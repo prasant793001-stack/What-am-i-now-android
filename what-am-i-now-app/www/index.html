@@ -1,0 +1,869 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>What Am I Now?</title>
+<meta name="theme-color" content="#0E6B5C">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap">
+<style>
+/* Layout: a shop-floor console. Sticky header + tabs, then one working column; the roster table scrolls sideways on phones. */
+:root{
+  --bg:#EEF2F1; --surface:#FFFFFF; --sunk:#F5F8F7; --ink:#14201D; --muted:#5B6A66; --line:#D9E1DF;
+  --primary:#0E6B5C; --primary-ink:#FFFFFF; --accent:#F0B429; --accent-ink:#2A1E00;
+  --mine:#D6F0E9; --mine-ink:#0A4A3F; --now:#FFF4D6; --red:#D93025; --red-bg:#FDE7E5; --brk:#F2EEE4; --danger:#B3402F; --danger-bg:#FBE5E1;
+  --shadow:0 1px 2px rgba(20,32,29,.06),0 8px 24px rgba(20,32,29,.07);
+  --f-display:"Bricolage Grotesque",ui-rounded,"Segoe UI",system-ui,sans-serif;
+  --f-body:"Figtree",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0D1412; --surface:#15201D; --sunk:#111A18; --ink:#E6EEEB; --muted:#93A39F; --line:#26332F;
+  --primary:#38BFA4; --primary-ink:#04211B; --accent:#F4C542; --accent-ink:#2A1E00;
+  --mine:#173B33; --mine-ink:#BFF0E3; --now:#2E2810; --red:#FF6B5E; --red-bg:#3A1714; --brk:#1C2420; --danger:#F08A78; --danger-bg:#3A1C17;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0D1412; --surface:#15201D; --sunk:#111A18; --ink:#E6EEEB; --muted:#93A39F; --line:#26332F;
+  --primary:#38BFA4; --primary-ink:#04211B; --accent:#F4C542; --accent-ink:#2A1E00;
+  --mine:#173B33; --mine-ink:#BFF0E3; --now:#2E2810; --red:#FF6B5E; --red-bg:#3A1714; --brk:#1C2420; --danger:#F08A78; --danger-bg:#3A1C17;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25); color-scheme:dark}
+*{box-sizing:border-box}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+[hidden]{display:none!important}
+img{max-width:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+.wrap{max-width:1440px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;gap:12px;padding-block:10px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;margin-right:auto;min-width:0}
+.brand b{font-family:var(--f-display);font-weight:800;font-size:20px;letter-spacing:-.01em}
+.brand small{display:block;color:var(--muted);font-size:12px}
+.ticket{width:34px;height:34px;border-radius:9px;background:var(--primary);color:var(--primary-ink);display:grid;place-items:center;font-family:var(--f-mono);font-weight:600;font-size:12px}
+.tabs{display:flex;gap:4px;background:var(--sunk);border:1px solid var(--line);border-radius:12px;padding:3px}
+.tabs button{border:0;background:none;padding:7px 14px;border-radius:9px;font-weight:600;color:var(--muted)}
+.tabs button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
+.mechip{display:flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--sunk);border-radius:999px;padding:3px 12px 3px 3px;font-weight:600}
+main{padding-block:18px 60px;display:grid;gap:16px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px}
+h2{font-family:var(--f-display);font-weight:800;font-size:20px;margin:0;letter-spacing:-.01em;text-wrap:balance}
+h3{font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:0;font-weight:700}
+.muted{color:var(--muted)}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:8px 14px;font-weight:600}
+.btn:hover{border-color:var(--primary)}
+.btn.primary{background:var(--primary);border-color:var(--primary);color:var(--primary-ink)}
+.btn.accent{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.ghost{background:none}
+.btn.danger{color:var(--danger)}
+.btn.sm{padding:5px 10px;font-size:13px;border-radius:8px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:3px 10px;font-size:12px;font-weight:700;background:var(--sunk);border:1px solid var(--line)}
+.pill.ok{background:var(--mine);color:var(--mine-ink);border-color:transparent}
+.pill.warn{background:var(--now);border-color:transparent}
+.pill.bad{background:var(--danger-bg);color:var(--danger);border-color:transparent}
+/* avatars */
+.av{--s:32px;width:var(--s);height:var(--s);border-radius:50%;overflow:hidden;flex:none;display:inline-block;background:var(--sunk);vertical-align:middle}
+.av svg,.av img{width:100%;height:100%;display:block;object-fit:cover}
+/* sign in */
+.who{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px}
+.who button{border:1px solid var(--line);background:var(--surface);border-radius:16px;padding:16px 8px 12px;display:grid;justify-items:center;gap:8px;font-weight:700;font-size:16px;transition:transform .15s,border-color .15s}
+.who button:hover{transform:translateY(-2px);border-color:var(--primary)}
+.hero-sign{display:grid;gap:6px}
+.hero-sign h2{font-size:28px}
+/* now card */
+.now{display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:var(--shadow)}
+.now .role{font-family:var(--f-display);font-weight:800;font-size:clamp(28px,6vw,40px);line-height:1.05;letter-spacing:-.02em}
+.now .sub{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin-top:6px}
+.nextbox{display:inline-flex;align-items:center;gap:8px;background:var(--now);border-radius:10px;padding:6px 10px;font-weight:600}
+.nextbox b{font-family:var(--f-display);font-size:17px}
+/* day strip */
+.weekbar{display:flex;align-items:center;gap:8px}
+.days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;flex:1}
+.days button{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:6px 2px;display:grid;justify-items:center;gap:0;min-width:0}
+.days button span{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700}
+.days button b{font-family:var(--f-mono);font-size:16px}
+.days button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.days button[aria-pressed="true"] span{color:inherit;opacity:.75}
+.days button.istoday b{text-decoration:underline;text-decoration-color:var(--accent);text-decoration-thickness:3px;text-underline-offset:3px}
+.days button.off{opacity:.5}
+.arrow{border:1px solid var(--line);background:var(--surface);border-radius:10px;width:36px;height:44px;font-size:18px;flex:none}
+/* attendance */
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:3px 12px 3px 3px;font-weight:600}
+.chip.out{background:var(--danger-bg);border-color:transparent;color:var(--danger)}
+.chip.out .av{filter:grayscale(1);opacity:.6}
+.chip.out .nm{text-decoration:line-through}
+/* roster table */
+.shiftbox{display:grid;gap:10px}
+.shifthead{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 12px}
+.tscroll{overflow-x:auto;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
+table{border-collapse:separate;border-spacing:0;width:100%;min-width:760px}
+th,td{padding:8px 10px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}
+thead th{font-size:12px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);background:var(--sunk);font-weight:700;position:sticky;top:0}
+th.brkh,td.brk{background:var(--brk)}
+tbody tr:last-child td{border-bottom:0}
+td.time{font-family:var(--f-mono);font-size:13px;position:sticky;left:0;background:var(--surface);z-index:1;border-right:1px solid var(--line)}
+thead th:first-child{position:sticky;left:0;z-index:2}
+.cell{border:0;background:transparent;color:inherit;font:inherit;cursor:pointer;display:inline-flex;align-items:center;gap:7px;border-radius:999px;padding:2px 10px 2px 2px}
+.cell.me{background:var(--mine);color:var(--mine-ink);font-weight:700;box-shadow:inset 0 0 0 2px var(--primary)}
+tr.cur td{background:var(--now)}
+tr.cur td.time{background:var(--now);font-weight:600}
+tr.cur td.time::before{content:"NOW ";color:var(--danger);font-weight:700}
+tr.past td{opacity:.55}
+.empty{border:1px dashed var(--line);border-radius:16px;padding:28px;text-align:center;display:grid;gap:10px;justify-items:center;background:var(--surface)}
+/* wheel */
+.wheelgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+@media (max-width:820px){.wheelgrid{grid-template-columns:1fr}}
+.wheelstage{display:grid;justify-items:center;gap:14px;position:relative}
+.wheelwrap{position:relative;width:min(340px,100%);aspect-ratio:1;max-width:100%}
+.wheelwrap canvas{width:100%;height:100%;display:block}
+.pointer{position:absolute;left:50%;top:-6px;transform:translateX(-50%);width:0;height:0;border-left:14px solid transparent;border-right:14px solid transparent;border-top:24px solid var(--ink);filter:drop-shadow(0 2px 2px rgba(0,0,0,.25))}
+.result{border-radius:14px;padding:12px 14px;text-align:center;font-weight:600}
+.result.good{background:var(--mine);color:var(--mine-ink)}
+.result.again{background:var(--now)}
+.result b{font-family:var(--f-display);font-size:22px;display:block}
+.drawlist{display:grid;gap:6px}
+.drawlist div{display:flex;align-items:center;gap:10px;padding:6px 8px;border-radius:10px;background:var(--sunk)}
+.drawlist .spot{margin-left:auto;font-family:var(--f-mono);font-size:13px}
+/* settings */
+.sgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:16px;align-items:start}
+.list{display:grid;gap:6px}
+.li{display:flex;align-items:center;gap:8px;padding:6px;border-radius:10px;background:var(--sunk);flex-wrap:wrap}
+.li .grow{flex:1;min-width:0;font-weight:600;overflow:hidden;text-overflow:ellipsis}
+.li input[type="time"],.li input[type="text"]{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:5px 8px;min-width:0}
+.field{display:grid;gap:6px}
+.field select,.field input{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:8px 10px;max-width:100%}
+.addrow{display:flex;gap:8px}
+.addrow input{flex:1;min-width:0;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:8px 10px}
+.toggles{display:flex;flex-wrap:wrap;gap:6px}
+.toggles button{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:6px 10px;font-weight:600}
+.toggles button[aria-pressed="true"]{background:var(--primary);color:var(--primary-ink);border-color:var(--primary)}
+.icon{border:1px solid var(--line);background:var(--surface);border-radius:8px;width:30px;height:30px;display:inline-grid;place-items:center;font-size:14px;padding:0}
+/* banner + sheet + toast */
+#banner{position:fixed;left:0;right:0;top:0;z-index:30;padding-top:calc(env(safe-area-inset-top,0px) + 10px);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));pointer-events:none}
+#banner .b{max-width:560px;margin:0 auto;background:var(--accent);color:var(--accent-ink);border-radius:18px;padding:14px 16px;display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;box-shadow:0 12px 40px rgba(0,0,0,.3);pointer-events:auto;animation:drop .35s ease-out}
+#banner .b big{font-family:var(--f-display);font-weight:800;font-size:24px;display:block;line-height:1.1}
+#banner .b .btn{background:var(--accent-ink);color:var(--accent);border-color:var(--accent-ink)}
+@keyframes drop{from{transform:translateY(-30px);opacity:0}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){#banner .b{animation:none}.who button{transition:none}}
+.sheetback{position:fixed;inset:0;z-index:20;background:rgba(5,12,10,.5);display:grid;place-items:end center;padding-left:max(0px,env(safe-area-inset-left,0px));padding-right:max(0px,env(safe-area-inset-right,0px))}
+.sheet{background:var(--surface);width:min(640px,100%);max-height:90vh;overflow:auto;border-radius:20px 20px 0 0;padding:18px max(16px,env(safe-area-inset-right,0px)) calc(18px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));display:grid;gap:16px}
+@media (min-width:700px){.sheetback{place-items:center}.sheet{border-radius:20px}}
+.opt{display:grid;gap:6px}
+.swatches{display:flex;flex-wrap:wrap;gap:6px}
+.swatches button{border:2px solid transparent;border-radius:999px;padding:4px 10px;background:var(--sunk);font-weight:600;font-size:13px}
+.swatches button.sw{width:30px;height:30px;padding:0}
+.swatches button[aria-pressed="true"]{border-color:var(--primary)}
+#toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:40;background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-weight:600;max-width:calc(100% - 32px);box-shadow:var(--shadow)}
+.split{display:grid;gap:16px;grid-template-columns:minmax(0,1fr) 360px;align-items:start}
+.maincol{display:grid;gap:16px;min-width:0}
+.side{position:sticky;top:calc(env(safe-area-inset-top,0px) + 76px);display:grid;gap:12px;min-width:0}
+@media (max-width:1000px){.split{grid-template-columns:minmax(0,1fr)}.side{position:static;order:-1}.maincol>.now{display:none}}
+.sidecard{display:grid;gap:12px}
+.clock{font-family:var(--f-mono);font-variant-numeric:tabular-nums;font-size:38px;font-weight:600;letter-spacing:-.03em;line-height:1}
+.clock small{font-size:16px;color:var(--muted)}
+.nowrole{display:grid;gap:2px;background:var(--red);color:#fff;border-radius:14px;padding:12px 14px}
+.nowrole b{font-family:var(--f-display);font-weight:800;font-size:32px;line-height:1.05}
+.nowrole.idle{background:var(--sunk);color:var(--ink);border:1px solid var(--line)}
+.nextline{display:flex;gap:6px;align-items:baseline;flex-wrap:wrap;background:var(--now);border-radius:10px;padding:8px 12px}
+.nextline b:last-child{font-family:var(--f-display);font-size:18px}
+.tl{position:relative;display:grid;gap:6px;max-height:min(56vh,520px);overflow:auto;padding:2px}
+.tl .it{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 12px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.tl .it.cur{border:2px solid var(--red);background:var(--red-bg);color:var(--red)}
+.tl .it.cur b::after{content:" · NOW";font-size:12px;letter-spacing:.06em}
+.tl .it.nx{border-color:var(--accent)}
+.tl .it.past{opacity:.45}
+.calbox{display:grid;gap:10px}
+.calbox p{margin:0}
+.native [data-audio]{display:none}
+.syncdot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--primary);margin-right:4px}
+.syncdot.off{background:var(--danger)}
+</style>
+</head>
+<body>
+
+<header class="top"><div class="wrap">
+  <div class="brand"><div class="ticket" aria-hidden="true">?</div><div><b>What Am I Now?</b><small id="hdrdate"></small></div></div>
+  <nav class="tabs" id="tabs" aria-label="Sections"></nav>
+  <div id="mebox"></div>
+</div></header>
+<main class="wrap" id="view"></main>
+<div id="banner" hidden></div>
+<div id="sheet" hidden></div>
+<div id="toast" role="status" hidden></div>
+
+<script src="vendor/capacitor.js"></script>
+<script src="vendor/local-notifications.js"></script>
+<script src="vendor/app.js"></script>
+<script type="module">
+/* ---------- Firebase (shared, auto-saving database) ---------- */
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, doc as fdoc, collection as fcol, onSnapshot as fsnap, setDoc, getDoc, runTransaction } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getAuth, initializeAuth, indexedDBLocalPersistence, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import * as CFG from "./firebase-config.js";
+const firebaseConfig=CFG.firebaseConfig;
+const googleClientId=(CFG.googleClientId&&!/PASTE/i.test(CFG.googleClientId))?CFG.googleClientId:'';
+
+const SEED_STAFF=["Ahmed","Shahid","Ziko","Rayan","Hamada","Prashant","Mohammed","Ahoud","Mustafa"];
+let fs=null;
+function makeDb(){
+  const wrap=s=>({id:s.id,exists:s.exists(),data:()=>s.data()});
+  return {
+    doc(p){const r=fdoc(fs,p);return{get:async()=>wrap(await getDoc(r)),set:d=>setDoc(r,d),onSnapshot:(n,e)=>fsnap(r,s=>n(wrap(s)),e)}},
+    collection(p){const r=fcol(fs,p);return{onSnapshot:(n,e)=>fsnap(r,s=>n({docs:s.docs.map(wrap)}),e)}},
+    transact(p,fn){const r=fdoc(fs,p);return runTransaction(fs,async tx=>{const s=await tx.get(r);const out=fn(s.exists()?s.data():{});if(out.write)tx.set(r,out.write);return out.result})}
+  };
+}
+const NATIVE=!!(window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform());
+const PLATFORM=window.Capacitor&&Capacitor.getPlatform?Capacitor.getPlatform():'web';
+const LN=NATIVE&&window.capacitorLocalNotifications?capacitorLocalNotifications.LocalNotifications:null;
+const CapApp=NATIVE&&window.capacitorApp?capacitorApp.App:null;
+if(NATIVE)document.documentElement.classList.add('native');
+let swReg=null;
+if(!NATIVE&&'serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').then(r=>swReg=r).catch(()=>{})}
+
+/* ---------- basics ---------- */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const LS={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{v==null?localStorage.removeItem(k):localStorage.setItem(k,v)}catch(e){}}};
+const SS={get(k){try{return sessionStorage.getItem(k)}catch(e){return null}},set(k,v){try{sessionStorage.setItem(k,v)}catch(e){}}};
+const DAYN=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const DEFAULTS={roles:[{name:'Greeter'},{name:'SAS1'},{name:'SAS2'},{name:'SAS3'},{name:'GA'},{name:'TAB1'},{name:'TAB2'},{name:'TAB3'},{name:'Break',brk:true}],
+  shifts:[{name:'Shift 1',start:'08:00',end:'12:30'},{name:'Shift 2',start:'12:30',end:'17:00'}],
+  slotMode:'auto',leadMin:3,workDays:[0,1,2,3,4,5,6],wheelHours:24};
+
+let db=null, dbState='loading', cfg=null, profiles={}, absences={}, wheels={}, readOnly=false;
+function getCookie(k){try{const c=document.cookie.split('; ').find(x=>x.startsWith(k+'='));return c?decodeURIComponent(c.slice(k.length+1))||null:null}catch(e){return null}}
+function rememberMe(n){LS.set('dutyRoster.me',n);try{document.cookie='dutyRoster.me='+(n?encodeURIComponent(n):'')+';path=/;max-age='+(n?34560000:0)+';SameSite=Lax'}catch(e){}}
+function setUrlMe(n){try{const u=new URL(location.href);n?u.searchParams.set('me',n):u.searchParams.delete('me');history.replaceState(null,'',u)}catch(e){}}
+const urlMe=new URLSearchParams(location.search).get('me');
+let me=urlMe||LS.get('dutyRoster.me')||getCookie('dutyRoster.me');
+if(me){rememberMe(me);setUrlMe(me)}
+try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
+let tab=LS.get('dutyRoster.tab')||'today';
+let viewDate=sod(new Date());
+let cache=new Map();
+let sheetOpen=false;
+
+function sod(d){const x=new Date(d);x.setHours(0,0,0,0);return x}
+function addDays(d,n){const x=new Date(d);x.setDate(x.getDate()+n);return x}
+function dkey(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function fromKey(k){const [y,m,dd]=k.split('-').map(Number);return new Date(y,m-1,dd)}
+function monday(d){const x=sod(d);return addDays(x,-((x.getDay()+6)%7))}
+function wkKey(d){return dkey(monday(d))}
+function parseHM(s){const [h,m]=String(s||'0:0').split(':').map(Number);return (h||0)*60+(m||0)}
+function fmtT(m,ap=true){const h=Math.floor(m/60)%24,mm=m%60;return (h%12||12)+':'+String(mm).padStart(2,'0')+(ap?(h<12?' AM':' PM'):'')}
+function fmtRange(a,b){return ((Math.floor(a/60)%24<12)===(Math.floor(b/60)%24<12))?fmtT(a,false)+'–'+fmtT(b):fmtT(a)+'–'+fmtT(b)}
+function fmtDay(d){return DAYN[d.getDay()]+' '+d.getDate()+' '+MON[d.getMonth()]}
+function fmtCd(ms){if(ms<=0)return '0:00';const s=Math.floor(ms/1000),h=Math.floor(s/3600),m=Math.floor(s%3600/60),ss=s%60;return h?h+'h '+String(m).padStart(2,'0')+'m':m+':'+String(ss).padStart(2,'0')}
+function hash(s){let h=2166136261;for(const c of String(s)){h^=c.charCodeAt(0);h=Math.imul(h,16777619)}return h>>>0}
+function rng(seed){let a=seed>>>0;return()=>{a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function shuffle(arr,r){const a=arr.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function rotate(a,k){const n=a.length;if(!n)return[];k=((k%n)+n)%n;return a.map((_,i)=>a[(i+k)%n])}
+function pkey(n){return String(n).replace(/[^A-Za-z0-9_\-.~:@+]/g,'_')||'_'}
+const C=()=>Object.assign({},DEFAULTS,cfg||{});
+const staff=()=>(cfg&&Array.isArray(cfg.staff))?cfg.staff:[];
+function clearCache(){cache=new Map()}
+
+/* ---------- roster engine ---------- */
+function normalize(order){const s=staff();const out=[...new Set(order)].filter(x=>s.includes(x));for(const x of s)if(!out.includes(x))out.push(x);return out}
+function baseOrder(wk){
+  const ck='b'+wk;if(cache.has(ck))return cache.get(ck);
+  const c=C(),anchor=c.anchorWeek||wkKey(new Date()),wd=(c.workDays||[]).length||7;let res;
+  if(wk===anchor)res=normalize(staff());
+  else if(wk<anchor)res=rotate(baseOrder(dkey(addDays(fromKey(wk),7))),-wd);
+  else{const prev=dkey(addDays(fromKey(wk),-7));const a=cleanAssign(wheels[wk]);
+    res=Object.keys(a).length?wheelOrder(wk,baseOrder(prev)):rotate(baseOrder(prev),wd)}
+  cache.set(ck,res);return res;
+}
+function cleanAssign(w){const s=staff(),n=s.length,out={},used=new Set();for(const [p,pos] of Object.entries((w&&w.assign)||{})){if(s.includes(p)&&Number.isInteger(pos)&&pos>=0&&pos<n&&!used.has(pos)){out[p]=pos;used.add(pos)}}return out}
+function forbidsFor(prev){const f={};if(prev[0])f[prev[0]]=new Set([0]);if(prev[1])(f[prev[1]]=f[prev[1]]||new Set()).add(1);return f}
+function match(people,free,bad){const res=[],used=new Set();const go=k=>{if(k===people.length)return true;for(const i of free){if(used.has(i)||bad(people[k],i))continue;used.add(i);res[k]=i;if(go(k+1))return true;used.delete(i)}return false};return go(0)?res.slice():null}
+function wheelOrder(wk,prev){
+  const s=staff(),n=s.length,a=cleanAssign(wheels[wk]),forb=forbidsFor(prev),order=Array(n).fill(null);
+  for(const [p,pos] of Object.entries(a))order[pos]=p;
+  const r=rng(hash('wheel'+wk));
+  const people=shuffle(s.filter(p=>!(p in a)),r),free=shuffle([...Array(n).keys()].filter(i=>order[i]==null),r);
+  const sol=match(people,free,(p,i)=>forb[p]&&forb[p].has(i))||match(people,free,()=>false)||[];
+  people.forEach((p,k)=>order[sol[k]]=p);return order;
+}
+function buildPositions(n){
+  const roles=(C().roles||[]).map(r=>({name:r.name,brk:!!r.brk}));if(!n)return[];let pos=roles.slice();
+  if(n>pos.length){const bn=(pos.find(r=>r.brk)||{}).name||'Standby';let k=2;while(pos.length<n)pos.push({name:bn+' '+k++,brk:true})}
+  else while(pos.length>n){let i=-1;for(let j=pos.length-1;j>=0;j--)if(!pos[j].brk){i=j;break}pos.splice(i<0?pos.length-1:i,1)}
+  return pos;
+}
+function buildSlots(s,e,n,mode){
+  if(e<=s||!n)return[];const out=[];
+  if(mode==='auto'){let prev=s;for(let k=1;k<=n;k++){const b=k===n?e:s+Math.round(k*(e-s)/n/5)*5;if(b>prev){out.push({start:prev,end:b});prev=b}}return out}
+  const L=Math.max(5,+mode||30);for(let t=s;t<e;t+=L)out.push({start:t,end:Math.min(e,t+L)});return out;
+}
+function dayRoster(date){
+  const key=dkey(date),ck='d'+key;if(cache.has(ck))return cache.get(ck);
+  const c=C(),wd=c.workDays||[];let res;
+  if(!staff().length)res={key,empty:true};
+  else if(!wd.includes(date.getDay()))res={key,off:true};
+  else{
+    const mon=monday(date);let idx=0;for(let i=0;i<(date.getDay()+6)%7;i++)if(wd.includes(addDays(mon,i).getDay()))idx++;
+    const full=rotate(baseOrder(dkey(mon)),idx);
+    const absent=((absences[key]||{}).names||[]).filter(x=>staff().includes(x));
+    const order=full.filter(x=>!absent.includes(x)),positions=buildPositions(order.length);
+    const shifts=(c.shifts||[]).map(sh=>({...sh,slots:buildSlots(parseHM(sh.start),parseHM(sh.end),order.length,c.slotMode).map((sl,i)=>({...sl,cells:positions.map((_,j)=>order[(i+j)%order.length])}))}));
+    res={key,full,order,absent,positions,shifts};
+  }
+  cache.set(ck,res);return res;
+}
+function allSlots(r){const out=[];(r.shifts||[]).forEach(sh=>sh.slots.forEach(sl=>out.push({...sl,shift:sh.name})));return out.sort((a,b)=>a.start-b.start)}
+function roleOf(r,slot,name){const i=slot.cells.indexOf(name);return i<0?null:r.positions[i]}
+
+/* ---------- cartoon avatars ---------- */
+const SKIN=['#F6D7B8','#E8B98F','#C98E5F','#9C6640','#6E4529'];
+const HAIRC=['#1D1715','#3B2A20','#6A4A2E','#A87A4A','#8E8E8E'];
+const CLOTH=['#2E3A3F','#7A4E6E','#2F5DA8','#B98D6A','#0F6E5F'];
+const SHIRT=['#0F6E5F','#2F5DA8','#B5473A','#6B4FA0','#C08A1E','#2E3A3F'];
+const BGS=['#CDEBE3','#D8E3F6','#F6DCD6','#E6DEF4','#F5E8C7','#DCE3E1'];
+const HAIRS=[['short','Short'],['quiff','Quiff'],['curly','Curly'],['buzz','Buzz'],['ghutra','Ghutra'],['hijab','Hijab']];
+function defaultLook(n){const h=hash(n);return{hair:['short','quiff','curly','buzz'][h%4],skin:(h>>>3)%5,hc:(h>>>6)%3,beard:['none','stubble','full'][(h>>>9)%3],glasses:((h>>>12)%4)===0,shirt:(h>>>14)%6,bg:(h>>>17)%6}}
+function lookOf(n){return Object.assign(defaultLook(n),(profiles[pkey(n)]||{}).look||{})}
+function avatarSVG(L){
+  const sk=SKIN[L.skin]||SKIN[1],hc=HAIRC[L.hc]||HAIRC[0],cl=CLOTH[L.hc]||CLOTH[0],sh=SHIRT[L.shirt]||SHIRT[0],bg=BGS[L.bg]||BGS[0];
+  let back='',hair='',front='',ears=`<circle cx="31" cy="46" r="4.5" fill="${sk}"/><circle cx="69" cy="46" r="4.5" fill="${sk}"/>`;
+  if(L.hair==='hijab'){ears='';back=`<path d="M19 104C17 74 21 44 28 30C35 12 65 12 72 30C79 44 83 74 81 104Z" fill="${cl}"/>`;
+    front=`<path d="M31 52C33 74 67 74 69 52C68 80 32 80 31 52Z" fill="${cl}"/><path d="M29 43C29 22 71 22 71 43C64 32 36 32 29 43Z" fill="${cl}"/>`}
+  else if(L.hair==='ghutra'){ears='';back=`<path d="M23 104C21 80 23 50 29 34C34 17 66 17 71 34C77 50 79 80 77 104Z" fill="#F4F4F1" stroke="rgba(0,0,0,.1)"/>`;
+    front=`<path d="M28 40C29 19 71 19 72 40C64 30 36 30 28 40Z" fill="#FBFBF9" stroke="rgba(0,0,0,.08)"/><ellipse cx="50" cy="24" rx="20" ry="4.5" fill="none" stroke="#1d1d1d" stroke-width="2.6"/><ellipse cx="50" cy="27.5" rx="21" ry="4.5" fill="none" stroke="#1d1d1d" stroke-width="1.6"/>`}
+  else if(L.hair==='short')hair=`<path d="M30 44C29 26 40 19 51 19C63 19 72 27 70 44C67 36 62 31 54 30C46 33 37 34 30 44Z" fill="${hc}"/>`;
+  else if(L.hair==='quiff')hair=`<path d="M30 44C29 26 40 19 51 19C63 19 72 27 70 44C67 36 62 31 54 30C46 33 37 34 30 44Z" fill="${hc}"/><path d="M36 30C38 13 60 9 68 22C61 18 52 19 45 27Z" fill="${hc}"/>`;
+  else if(L.hair==='curly')hair=[[33,37,7],[38,27,8],[47,22,8.5],[57,22,8.5],[65,29,7.5],[69,39,5.5],[31,45,4.5],[50,28,6]].map(([x,y,r])=>`<circle cx="${x}" cy="${y}" r="${r}" fill="${hc}"/>`).join('');
+  else if(L.hair==='buzz')hair=`<path d="M31 41C31 25 41 20 50 20C60 20 69 25 69 41C64 31 57 28 50 28C43 28 36 31 31 41Z" fill="${hc}" opacity=".75"/>`;
+  let beard='';
+  if(L.hair!=='hijab'){if(L.beard==='stubble')beard=`<path d="M32 48C33 66 44 70 50 70C56 70 67 66 68 48C64 58 58 61 50 61C42 61 36 58 32 48Z" fill="${hc}" opacity=".3"/>`;
+    else if(L.beard==='full')beard=`<path d="M31 46C32 68 44 72 50 72C56 72 68 68 69 46C65 58 58 60 50 60C42 60 35 58 31 46Z" fill="${hc}"/><path d="M41 55C45 52 55 52 59 55C55 57 45 57 41 55Z" fill="${hc}"/>`}
+  const mouth=L.beard==='full'&&L.hair!=='hijab'?'#F3C7B5':'#7A3B2E';
+  const glasses=L.glasses?`<g fill="none" stroke="#1d1d1d" stroke-width="1.8"><circle cx="42" cy="45" r="6"/><circle cx="58" cy="45" r="6"/><path d="M48 45h4"/></g>`:'';
+  return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" fill="${bg}"/>${back}
+<path d="M14 104C16 80 32 72 50 72C68 72 84 80 86 104Z" fill="${sh}"/><path d="M42 73L50 84L58 73" fill="none" stroke="rgba(255,255,255,.75)" stroke-width="2.5"/>
+<rect x="43" y="58" width="14" height="18" rx="5" fill="${sk}"/><rect x="43" y="62" width="14" height="5" fill="rgba(0,0,0,.1)"/>${ears}
+<ellipse cx="50" cy="44" rx="19" ry="22" fill="${sk}"/>${hair}${beard}
+<g stroke="${L.hair==='hijab'||L.hair==='ghutra'?'#3B2A20':hc}" stroke-width="2.2" stroke-linecap="round" fill="none"><path d="M37 38Q41 35.5 46 37.5"/><path d="M54 37.5Q59 35.5 63 38"/></g>
+<circle cx="42" cy="45" r="2.7" fill="#1b1b1b"/><circle cx="58" cy="45" r="2.7" fill="#1b1b1b"/><circle cx="43" cy="44" r=".9" fill="#fff"/><circle cx="59" cy="44" r=".9" fill="#fff"/>
+<path d="M50 47Q48 52 51 53" stroke="rgba(0,0,0,.25)" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+<ellipse cx="37.5" cy="52" rx="3.6" ry="2" fill="#FF8A80" opacity=".28"/><ellipse cx="62.5" cy="52" rx="3.6" ry="2" fill="#FF8A80" opacity=".28"/>
+<path d="M44 57Q50 62 56 57" stroke="${mouth}" stroke-width="2.2" fill="none" stroke-linecap="round"/>${glasses}${front}</svg>`;
+}
+function avatar(name,size=32){const p=profiles[pkey(name)];const inner=p&&p.photo?`<img src="${esc(p.photo)}" alt="">`:avatarSVG(lookOf(name));return `<span class="av" style="--s:${size}px" aria-hidden="true">${inner}</span>`}
+
+/* ---------- sound + alerts ---------- */
+let actx=null;
+function unlockAudio(){try{if(!actx){const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;actx=new AC()}if(actx.state==='suspended')actx.resume()}catch(e){}}
+const audioReady=()=>!!actx&&actx.state==='running';
+function tone(f,t0,dur,vol,type){const o=actx.createOscillator(),g=actx.createGain();o.type=type||'sine';o.frequency.value=f;g.gain.setValueAtTime(0,t0);g.gain.linearRampToValueAtTime(vol,t0+.02);g.gain.exponentialRampToValueAtTime(.0001,t0+dur);o.connect(g).connect(actx.destination);o.start(t0);o.stop(t0+dur+.05)}
+function chime(){if(!actx)return;const t=actx.currentTime+.05;[[659,0],[880,.18],[1175,.36],[880,.95],[1175,1.13],[1568,1.31]].forEach(([f,d])=>tone(f,t+d,.65,.22,'triangle'))}
+function clickTick(){if(audioReady())tone(1900,actx.currentTime,.03,.05,'square')}
+document.addEventListener('pointerdown',()=>{const was=audioReady();unlockAudio();if(!was)setTimeout(updateLive,200)},true);
+
+let fired=new Set();try{fired=new Set(JSON.parse(SS.get('dutyRoster.fired')||'[]'))}catch(e){}
+let bannerData=null,alarmT=null;
+function checkAlerts(now){
+  if(!me||!staff().includes(me))return;const r=dayRoster(sod(now));if(!r.shifts)return;
+  const lead=(+C().leadMin||3)*60000,t0=sod(now).getTime(),slots=allSlots(r);
+  slots.forEach((sl,i)=>{const S=t0+sl.start*60000;if(now>=S-lead&&now<S){const k=r.key+'@'+sl.start+'@'+me;if(fired.has(k))return;fired.add(k);SS.set('dutyRoster.fired',JSON.stringify([...fired].slice(-60)));
+    const role=roleOf(r,sl,me);if(!role)return;const cur=slots.find(x=>x.start*60000+t0<=now&&now<x.end*60000+t0);const from=cur?roleOf(r,cur,me):null;
+    fireAlert({role:role.name,brk:role.brk,at:sl.start,from:from&&from.name,hideAt:S+90000})}});
+}
+function fireAlert(a){
+  const osRings=NATIVE&&nativeInfo.perm==='granted'&&!a.test;bannerData=a;if(!osRings)chime();clearInterval(alarmT);let rings=0;alarmT=setInterval(()=>{if(!bannerData||++rings>8){clearInterval(alarmT);return}chime();try{navigator.vibrate&&navigator.vibrate([300,120,300])}catch(e){}},4000);try{navigator.vibrate&&navigator.vibrate([300,120,300,120,500])}catch(e){}
+  try{if(!NATIVE&&window.Notification&&Notification.permission==='granted'){const title=(a.brk?'Break':'Next: '+a.role)+' at '+fmtT(a.at),opts={body:a.from?'You move from '+a.from+' to '+a.role+'.':'You start as '+a.role+'.',tag:'role-change',renotify:true,requireInteraction:true,vibrate:[300,120,300,120,500],icon:'icon-192.png',badge:'icon-192.png'};
+    if(swReg&&swReg.showNotification)swReg.showNotification(title,opts);else new Notification(title,opts)}}catch(e){}
+  renderBanner();
+}
+function renderBanner(){
+  const b=$('#banner');if(!bannerData){b.hidden=true;b.innerHTML='';return}
+  const a=bannerData;b.hidden=false;
+  b.innerHTML=`<div class="b" role="alert">${avatar(me,52)}<div><span>${a.brk?'Your break starts at':'At'} <b class="mono">${fmtT(a.at)}</b>${a.brk?'':' you are the next'}</span><big>${esc(a.role)}</big><span>${a.from?'Moving from '+esc(a.from):'First slot of the shift'}</span></div><button class="btn sm" data-act="banner-close">Got it</button></div>`;
+}
+
+/* ---------- db ---------- */
+let unsubs=[],dbError='';
+function startDb(){
+  if(!firebaseConfig||!firebaseConfig.apiKey||/PASTE/i.test(firebaseConfig.apiKey)){dbState='setup';render(true);return}
+  let app;
+  try{
+    app=initializeApp(firebaseConfig);
+    fs=initializeFirestore(app,{localCache:persistentLocalCache({tabManager:persistentMultipleTabManager()})});
+  }catch(e){dbState='none';dbError=e.message;render(true);return}
+  let auth;try{auth=NATIVE?initializeAuth(app,{persistence:indexedDBLocalPersistence}):getAuth(app)}catch(e){auth=getAuth(app)}
+  onAuthStateChanged(auth,u=>{
+    if(!u||db)return;db=makeDb();
+    const err=e=>{dbState='none';dbError=e&&e.code==='permission-denied'?'The database refused access. Check the Firestore rules and that Anonymous sign-in is turned on.':(e&&e.message)||'';render(true)};
+    unsubs.push(db.doc('config/main').onSnapshot(s=>{cfg=s.exists?s.data():null;dbState='ready';clearCache();render()},err));
+    unsubs.push(db.collection('profiles').onSnapshot(s=>{const p={};s.docs.forEach(d=>p[d.id]=d.data());profiles=p;render()},err));
+    unsubs.push(db.collection('absences').onSnapshot(s=>{const a={};s.docs.forEach(d=>a[d.id]=d.data());absences=a;clearCache();render()},err));
+    unsubs.push(db.collection('wheel').onSnapshot(s=>{const w={};s.docs.forEach(d=>w[d.id]=d.data());wheels=w;clearCache();render()},err));
+  });
+  signInAnonymously(auth).catch(e=>{dbState='none';dbError=e.code==='auth/operation-not-allowed'?'Turn on Anonymous sign-in in Firebase Authentication.':e.code==='auth/unauthorized-domain'?'Add this website address to Firebase Authentication → Settings → Authorized domains.':e.message;render(true)});
+}
+startDb();
+window.addEventListener('online',()=>updateLive());window.addEventListener('offline',()=>{toast('You are offline. Changes will save when the connection is back.');updateLive()});
+function writeErr(e){
+  if(e&&e.code==='permission-denied'){readOnly=true;toast('The database refused the change. Check the Firestore rules.')}
+  else if(e&&e.code==='resource-exhausted')toast('The free daily limit is used up. Changes will save again tomorrow.');
+  else toast('Could not save. Check your connection and try again.');
+}
+let cfgChain=Promise.resolve();
+function saveCfg(patch){
+  if(!db){toast('Saving needs the shared roster. Wait for the team database to connect, then try again.');return}
+  cfg=Object.assign({},C(),cfg||{},patch);clearCache();render(true);
+  const body=JSON.parse(JSON.stringify(cfg));cfgChain=cfgChain.then(()=>db.doc('config/main').set(body)).catch(writeErr);
+}
+const profTimers={},profChains={};
+function saveProfile(name,patch){
+  const k=pkey(name);profiles={...profiles,[k]:Object.assign({},profiles[k]||{},patch)};render(true);if(sheetOpen)renderSheet();
+  if(!db)return;clearTimeout(profTimers[k]);
+  profTimers[k]=setTimeout(()=>{const body=JSON.parse(JSON.stringify(profiles[k]));profChains[k]=(profChains[k]||Promise.resolve()).then(()=>db.doc('profiles/'+k).set(body)).catch(writeErr)},450);
+}
+let absChain=Promise.resolve();
+function toggleAbsent(name){
+  if(!db)return toast('Saving needs the shared roster.');
+  const key=dkey(viewDate),cur=((absences[key]||{}).names||[]).slice(),i=cur.indexOf(name);
+  if(i>=0)cur.splice(i,1);else cur.push(name);
+  absences={...absences,[key]:{names:cur}};clearCache();render(true);
+  toast(i>=0?name+' is back on duty for '+fmtDay(viewDate)+'.':name+' marked on leave for '+fmtDay(viewDate)+'. Roster adjusted.');
+  absChain=absChain.then(()=>db.doc('absences/'+key).set({names:cur})).catch(writeErr);
+}
+
+/* ---------- toast ---------- */
+let toastT;function toast(m){const t=$('#toast');t.textContent=m;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>t.hidden=true,3800)}
+
+/* ---------- render ---------- */
+function render(force){
+  renderHeader();
+  const active=document.activeElement;
+  if(!force&&active&&active.closest&&active.closest('#view')&&/INPUT|SELECT/.test(active.tagName))return;
+  const v=$('#view');
+  if(dbState==='loading'){v.innerHTML=`<div class="empty"><h2>Loading the team…</h2></div>`;return}
+  if(dbState==='setup'){v.innerHTML=`<div class="empty"><h2>Almost ready</h2><p class="muted">Paste your Firebase settings into <b>firebase-config.js</b> (see the README), then reload this page.</p></div>`;return}
+  if(dbState==='none'){v.innerHTML=`<div class="empty"><h2>Can't reach the team database</h2><p class="muted">${esc(dbError||'Check your internet connection and reload.')}</p></div>`;return}
+  const signed=me&&staff().includes(me);
+  if(tab==='settings')v.innerHTML=viewSettings();
+  else if(!staff().length)v.innerHTML=`<div class="empty"><h2>No team set up yet</h2><p class="muted">Start with the 9 agents and roles from your current roster sheet, or add your own in Settings.</p><div class="row" style="justify-content:center"><button class="btn primary" data-act="seed">Set up with current team</button><button class="btn" data-act="tab" data-tab="settings">Open settings</button></div></div>`;
+  else if(!signed)v.innerHTML=viewSignIn();
+  else if(tab==='wheel'){v.innerHTML=viewWheel();drawWheel()}
+  else{v.innerHTML=viewToday();const tl=$('#tl'),c=tl&&tl.querySelector('.cur,.nx');if(c)tl.scrollTop=Math.max(0,c.offsetTop-8)}
+  if(NATIVE)queueSchedule();
+  updateLive();
+}
+function renderHeader(){
+  $('#hdrdate').innerHTML=`<span class="syncdot ${navigator.onLine&&dbState==='ready'?'':'off'}" data-sync></span>${fmtDay(new Date())} · <span data-synctext>${navigator.onLine&&dbState==='ready'?'All changes saved':'Offline, will sync'}</span>`;
+  const tabs=[['today','Roster'],['wheel','Spin wheel'],['settings','Settings']];
+  $('#tabs').innerHTML=tabs.map(([k,l])=>`<button data-act="tab" data-tab="${k}" aria-pressed="${tab===k}">${l}</button>`).join('');
+  $('#mebox').innerHTML=me&&staff().includes(me)?`<button class="mechip" data-act="profile" aria-label="My profile">${avatar(me,30)}<span>${esc(me)}</span></button>`:'';
+}
+function viewSignIn(){
+  return `<section class="hero-sign"><h2>Who's on the floor?</h2><p class="muted">Tap your character once. This device remembers you, and you'll get a chime before every role change.</p></section>
+  <div class="who">${staff().map(n=>`<button data-act="signin" data-name="${esc(n)}">${avatar(n,84)}<span>${esc(n)}</span></button>`).join('')}</div>`;
+}
+function nowInfo(now){
+  const r=dayRoster(sod(now));if(r.off)return{msg:'Day off',sub:'No roster today.'};
+  if(r.absent&&r.absent.includes(me))return{msg:'On leave today',sub:'You are marked absent. Get well soon.'};
+  const slots=allSlots(r),t=now.getHours()*60+now.getMinutes()+now.getSeconds()/60,t0=sod(now).getTime();
+  const cur=slots.find(s=>s.start<=t&&t<s.end),nxt=slots.find(s=>s.start>t);
+  const out={cur,curRole:cur&&roleOf(r,cur,me),nxt,nxtRole:nxt&&roleOf(r,nxt,me),nextMs:nxt?t0+nxt.start*60000:null,endMs:cur?t0+cur.end*60000:null};
+  if(!cur)out.msg=nxt?'Off the floor':'Done for today';
+  return out;
+}
+function viewToday(){
+  const now=new Date(),ni=nowInfo(now),r=dayRoster(viewDate),isToday=dkey(viewDate)===dkey(now);
+  const audio=`<span class="pill ${audioReady()?'ok':'warn'}" data-audio>${audioReady()?'Alerts on · '+(+C().leadMin||3)+' min before':'Tap anywhere to turn on alert sound'}</span>`;
+  let nowCard;
+  if(ni.curRole){nowCard=`<section class="now">${avatar(me,76)}<div><h3>Right now · ${esc(ni.cur.shift)}</h3><div class="role">${esc(ni.curRole.name)}</div>
+    <div class="sub"><span class="mono">until ${fmtT(ni.cur.end)} · <span data-cd="${ni.endMs}"></span> left</span>
+    ${ni.nxtRole&&ni.nxt.start===ni.cur.end?`<span class="nextbox">Next ${fmtT(ni.nxt.start)} → <b>${esc(ni.nxtRole.name)}</b></span>`:''}${audio}</div></div></section>`}
+  else{nowCard=`<section class="now">${avatar(me,76)}<div><h3>Hi ${esc(me)}</h3><div class="role">${esc(ni.msg)}</div><div class="sub">
+    ${ni.sub?`<span class="muted">${esc(ni.sub)}</span>`:''}${ni.nxtRole?`<span class="nextbox">Starts ${fmtT(ni.nxt.start)} as <b>${esc(ni.nxtRole.name)}</b> · <span class="mono" data-cd="${ni.nextMs}"></span></span>`:''}${audio}</div></div></section>`}
+  const mon=monday(viewDate),wd=C().workDays||[];
+  const strip=`<div class="weekbar"><button class="arrow" data-act="wk" data-dir="-1" aria-label="Previous week">‹</button><div class="days">${[...Array(7)].map((_,i)=>{const d=addDays(mon,i);return `<button data-act="day" data-key="${dkey(d)}" aria-pressed="${dkey(d)===dkey(viewDate)}" class="${dkey(d)===dkey(now)?'istoday':''} ${wd.includes(d.getDay())?'':'off'}"><span>${DAYN[d.getDay()]}</span><b>${d.getDate()}</b></button>`}).join('')}</div><button class="arrow" data-act="wk" data-dir="1" aria-label="Next week">›</button></div>`;
+  let body;
+  if(r.off)body=`<div class="empty"><h2>${fmtDay(viewDate)} is a day off</h2><p class="muted">Change working days in Settings.</p></div>`;
+  else{
+    const att=`<section class="card" style="display:grid;gap:10px"><div class="row" style="justify-content:space-between"><h3>On duty · ${fmtDay(viewDate)} · ${r.order.length} of ${r.full.length}</h3><span class="muted" style="font-size:13px">Tap a name to mark sick leave</span></div>
+      <div class="chips">${r.full.map(n=>{const out=r.absent.includes(n);return `<button class="chip ${out?'out':''}" data-act="absent" data-name="${esc(n)}" aria-pressed="${out}">${avatar(n,26)}<span class="nm">${esc(n)}</span>${out?'<span>· Leave</span>':''}</button>`}).join('')}</div></section>`;
+    const tnow=now.getHours()*60+now.getMinutes();
+    const tables=r.order.length?r.shifts.map(sh=>{const len=sh.slots.length?sh.slots[0].end-sh.slots[0].start:0;return `<section class="shiftbox"><div class="shifthead"><h2>${esc(sh.name)}</h2><span class="mono muted">${fmtRange(parseHM(sh.start),parseHM(sh.end))}</span><span class="pill">${C().slotMode==='auto'?'~'+len+' min per role':len+' min per role'}</span></div>
+      <div class="tscroll"><table><thead><tr><th>Time</th>${r.positions.map(p=>`<th class="${p.brk?'brkh':''}">${esc(p.name)}</th>`).join('')}</tr></thead><tbody>
+      ${sh.slots.map(sl=>{const cur=isToday&&sl.start<=tnow&&tnow<sl.end,past=isToday&&sl.end<=tnow;return `<tr class="${cur?'cur':''} ${past?'past':''}"><td class="time">${fmtRange(sl.start,sl.end)}</td>${sl.cells.map((n,j)=>`<td class="${r.positions[j].brk?'brk':''}"><button class="cell ${n===me?'me':''}" data-act="peek" data-name="${esc(n)}" title="Show ${esc(n)}'s timeline">${avatar(n,24)}${esc(n)}</button></td>`).join('')}</tr>`}).join('')}
+      </tbody></table></div></section>`}).join(''):`<div class="empty"><h2>Everyone is on leave</h2></div>`;
+    body=att+tables;
+  }
+  return `<div class="split"><div class="maincol">${nowCard}${strip}${body}</div><aside class="side" aria-label="My timeline">${viewSide()}</aside></div>`;
+}
+
+/* ---------- my timeline (right side) ---------- */
+let sidePerson=null;
+function clockText(d){const h=d.getHours();return (h%12||12)+':'+String(d.getMinutes()).padStart(2,'0')+':'+String(d.getSeconds()).padStart(2,'0')+'<small> '+(h<12?'AM':'PM')+'</small>'}
+function myItems(r,who,t){const items=[];if(!r.shifts||(r.absent||[]).includes(who))return items;for(const sl of allSlots(r)){const role=roleOf(r,sl,who);if(!role)continue;items.push({sl,role,cur:sl.start<=t&&t<sl.end,past:sl.end<=t})}return items}
+function viewSide(){
+  const who=sidePerson&&staff().includes(sidePerson)?sidePerson:me,isMe=who===me,now=new Date(),r=dayRoster(sod(now)),t=now.getHours()*60+now.getMinutes()+now.getSeconds()/60;
+  const items=myItems(r,who,t),cur=items.find(i=>i.cur),nxt=items.find(i=>!i.past&&!i.cur),t0=sod(now).getTime();
+  const label=isMe?'Your role is now':esc(who)+"'s role is now";
+  let box;
+  if(cur)box=`<div class="nowrole"><span>${label}</span><b>${esc(cur.role.name)}</b><span class="mono">until ${fmtT(cur.sl.end)} · <span data-cd="${t0+cur.sl.end*60000}"></span> left</span></div>`;
+  else{const why=r.off?'Day off today':(r.absent||[]).includes(who)?'On leave today':nxt?'Not on the floor yet':'Finished for today';
+    box=`<div class="nowrole idle"><span>${label}</span><b>${why}</b>${nxt?`<span class="mono">starts ${fmtT(nxt.sl.start)} · in <span data-cd="${t0+nxt.sl.start*60000}"></span></span>`:''}</div>`}
+  const next=nxt?`<div class="nextline">Next at <b class="mono">${fmtT(nxt.sl.start)}</b> → <b>${esc(nxt.role.name)}</b></div>`:'';
+  const list=items.length?`<div class="tl" id="tl">${items.map(i=>`<div class="it ${i.cur?'cur':''} ${i.past?'past':''} ${i===nxt?'nx':''}"><span class="mono">${fmtRange(i.sl.start,i.sl.end)}</span><b>${esc(i.role.name)}</b></div>`).join('')}</div>`:'';
+  return `<section class="card sidecard"><div class="row" style="justify-content:space-between;align-items:flex-start;flex-wrap:nowrap"><div><div class="clock" data-clock>${clockText(now)}</div><div class="muted">${fmtDay(now)}</div></div>${avatar(who,52)}</div>
+    ${isMe?'':`<div class="row" style="justify-content:space-between"><span class="pill">Viewing ${esc(who)}</span><button class="btn sm" data-act="peek" data-name="${esc(me)}">Back to me</button></div>`}
+    ${box}${next}${list}</section>${isMe?(NATIVE?viewNativeAlarm():viewCal()):''}`;
+}
+
+/* ---------- Google Calendar ---------- */
+const CAL_DAYS=7;let calBusy='',calConfirm=false;
+const calKey=()=>'dutyRoster.gcal.'+pkey(me);
+function calRec(){try{return JSON.parse(LS.get(calKey())||'null')}catch(e){return null}}
+function myEvents(name,from,days){const out=[];for(let k=0;k<days;k++){const d=addDays(from,k),r=dayRoster(d);for(const it of myItems(r,name,-1)){out.push({start:new Date(d.getFullYear(),d.getMonth(),d.getDate(),0,it.sl.start),end:new Date(d.getFullYear(),d.getMonth(),d.getDate(),0,it.sl.end),role:it.role.name,brk:it.role.brk,shift:it.sl.shift})}}return out}
+const evSig=evs=>hash(evs.map(e=>e.start.getTime()+e.role).join('|'));
+function viewCal(){
+  const rec=calRec(),lead=+C().leadMin||3;let status='';
+  if(rec){const from=fromKey(rec.from),end=addDays(from,rec.days-1),stale=evSig(myEvents(me,from,rec.days))!==rec.sig,ending=addDays(end,-1)<=sod(new Date());
+    status=stale?`<span class="pill warn">Roster changed since you added it. Tap Update.</span>`:ending?`<span class="pill warn">Ends ${fmtDay(end)}. Tap Update to add the coming week.</span>`:`<span class="pill ok">In your calendar until ${fmtDay(end)}</span>`}
+  const buttons=calBusy?`<p class="mono" data-calprog>${esc(calBusy)}</p>`:rec?`<div class="row"><button class="btn primary" data-act="cal-add">Update my calendar</button><button class="btn danger" data-act="cal-remove">${calConfirm?'Tap again to remove':'Remove from Google Calendar'}</button></div>`:`<button class="btn primary" data-act="cal-add" style="justify-self:start">Add to Google Calendar</button>`;
+  return `<section class="card calbox"><h3>Phone alarm</h3><p class="muted">Adds your role changes for the next 7 days to Google Calendar. Your phone notifies you ${lead} minutes before each change, even when it's locked.</p>${status}${buttons}
+    <div class="row"><button class="btn ghost sm" data-act="cal-ics">iPhone / Outlook calendar file</button><button class="btn ghost sm" data-act="copy-link">Copy my personal link</button></div></section>`;
+}
+let gTok=null,gExp=0,gisP=null;
+const gisReady=()=>!!(window.google&&google.accounts&&google.accounts.oauth2);
+function loadGis(){if(gisReady())return Promise.resolve();if(!gisP)gisP=new Promise((res,rej)=>{const s=document.createElement('script');s.src='https://accounts.google.com/gsi/client';s.async=true;s.onload=res;s.onerror=()=>{gisP=null;rej(new Error('Could not load Google sign-in. Check your connection.'))};document.head.appendChild(s)});return gisP}
+if(googleClientId)loadGis().catch(()=>{});
+function getToken(){
+  if(gTok&&Date.now()<gExp-60000)return Promise.resolve(gTok);
+  if(!gisReady())return loadGis().then(()=>Promise.reject(new Error('Google sign-in is ready now. Tap the button again.')));
+  return new Promise((res,rej)=>{google.accounts.oauth2.initTokenClient({client_id:googleClientId,scope:'https://www.googleapis.com/auth/calendar.events',
+    callback:r=>{if(r&&r.access_token){gTok=r.access_token;gExp=Date.now()+(+r.expires_in||3600)*1000;res(gTok)}else rej(new Error('Google did not give calendar access.'))},
+    error_callback:e=>rej(new Error(e&&e.type==='popup_closed'?'The Google window was closed before finishing.':'Google sign-in was blocked. Allow pop-ups for this site and try again.'))}).requestAccessToken()});
+}
+async function gcal(method,path,body,tries=0){
+  const r=await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/'+path,{method,headers:{Authorization:'Bearer '+gTok,'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined});
+  if((r.status===429||r.status===403)&&tries<5){const j=await r.clone().json().catch(()=>null),reason=(((j||{}).error||{}).errors||[{}])[0].reason||'';
+    if(r.status===429||/rateLimit/i.test(reason)){await new Promise(z=>setTimeout(z,800*2**tries+Math.random()*400));return gcal(method,path,body,tries+1)}}
+  if(r.status===204||r.status===410||(method==='DELETE'&&r.status===404))return null;
+  const j=await r.json().catch(()=>null);if(!r.ok)throw new Error((j&&j.error&&j.error.message)||('Google Calendar error '+r.status));return j;
+}
+async function pool(items,n,fn,prog){let i=0,done=0;await Promise.all(Array.from({length:Math.min(n,items.length)},async()=>{while(i<items.length){const it=items[i++];await fn(it);done++;prog&&prog(done)}}))}
+function setBusy(s){calBusy=s;const el=document.querySelector('[data-calprog]');if(el)el.textContent=s;else if(tab==='today')render(true)}
+async function removeOurs(name,fromDate){
+  const ids=[];let page='';
+  do{const q=new URLSearchParams({privateExtendedProperty:'waian='+pkey(name),timeMin:fromDate.toISOString(),maxResults:'250',singleEvents:'true'});if(page)q.set('pageToken',page);
+    const j=await gcal('GET','events?'+q);(j.items||[]).forEach(e=>ids.push(e.id));page=j.nextPageToken||''}while(page);
+  await pool(ids,4,id=>gcal('DELETE','events/'+encodeURIComponent(id)),d=>setBusy('Removing old events '+d+' of '+ids.length+'…'));return ids.length;
+}
+const noGoogle=()=>toast('Google Calendar is not set up yet. Add the Google client ID in firebase-config.js (see README).');
+async function calAdd(){
+  if(!googleClientId)return noGoogle();if(calBusy)return;
+  try{await getToken()}catch(e){return toast(e.message)}
+  const name=me,from=sod(new Date()),now=Date.now(),lead=+C().leadMin||3,tz=Intl.DateTimeFormat().resolvedOptions().timeZone;
+  try{setBusy('Checking your calendar…');await removeOurs(name,from);
+    const all=myEvents(name,from,CAL_DAYS),evs=all.filter(e=>e.end.getTime()>now);
+    await pool(evs,3,e=>gcal('POST','events',{summary:e.role+' · What Am I Now?',description:name+"'s role from the team roster ("+e.shift+'). Open the roster site and tap Update if the roster changes.',
+      start:{dateTime:e.start.toISOString(),timeZone:tz},end:{dateTime:e.end.toISOString(),timeZone:tz},reminders:{useDefault:false,overrides:[{method:'popup',minutes:lead}]},
+      colorId:e.brk?'8':(e.role==='Greeter'?'11':'7'),transparency:'transparent',extendedProperties:{private:{waian:pkey(name)}}}),d=>setBusy('Adding '+d+' of '+evs.length+'…'));
+    LS.set(calKey(),JSON.stringify({from:dkey(from),days:CAL_DAYS,sig:evSig(all)}));calBusy='';render(true);
+    toast('Added '+evs.length+' role changes to Google Calendar. Alerts '+lead+' min before each.');
+  }catch(e){calBusy='';render(true);toast(e.message)}
+}
+async function calRemove(){
+  if(!googleClientId)return noGoogle();if(calBusy)return;
+  if(!calConfirm){calConfirm=true;render(true);setTimeout(()=>{if(calConfirm){calConfirm=false;render(true)}},5000);return}
+  calConfirm=false;try{await getToken()}catch(e){render(true);return toast(e.message)}
+  try{setBusy('Removing…');const n=await removeOurs(me,sod(new Date()));LS.set(calKey(),null);calBusy='';render(true);toast('Removed '+n+' roster events from Google Calendar.')}
+  catch(e){calBusy='';render(true);toast(e.message)}
+}
+function calIcs(){
+  const from=sod(new Date()),evs=myEvents(me,from,CAL_DAYS).filter(e=>e.end>new Date()),lead=+C().leadMin||3,f=d=>d.toISOString().replace(/[-:]/g,'').replace(/\.\d{3}/,'');
+  if(!evs.length)return toast('No upcoming roles in the next 7 days.');
+  const L=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//What Am I Now//Roster//EN','CALSCALE:GREGORIAN','METHOD:PUBLISH'];
+  evs.forEach(e=>L.push('BEGIN:VEVENT','UID:'+pkey(me)+'-'+e.start.getTime()+'@whataminow','DTSTAMP:'+f(new Date()),'DTSTART:'+f(e.start),'DTEND:'+f(e.end),'SUMMARY:'+e.role+' - What Am I Now?','BEGIN:VALARM','ACTION:DISPLAY','DESCRIPTION:'+e.role+' in '+lead+' minutes','TRIGGER:-PT'+lead+'M','END:VALARM','END:VEVENT'));
+  L.push('END:VCALENDAR');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([L.join('\r\n')],{type:'text/calendar'}));a.download='roster-'+pkey(me)+'-'+dkey(from)+'.ics';document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500);
+  toast('Calendar file ready. Open it and tap Add All.');
+}
+async function copyLink(){const url=location.origin+location.pathname+'?me='+encodeURIComponent(me);try{await navigator.clipboard.writeText(url);toast('Your personal link is copied. Bookmark it or add it to your home screen.')}catch(e){window.prompt('Copy your personal link:',url)}}
+
+/* ---------- phone app alarms (Android + iPhone) ---------- */
+const N_DAYS=14,N_MAX=PLATFORM==='ios'?60:260;
+let schedSig='',schedT=null,schedRunning=false,nativeInfo={perm:'unknown',count:0,next:null,exact:null};
+function queueSchedule(){if(!LN)return;clearTimeout(schedT);schedT=setTimeout(scheduleNative,1200)}
+function nativeList(){
+  const lead=(+C().leadMin||3)*60000,now=Date.now(),from=sod(new Date()),out=[];
+  for(let k=0;k<N_DAYS&&out.length<N_MAX;k++){const d=addDays(from,k),r=dayRoster(d),items=myItems(r,me,-1);
+    items.forEach((it,i)=>{const at=new Date(d.getFullYear(),d.getMonth(),d.getDate(),0,it.sl.start).getTime()-lead;if(at<=now+5000||out.length>=N_MAX)return;
+      const prev=i>0&&items[i-1].sl.end===it.sl.start?items[i-1].role.name:null;out.push({at,start:it.sl.start,role:it.role.name,brk:it.role.brk,prev,day:dkey(d)})})}
+  return out;
+}
+async function scheduleNative(){
+  if(!LN||schedRunning||dbState!=='ready'||!cfg)return;schedRunning=true;
+  try{
+    const p=await LN.checkPermissions();nativeInfo.perm=p.display;
+    if(PLATFORM==='android'){try{nativeInfo.exact=(await LN.checkExactNotificationSetting()).exact_alarm}catch(e){}}
+    const list=me&&staff().includes(me)&&p.display==='granted'?nativeList():[];
+    const sig=(me||'')+'|'+list.map(e=>e.at+e.role).join(',');
+    if(sig!==schedSig){
+      const pend=await LN.getPending();if(pend.notifications.length)await LN.cancel({notifications:pend.notifications.map(n=>({id:n.id}))});
+      if(list.length)await LN.schedule({notifications:list.map((e,i)=>({id:1000+i,
+        title:e.brk?'Break at '+fmtT(e.start):'At '+fmtT(e.start)+' you are '+e.role,
+        body:e.prev?'Moving from '+e.prev+' to '+e.role+'.':'Your first role: '+e.role+'.',
+        schedule:{at:new Date(e.at),allowWhileIdle:true},channelId:'role-alarm',sound:'role_alarm.wav',smallIcon:'ic_stat_roster',iconColor:'#0E6B5C',
+        extra:{role:e.role,start:e.start,day:e.day}}))});
+      schedSig=sig;
+    }
+    nativeInfo.count=list.length;nativeInfo.next=list[0]||null;
+  }catch(e){console.warn('schedule failed',e)}
+  schedRunning=false;
+  const card=document.querySelector('[data-nalarm]');if(card&&!sheetOpen)card.outerHTML=viewNativeAlarm();
+}
+async function nativeAllow(){
+  if(!LN)return;try{const p=await LN.requestPermissions();nativeInfo.perm=p.display;
+    if(p.display!=='granted')toast(PLATFORM==='ios'?'Notifications are off. Open iPhone Settings → What Am I Now? → Notifications and turn them on.':'Notifications are off. Open phone Settings → Apps → What Am I Now? → Notifications.');
+  }catch(e){}schedSig='';scheduleNative();
+}
+async function nativeTest(){
+  if(!LN)return;let p=await LN.checkPermissions();if(p.display!=='granted')p=await LN.requestPermissions();
+  if(p.display!=='granted')return toast('Allow notifications first.');
+  await LN.schedule({notifications:[{id:9999,title:'Test: at '+fmtT(new Date().getHours()*60+new Date().getMinutes()+3)+' you are Greeter',body:'This is how your role alarm will look and sound.',schedule:{at:new Date(Date.now()+10000),allowWhileIdle:true},channelId:'role-alarm',sound:'role_alarm.wav',smallIcon:'ic_stat_roster',iconColor:'#0E6B5C'}]});
+  toast('Test alarm in 10 seconds. Lock your phone to try it.');
+}
+function viewNativeAlarm(){
+  const lead=+C().leadMin||3,i=nativeInfo;let body;
+  if(i.perm==='granted'){body=`<span class="pill ok">Alarms on · ${i.count} scheduled</span>${i.next?`<p>Next alarm <b class="mono">${fmtT(Math.round((i.next.at-sod(new Date(i.next.at)).getTime())/60000))}</b>${i.next.day===dkey(new Date())?'':' on '+fmtDay(fromKey(i.next.day))} for <b>${esc(i.next.role)}</b>.</p>`:'<p class="muted">No upcoming roles in the next 2 weeks.</p>'}
+    ${PLATFORM==='android'&&i.exact==='denied'?`<p class="muted">Alarms may come a few minutes late. Allow exact alarms to fix it.</p><button class="btn" data-act="n-exact">Allow exact alarms</button>`:''}`}
+  else body=`<span class="pill bad">Alarms are off</span><button class="btn primary" data-act="n-allow" style="justify-self:start">Turn on role alarms</button>`;
+  return `<section class="card calbox" data-nalarm><h3>Phone alarm</h3><p class="muted">Rings ${lead} minutes before each role change, even when the app is closed or the phone is locked.</p>${body}
+    <button class="btn ghost sm" data-act="n-test" style="justify-self:start">Test alarm in 10 seconds</button></section>`;
+}
+if(LN){
+  if(PLATFORM==='android')LN.createChannel({id:'role-alarm',name:'Role change alarms',description:'Rings before your next role',importance:5,visibility:1,sound:'role_alarm.wav',vibration:true,lights:true,lightColor:'#F0B429'}).catch(()=>{});
+  LN.addListener('localNotificationActionPerformed',()=>{tab='today';sidePerson=null;render(true)}).catch(()=>{});
+}
+if(CapApp){CapApp.addListener('appStateChange',st=>{if(st.isActive){schedSig='';queueSchedule();tickNow()}})}
+
+/* ---------- wheel ---------- */
+let spin={anim:false,rot:0,land:null,forbidden:false,wk:null,done:false};const respun=new Set();
+function wheelTarget(){const now=new Date(),thisWk=wkKey(now),next=dkey(addDays(monday(now),7));
+  const c=C(),start=fromKey(next).getTime()-(+c.wheelHours||24)*3600000,end=fromKey(next).getTime(),ov=c.wheelOverride;
+  let open=Date.now()>=start&&Date.now()<end,closeAt=end,openAt=start;
+  if(ov&&ov.wk===next&&Date.now()<ov.until){open=true;closeAt=Math.min(ov.until,end)}
+  return{thisWk,next,open,openAt,closeAt}}
+function wheelLabels(){const n=staff().length,pos=buildPositions(n);return pos.map((p,i)=>(i+1)+' · '+p.name)}
+function viewWheel(){
+  const w=wheelTarget(),prev=baseOrder(w.thisWk),n=staff().length,assign=cleanAssign(wheels[w.next]);
+  const labels=wheelLabels(),mineDone=me in assign&&!(spin.anim&&spin.wk===w.next);
+  const status=w.open?`<span class="pill ok">Open · closes in <span data-cd="${w.closeAt}"></span></span>`:`<span class="pill">Opens ${fmtDay(new Date(w.openAt))}, ${fmtT(new Date(w.openAt).getHours()*60)} · in <span data-cd="${w.openAt}"></span></span>`;
+  let result='';
+  if(spin.done&&spin.wk===w.next&&!spin.anim){result=spin.forbidden?`<div class="result again">Spot ${spin.land+1} · ${esc(labels[spin.land].split(' · ')[1])}<b>Same as last week. Spin again!</b></div>`:`<div class="result good">You start the week of ${fmtDay(fromKey(w.next))} as<b>${esc(labels[spin.land].split(' · ')[1])}</b>Spot ${spin.land+1} in Monday's first slot</div>`}
+  else if(mineDone)result=`<div class="result good">Your spot for next week<b>${esc(labels[assign[me]].split(' · ')[1])}</b>Spot ${assign[me]+1} in Monday's first slot</div>`;
+  const canSpin=w.open&&!mineDone&&!spin.anim&&!readOnly;
+  const rules=[prev[0]?`<li><b>${esc(prev[0])}</b> opened this week as ${esc(labels[0].split(' · ')[1])}, so can't land spot 1 again.</li>`:'',prev[1]?`<li><b>${esc(prev[1])}</b> opened this week as ${esc((labels[1]||'').split(' · ')[1]||'')}, so can't land spot 2 again.</li>`:''].join('');
+  const done=Object.keys(assign).length;
+  return `<section class="row" style="justify-content:space-between"><div><h2>Next week's spin · ${fmtDay(fromKey(w.next))}</h2><p class="muted" style="margin:4px 0 0">Each agent spins once to pick their starting spot. The order then rotates daily, the same as every week.</p></div>${status}</section>
+  <div class="wheelgrid"><section class="card wheelstage"><div class="wheelwrap"><canvas id="wheel" width="680" height="680" aria-label="Spinning wheel"></canvas><div class="pointer" aria-hidden="true"></div></div>
+    <button class="btn accent" data-act="spin" ${canSpin?'':'disabled'} style="font-size:17px;padding:12px 28px">${spin.anim?'Spinning…':mineDone?'You have spun':w.open?(spin.forbidden&&spin.wk===w.next?'Spin again':'Spin for '+esc(me)):'Wheel closed'}</button>${result}</section>
+  <section class="card" style="display:grid;gap:12px;align-content:start"><h3>Draws so far · ${done} of ${n}</h3>
+    <div class="drawlist">${staff().map(p=>{const s=assign[p];const hidden=spin.anim&&p===me;return `<div>${avatar(p,30)}<b>${esc(p)}</b><span class="spot">${s!=null&&!hidden?esc(labels[s]):'<span class="muted">not spun</span>'}</span></div>`}).join('')}</div>
+    <h3>Rules</h3><ul class="muted" style="margin:0;padding-left:18px;display:grid;gap:4px">${rules}<li>Anyone who doesn't spin before it closes gets a random spot.</li></ul></section></div>`;
+}
+const SEGC=['#0E6B5C','#2F5DA8','#B5473A','#6B4FA0','#C08A1E','#2E6F8E','#7A4E6E','#4C7A2E','#A55B2A','#3E4E56'];
+function drawWheel(){
+  const cv=$('#wheel');if(!cv)return;const ctx=cv.getContext('2d'),S=cv.width,R=S/2-8,n=Math.max(1,staff().length);
+  const w=wheelTarget(),assign=cleanAssign(wheels[w.next]),owner={};for(const [p,i] of Object.entries(assign))if(!(spin.anim&&p===me))owner[i]=p;
+  const labels=wheelLabels(),seg=2*Math.PI/n,css=getComputedStyle(document.documentElement);
+  ctx.clearRect(0,0,S,S);ctx.save();ctx.translate(S/2,S/2);ctx.rotate(spin.rot);
+  for(let i=0;i<n;i++){const a0=-Math.PI/2+i*seg;ctx.beginPath();ctx.moveTo(0,0);ctx.arc(0,0,R,a0,a0+seg);ctx.closePath();
+    ctx.fillStyle=owner[i]?'#9AA6A2':SEGC[i%SEGC.length];ctx.fill();ctx.strokeStyle='rgba(255,255,255,.85)';ctx.lineWidth=3;ctx.stroke();
+    ctx.save();ctx.rotate(a0+seg/2);ctx.textAlign='right';ctx.textBaseline='middle';ctx.fillStyle='#fff';
+    ctx.font='700 '+Math.round(S/24)+'px Figtree, system-ui, sans-serif';ctx.fillText(labels[i]||String(i+1),R-18,owner[i]?-12:0);
+    if(owner[i]){ctx.font='600 '+Math.round(S/30)+'px Figtree, system-ui, sans-serif';ctx.fillText(owner[i],R-18,14)}ctx.restore()}
+  ctx.restore();ctx.beginPath();ctx.arc(S/2,S/2,S/11,0,2*Math.PI);ctx.fillStyle=css.getPropertyValue('--surface').trim()||'#fff';ctx.fill();ctx.lineWidth=4;ctx.strokeStyle=css.getPropertyValue('--ink').trim()||'#000';ctx.stroke();
+  ctx.fillStyle=css.getPropertyValue('--ink').trim()||'#000';ctx.font='800 '+Math.round(S/20)+'px "Bricolage Grotesque", system-ui, sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('SPIN',S/2,S/2+1);
+}
+async function doSpin(){
+  const w=wheelTarget();if(spin.anim||!w.open||!db)return;unlockAudio();
+  if(!navigator.onLine)return toast('Connect to the internet to spin, so two people can\'t land the same spot.');
+  const n=staff().length,forb=forbidsFor(baseOrder(w.thisWk)),mine=forb[me]||new Set(),allowSame=!respun.has(w.next);
+  let res;
+  try{res=await db.transact('wheel/'+w.next,data=>{
+    const assign=cleanAssign(data);if(me in assign)return{result:{already:true}};
+    const used=Object.values(assign),free=[...Array(n).keys()].filter(i=>!used.includes(i)),others=staff().filter(p=>p!==me&&!(p in assign));
+    let cands=free.filter(i=>!mine.has(i)&&match(others,free.filter(j=>j!==i),(p,j)=>forb[p]&&forb[p].has(j)));
+    if(allowSame)cands=cands.concat(free.filter(i=>mine.has(i)));
+    if(!cands.length)cands=free.filter(i=>!mine.has(i));if(!cands.length)cands=free;
+    const land=cands[Math.floor(Math.random()*cands.length)],forbidden=mine.has(land);
+    return{result:{land,forbidden},write:forbidden?null:{assign:{...assign,[me]:land},spunAt:{...(data.spunAt||{}),[me]:new Date().toISOString()}}};
+  })}catch(e){return writeErr(e)}
+  if(res.already)return toast('You have already spun for next week.');
+  const {land,forbidden}=res;if(forbidden)respun.add(w.next);
+  const seg=2*Math.PI/n,start=spin.rot,want=-(land+.5)*seg,delta=((want-start)%(2*Math.PI)+2*Math.PI)%(2*Math.PI)+2*Math.PI*6+(Math.random()-.5)*seg*.6;
+  const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches,dur=reduce?300:4800,t0=performance.now();
+  spin={anim:true,rot:start,land,forbidden,wk:w.next,done:false};render(true);let lastSeg=Math.floor(start/seg);
+  const step=t=>{const k=Math.min(1,(t-t0)/dur),e=1-Math.pow(1-k,4);spin.rot=start+delta*e;const sg=Math.floor(spin.rot/seg);if(sg!==lastSeg){lastSeg=sg;clickTick()}drawWheel();
+    if(k<1)requestAnimationFrame(step);else{spin.anim=false;spin.done=true;spin.rot=spin.rot%(2*Math.PI);if(audioReady()){forbidden?tone(220,actx.currentTime,.4,.2,'sawtooth'):chime()}render(true)}};
+  requestAnimationFrame(step);
+}
+
+/* ---------- settings ---------- */
+function viewSettings(){
+  const c=C(),thisWk=wkKey(new Date()),order=staff().length?baseOrder(thisWk):[],pos=buildPositions(order.length),w=wheelTarget();
+  const ov=c.wheelOverride&&c.wheelOverride.wk===w.next&&Date.now()<c.wheelOverride.until;
+  return `${readOnly?'<div class="pill bad">View only: you can\'t change settings</div>':''}
+  <section><h2>Settings</h2><p class="muted" style="margin:4px 0 0">Changes save for the whole team straight away.</p></section>
+  <div class="sgrid">
+  <section class="card" style="display:grid;gap:10px"><h3>Team · this week's Monday order</h3><p class="muted" style="margin:0;font-size:13px">Row 1 opens Monday as ${esc((pos[0]||{}).name||'Greeter')}, row 2 as ${esc((pos[1]||{}).name||'SAS1')}, and so on. Each day the order moves up by one.</p>
+    <div class="list">${order.map((n,i)=>`<div class="li"><span class="mono muted" style="width:22px">${i+1}</span>${avatar(n,30)}<span class="grow">${esc(n)} <span class="muted" style="font-weight:500">· ${esc((pos[i]||{}).name||'')}</span></span>
+      <button class="icon" data-act="staff-move" data-i="${i}" data-d="-1" aria-label="Move ${esc(n)} up" ${i?'':'disabled'}>↑</button><button class="icon" data-act="staff-move" data-i="${i}" data-d="1" aria-label="Move ${esc(n)} down" ${i<order.length-1?'':'disabled'}>↓</button><button class="icon" data-act="staff-del" data-i="${i}" aria-label="Remove ${esc(n)}">✕</button></div>`).join('')||'<p class="muted">No agents yet.</p>'}</div>
+    <form class="addrow" data-form="staff"><input id="newstaff" placeholder="Add agent name" autocomplete="off" maxlength="30"><button class="btn primary">Add</button></form></section>
+
+  <section class="card" style="display:grid;gap:10px"><h3>Roles · in priority order</h3><p class="muted" style="margin:0;font-size:13px">When someone is on leave, the last working role is dropped first so the front desk stays covered.</p>
+    <div class="list">${c.roles.map((r,i)=>`<div class="li"><span class="grow">${esc(r.name)}</span><label class="row" style="gap:4px;font-size:13px"><input type="checkbox" id="rbrk${i}" data-set="role-brk" data-i="${i}" ${r.brk?'checked':''}> Break</label>
+      <button class="icon" data-act="role-move" data-i="${i}" data-d="-1" aria-label="Move up" ${i?'':'disabled'}>↑</button><button class="icon" data-act="role-move" data-i="${i}" data-d="1" aria-label="Move down" ${i<c.roles.length-1?'':'disabled'}>↓</button><button class="icon" data-act="role-del" data-i="${i}" aria-label="Remove ${esc(r.name)}">✕</button></div>`).join('')}</div>
+    <form class="addrow" data-form="role"><input id="newrole" placeholder="Add role, e.g. SAS4" autocomplete="off" maxlength="20"><button class="btn primary">Add</button></form></section>
+
+  <section class="card" style="display:grid;gap:12px"><h3>Shifts and timing</h3>
+    <div class="list">${c.shifts.map((s,i)=>`<div class="li"><input type="text" id="shn${i}" data-set="shift-name" data-i="${i}" value="${esc(s.name)}" style="width:100px"><input type="time" id="shs${i}" data-set="shift-start" data-i="${i}" value="${esc(s.start)}"><span>to</span><input type="time" id="she${i}" data-set="shift-end" data-i="${i}" value="${esc(s.end)}"><button class="icon" data-act="shift-del" data-i="${i}" aria-label="Remove shift">✕</button></div>`).join('')}</div>
+    <button class="btn sm" data-act="shift-add" style="justify-self:start">Add shift</button>
+    <label class="field"><span><b>Time per role</b></span><select id="slotmode" data-set="slotMode">${[['auto','Auto: everyone does every role once per shift'],['30','30 minutes'],['45','45 minutes'],['60','1 hour']].map(([v,l])=>`<option value="${v}" ${String(c.slotMode)===v?'selected':''}>${l}</option>`).join('')}</select></label>
+    <span class="muted" style="font-size:13px">Auto stretches or shortens slots when someone is on leave, so the shift still ends on time.</span>
+    <div class="field"><b>Working days</b><div class="toggles">${[1,2,3,4,5,6,0].map(d=>`<button data-act="wday" data-d="${d}" aria-pressed="${c.workDays.includes(d)}">${DAYN[d]}</button>`).join('')}</div></div>
+    <label class="field"><b>Alert before each role change</b><select id="lead" data-set="leadMin">${[1,2,3,5,10].map(m=>`<option value="${m}" ${+c.leadMin===m?'selected':''}>${m} minute${m>1?'s':''}</option>`).join('')}</select></label></section>
+
+  <section class="card" style="display:grid;gap:12px"><h3>Spin wheel</h3>
+    <label class="field"><b>Wheel opens before the new week</b><select id="wheelh" data-set="wheelHours">${[12,24,48].map(h=>`<option value="${h}" ${+c.wheelHours===h?'selected':''}>${h} hours before Monday</option>`).join('')}</select></label>
+    <p class="muted" style="margin:0;font-size:13px">For the week of ${fmtDay(fromKey(w.next))}: ${w.open?'open now':'opens '+fmtDay(new Date(w.openAt))}.</p>
+    <div class="row">${ov?`<button class="btn" data-act="wheel-close">Close the early wheel</button>`:`<button class="btn" data-act="wheel-open">Open the wheel now for 24 hours</button>`}</div></section>
+  </div>`;
+}
+function onSettingChange(el){
+  const c=C(),k=el.dataset.set,i=+el.dataset.i;
+  if(k==='role-brk'){const roles=c.roles.map(r=>({...r}));roles[i].brk=el.checked;saveCfg({roles})}
+  else if(k.startsWith('shift-')){const shifts=c.shifts.map(s=>({...s})),f={'shift-name':'name','shift-start':'start','shift-end':'end'}[k];const v=el.value.trim();if(!v)return render(true);shifts[i][f]=v;saveCfg({shifts})}
+  else if(k==='slotMode')saveCfg({slotMode:el.value==='auto'?'auto':+el.value});
+  else if(k==='leadMin')saveCfg({leadMin:+el.value});
+  else if(k==='wheelHours')saveCfg({wheelHours:+el.value});
+}
+function setOrder(order){saveCfg({staff:order,anchorWeek:wkKey(new Date())})}
+
+/* ---------- profile sheet ---------- */
+function renderSheet(){
+  const s=$('#sheet');if(!sheetOpen||!me){s.hidden=true;s.innerHTML='';return}
+  const L=lookOf(me),p=profiles[pkey(me)]||{},hasPhoto=!!p.photo,covered=L.hair==='hijab'||L.hair==='ghutra';
+  const sw=(k,arr,label)=>`<div class="opt"><b>${label}</b><div class="swatches">${arr.map((c,i)=>`<button class="sw" data-act="look" data-k="${k}" data-v="${i}" aria-pressed="${L[k]===i}" style="background:${c}" aria-label="${label} ${i+1}"></button>`).join('')}</div></div>`;
+  const ch=(k,arr,label)=>`<div class="opt"><b>${label}</b><div class="swatches">${arr.map(([v,l])=>`<button data-act="look" data-k="${k}" data-v="${v}" aria-pressed="${String(L[k])===String(v)}">${l}</button>`).join('')}</div></div>`;
+  const perm=window.Notification?Notification.permission:'unsupported';
+  s.hidden=false;
+  s.innerHTML=`<div class="sheetback" data-act="sheet-close"><div class="sheet" role="dialog" aria-label="My profile" data-stop>
+    <div class="row">${avatar(me,88)}<div><h2>${esc(me)}</h2><p class="muted" style="margin:2px 0 0">Your character shows on the roster for everyone.</p></div></div>
+    <div class="row"><label class="btn" for="photo">${hasPhoto?'Change photo':'Use my photo'}</label><input id="photo" type="file" accept="image/*" hidden>${hasPhoto?'<button class="btn ghost danger" data-act="photo-del">Remove photo, use cartoon</button>':''}</div>
+    ${hasPhoto?'':`${ch('hair',HAIRS,'Hair or headwear')}${sw('skin',SKIN,'Skin')}${sw('hc',covered&&L.hair==='hijab'?CLOTH:HAIRC,L.hair==='hijab'?'Scarf colour':'Hair colour')}${L.hair==='hijab'?'':ch('beard',[['none','None'],['stubble','Stubble'],['full','Beard']],'Beard')}${ch('glasses',[[false,'No glasses'],[true,'Glasses']],'Glasses')}${sw('shirt',SHIRT,'Shirt')}${sw('bg',BGS,'Background')}`}
+    <div class="opt"><b>Alerts on this device</b><div class="row">
+      <button class="btn ${audioReady()?'':'accent'}" data-act="test-alert">${audioReady()?'Play test alert':'Turn on sound & test'}</button>
+      ${NATIVE?'':perm==='default'?'<button class="btn" data-act="notif">Allow pop-up notifications</button>':perm==='granted'?'<span class="pill ok">Pop-ups allowed</span>':''}
+      <button class="btn" data-act="wake" aria-pressed="${!!wakeLock}">${wakeLock?'Screen stays on ✓':'Keep screen on'}</button></div>
+      <span class="muted" style="font-size:13px">${NATIVE?'The app rings '+(+C().leadMin||3)+' minutes before each change, even when it is closed.':'Keep this page open (on a till or your phone with the screen on). Alerts sound '+(+C().leadMin||3)+' minutes before each change.'}</span></div>
+    <div class="row" style="justify-content:space-between"><span class="row"><button class="btn ghost" data-act="signout">Switch person</button>${NATIVE?'':'<button class="btn ghost" data-act="copy-link">Copy my personal link</button>'}</span><button class="btn primary" data-act="sheet-close-btn">Done</button></div>
+  </div></div>`;
+}
+let wakeLock=null,wantWake=false;
+async function getWake(){try{wakeLock=await navigator.wakeLock.request('screen');wakeLock.addEventListener('release',()=>{wakeLock=null;if(sheetOpen)renderSheet()})}catch(e){wakeLock=null;toast('This device would not keep the screen on. Change its auto-lock setting instead.')}if(sheetOpen)renderSheet()}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){if(wantWake&&!wakeLock)getWake();updateLive();tickNow()}});
+async function handlePhoto(file){
+  if(!file)return;try{const img=await createImageBitmap(file);const S=192,cv=document.createElement('canvas');cv.width=cv.height=S;const ctx=cv.getContext('2d');const m=Math.min(img.width,img.height);
+    ctx.drawImage(img,(img.width-m)/2,(img.height-m)/2,m,m,0,0,S,S);saveProfile(me,{photo:cv.toDataURL('image/jpeg',.82)});toast('Photo saved.')}catch(e){toast('That file could not be read as an image. Try a JPG or PNG.')}
+}
+
+/* ---------- events ---------- */
+document.addEventListener('click',e=>{
+  const el=e.target.closest('[data-act]');if(!el)return;
+  if(el.dataset.act==='sheet-close'&&e.target.closest('[data-stop]'))return;
+  const a=el.dataset.act,c=C();
+  switch(a){
+    case 'tab':tab=el.dataset.tab;LS.set('dutyRoster.tab',tab);if(tab==='today')viewDate=sod(new Date());render(true);break;
+    case 'signin':me=el.dataset.name;rememberMe(me);setUrlMe(me);sidePerson=null;unlockAudio();tab='today';LS.set('dutyRoster.tab',tab);render(true);toast('Signed in as '+me+'. Alerts are on for you.');
+      try{if(window.Notification&&Notification.permission==='default')Notification.requestPermission()}catch(err){}break;
+    case 'seed':saveCfg({staff:SEED_STAFF.slice(),anchorWeek:wkKey(new Date())});toast('Team added. Everyone can now pick their character.');break;
+    case 'signout':if(LN){schedSig='';LN.getPending().then(p=>p.notifications.length&&LN.cancel({notifications:p.notifications.map(n=>({id:n.id}))})).catch(()=>{})}me=null;rememberMe(null);setUrlMe(null);sidePerson=null;sheetOpen=false;renderSheet();render(true);break;
+    case 'profile':sheetOpen=true;renderSheet();break;
+    case 'sheet-close':case 'sheet-close-btn':sheetOpen=false;renderSheet();break;
+    case 'look':{let v=el.dataset.v;if(['skin','hc','shirt','bg'].includes(el.dataset.k))v=+v;if(el.dataset.k==='glasses')v=v==='true';const L={...((profiles[pkey(me)]||{}).look||lookOf(me)),[el.dataset.k]:v};saveProfile(me,{look:L});break}
+    case 'photo-del':saveProfile(me,{photo:null});break;
+    case 'test-alert':if(NATIVE){nativeTest();break}unlockAudio();setTimeout(()=>fireAlert({role:'Greeter',brk:false,at:Math.ceil((new Date().getHours()*60+new Date().getMinutes()+3)/5)*5,from:'SAS1',hideAt:Date.now()+20000}),120);break;
+    case 'notif':try{Notification.requestPermission().then(()=>renderSheet()).catch(()=>{})}catch(err){}break;
+    case 'wake':if(wakeLock){wantWake=false;wakeLock.release();wakeLock=null;renderSheet()}else{wantWake=true;getWake()}break;
+    case 'banner-close':bannerData=null;clearInterval(alarmT);renderBanner();break;
+    case 'day':viewDate=fromKey(el.dataset.key);render(true);break;
+    case 'wk':viewDate=addDays(viewDate,7*+el.dataset.dir);render(true);break;
+    case 'absent':if(readOnly)return toast('View only.');toggleAbsent(el.dataset.name);break;
+    case 'spin':doSpin();break;
+    case 'peek':sidePerson=el.dataset.name===me?null:el.dataset.name;render(true);if(matchMedia('(max-width:1000px)').matches)window.scrollTo({top:0,behavior:'smooth'});break;
+    case 'cal-add':calAdd();break;
+    case 'cal-remove':calRemove();break;
+    case 'cal-ics':calIcs();break;
+    case 'copy-link':copyLink();break;
+    case 'n-allow':nativeAllow();break;
+    case 'n-test':nativeTest();break;
+    case 'n-exact':LN&&LN.changeExactNotificationSetting().then(()=>{schedSig='';queueSchedule()}).catch(()=>{});break;
+    case 'staff-move':{const o=baseOrder(wkKey(new Date())).slice(),i=+el.dataset.i,j=i+ +el.dataset.d;[o[i],o[j]]=[o[j],o[i]];setOrder(o);break}
+    case 'staff-del':{const o=baseOrder(wkKey(new Date())).slice(),i=+el.dataset.i;if(el.dataset.confirm!=='1'){el.dataset.confirm='1';el.textContent='?';el.setAttribute('aria-label','Tap again to remove');toast('Tap ✕ again to remove '+o[i]+'.');return}o.splice(i,1);setOrder(o);break}
+    case 'role-move':{const r=c.roles.slice(),i=+el.dataset.i,j=i+ +el.dataset.d;[r[i],r[j]]=[r[j],r[i]];saveCfg({roles:r});break}
+    case 'role-del':{if(c.roles.length<=1)return;const r=c.roles.slice();r.splice(+el.dataset.i,1);saveCfg({roles:r});break}
+    case 'shift-add':{const s=c.shifts.slice(),last=s[s.length-1];s.push({name:'Shift '+(s.length+1),start:last?last.end:'08:00',end:last?fmt24(parseHM(last.end)+270):'12:30'});saveCfg({shifts:s});break}
+    case 'shift-del':{if(c.shifts.length<=1)return;const s=c.shifts.slice();s.splice(+el.dataset.i,1);saveCfg({shifts:s});break}
+    case 'wday':{const d=+el.dataset.d;let w=c.workDays.slice();w=w.includes(d)?w.filter(x=>x!==d):[...w,d];if(!w.length)return;saveCfg({workDays:w,anchorWeek:wkKey(new Date()),staff:baseOrder(wkKey(new Date()))});break}
+    case 'wheel-open':{const w=wheelTarget();saveCfg({wheelOverride:{wk:w.next,until:Date.now()+24*3600000}});toast('Wheel is open for 24 hours.');break}
+    case 'wheel-close':saveCfg({wheelOverride:null});break;
+  }
+});
+function fmt24(m){m=Math.min(m,23*60+59);return String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0')}
+document.addEventListener('change',e=>{
+  if(e.target.id==='photo')return handlePhoto(e.target.files&&e.target.files[0]);
+  if(e.target.dataset&&e.target.dataset.set)onSettingChange(e.target);
+});
+document.addEventListener('submit',e=>{
+  e.preventDefault();const f=e.target.dataset.form;
+  if(f==='staff'){const v=$('#newstaff').value.trim();if(!v)return;if(staff().includes(v))return toast(v+' is already on the team.');setOrder([...(staff().length?baseOrder(wkKey(new Date())):[]),v])}
+  if(f==='role'){const v=$('#newrole').value.trim();if(!v)return;const r=C().roles.slice();const bi=r.findIndex(x=>x.brk);r.splice(bi<0?r.length:bi,0,{name:v});saveCfg({roles:r})}
+});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&sheetOpen){sheetOpen=false;renderSheet()}});
+
+/* ---------- live clock ---------- */
+function updateLive(){
+  document.querySelectorAll('[data-clock]').forEach(el=>el.innerHTML=clockText(new Date()));
+  const now=Date.now();document.querySelectorAll('[data-cd]').forEach(el=>{el.textContent=fmtCd(+el.dataset.cd-now)});
+  const a=document.querySelector('[data-audio]');if(a){const ok=audioReady();a.className='pill '+(ok?'ok':'warn');a.textContent=ok?'Alerts on · '+(+C().leadMin||3)+' min before':'Tap anywhere to turn on alert sound'}
+}
+let lastSig='';
+function tickNow(){
+  const now=new Date();checkAlerts(now);
+  if(bannerData&&now.getTime()>bannerData.hideAt){bannerData=null;clearInterval(alarmT);renderBanner()}
+  const t=now.getHours()*60+now.getMinutes();let sig=dkey(now)+'|';
+  if(cfg&&staff().length){const r=dayRoster(sod(now));sig+=allSlots(r).filter(s=>s.start<=t).length+'|'+allSlots(r).filter(s=>s.end<=t).length}
+  const w=cfg?wheelTarget():null;if(w)sig+='|'+w.open;
+  if(sig!==lastSig){const first=!lastSig;lastSig=sig;if(!first&&tab!=='settings'&&!spin.anim)render()}
+  updateLive();
+}
+setInterval(tickNow,1000);
+setInterval(renderHeader,15000);
+window.addEventListener('online',renderHeader);window.addEventListener('offline',renderHeader);
+render(true);
+</script>
+</body>
+</html>
