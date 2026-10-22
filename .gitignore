@@ -1,0 +1,3 @@
+# WhatsApp login and colleagues' phone numbers: never upload these
+whatsapp-bot/data/
+whatsapp-bot/node_modules/
