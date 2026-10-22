@@ -1,5 +1,0 @@
-{
-  "private": true,
-  "type": "module",
-  "description": "Marks the .js files as ES modules for the Telegram worker build. The website itself needs no install."
-}

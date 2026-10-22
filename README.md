@@ -1,75 +1,56 @@
-# What Am I Now? (website + Telegram alerts)
+# What Am I Now? v1.0.0
 
-1. **The website.** Plain files with no app stores and no build step. Hosted free on GitHub Pages, with data in Firebase.
-2. **Telegram alerts.** A few minutes before every role change, each person gets **their own** role on Telegram, even with the phone locked:
+A simple team roster website. Open it and you see straight away:
 
-```
-⏰ Prashant, in 3 min it's your GREETER time
-🕑 2:00–3:00 PM
-↪️ Moving from SAS1 · next: TAB1 at 3:00 PM
-```
-
-The alerts run on Cloudflare's free plan, so no PC, phone or server has to stay on, and no card is needed. Sick leave, wheel spins and settings changes are used automatically. People on leave and days off get no messages.
-
----
+- **Current role:** what you're doing now, from what time to what time
+- **Next role:** what's next, from what time to what time
+- **Roster:** the whole day's sheet. It always fits the screen, with no scrolling sideways.
+- **Spin** or **Scratch:** pick your starting role for next week. Once picked, it's fixed.
+- **Settings:** change user, team, roles, shifts, alerts
 
 ## Files
 
-| File | What it is |
+| File / folder | What it is |
 |---|---|
-| `index.html` | The website: roster, sick leave, spin wheel, avatars, alerts, Google Calendar |
-| `roster-engine.js` | The roster calculation, shared by the website and the Telegram alerts so they always agree |
-| `firebase-config.js` | Your Firebase keys |
+| `index.html` | The website |
+| `roster-engine.js` | Works out who does which role when |
+| `firebase-config.js` | Keys for the shared team database (see below) |
 | `firestore.rules` | Database rules |
-| `telegram-bot/` | The Telegram alerts (Cloudflare Worker) |
-| `.github/workflows/telegram-bot.yml` | Puts the Telegram alerts online automatically when you push to GitHub |
+| `images/` | Agent photos: `images/Name.jpg`. See `images/AGENTS.txt` |
+| `Publish to GitHub.bat` | **Double-click to upload all your changes to GitHub** |
+| `sw.js`, `manifest.webmanifest`, `icon-*.png` | "Add to Home Screen" and pop-up alerts |
 
----
+## How the site remembers things
 
-## 1. Firebase (the shared database)
+| What | Where it's kept | Who sees it |
+|---|---|---|
+| **Who you are** | Saved on each device the first time you tap your name: browser storage, a cookie and `?me=Name` in the address. Change it in **Settings → Change user**. | Only that device |
+| **Spin / Scratch picks, sick leave, team, roles, shifts** | The shared team database (Firebase) | Everyone, instantly |
 
-1. https://console.firebase.google.com → **Create a project** (Google Analytics not needed).
-2. **Build → Firestore Database → Create database** → location `eur3` or the nearest one → **production mode**.
-3. **Firestore → Rules:** paste `firestore.rules` → **Publish**.
-4. **Build → Authentication → Get started → Sign-in method → Anonymous → Enable.**
-5. **Project settings → Your apps → Web (`</>`)** → register the app → copy the `firebaseConfig` values into `firebase-config.js`.
-6. **Authentication → Settings → Authorized domains** → add `YOUR-USERNAME.github.io`.
+Each pick is saved with a database transaction, so two people can never get the same spot, and once it's saved it can't be changed.
 
-## 2. Website (GitHub Pages)
+**Until Firebase is set up, the site runs in Demo mode.** Everything works, but it's saved only on that one device, so colleagues won't see each other's picks or sick leave. The footer says "Demo mode" while this is the case.
 
-Repository **Settings → Pages → Source: Deploy from a branch → `main` / `(root)` → Save.**
-It goes live at `https://YOUR-USERNAME.github.io/REPO-NAME/`. On phones use **Add to Home Screen**.
+To share it with the team (free, no card needed), create a Firebase project and paste its keys into `firebase-config.js`:
+1. https://console.firebase.google.com → **Create a project**.
+2. **Firestore Database → Create database** (production mode) → **Rules** → paste `firestore.rules` → Publish.
+3. **Authentication → Sign-in method → Anonymous → Enable.**
+4. **Project settings → Your apps → Web `</>`** → copy the config values into `firebase-config.js`.
+5. **Authentication → Settings → Authorized domains** → add `prasant793001-stack.github.io`.
 
-## 3. Telegram alerts (about 10 minutes, once)
+## Photos
 
-**a. Create the bot.** In Telegram open **@BotFather** → `/newbot` → choose a name (e.g. *What Am I Now Roster*) and a username ending in `bot` (e.g. `WhatAmINowRosterBot`). BotFather replies with a **token** like `123456:ABC...`. Keep it private.
+Replace each file in `images/` with the real photo, **keeping the same name** (e.g. `images/Ahmed.jpg`). Names must match the roster exactly, including capital letters. Square photos look best. If a photo file is missing, the person's initials show instead.
 
-**b. Free Cloudflare account.** Sign up at https://dash.cloudflare.com/sign-up (no card). Open **Workers & Pages** once so Cloudflare sets up your free `workers.dev` address.
-Then go to **My Profile → API Tokens → Create Token → template "Edit Cloudflare Workers" → Account Resources: your account → Continue → Create Token**, and copy the token.
+## Publish to GitHub (one click)
 
-**c. Give both tokens to GitHub.** In the repository: **Settings → Secrets and variables → Actions → New repository secret**:
-- `TELEGRAM_BOT_TOKEN`: the BotFather token
-- `CLOUDFLARE_API_TOKEN`: the Cloudflare token
+Double-click **`Publish to GitHub.bat`** in this folder. It uploads everything you changed, and the website updates about a minute later.
 
-**d. Deploy.** Open **Actions → Deploy Telegram alerts → Run workflow**. When it turns green, the alerts are live. Every later push to GitHub updates them by itself.
+- First time only: if Git isn't installed it installs it (then double-click again), and a GitHub sign-in window opens once.
+- Use this folder as your working copy. The first publish makes GitHub match this folder.
 
-**e. Switch on the button.** On the website: **Settings → Telegram alerts →** type the bot username (e.g. `WhatAmINowRosterBot`).
+## Website address
 
-## How colleagues join
-
-They tap **Get alerts on Telegram** on the website, and Telegram opens. They press **Start** and they're in. In the bot they can send:
-
-| Message | What happens |
-|---|---|
-| `/start` | Shows name buttons. Tap yours to join |
-| `/now` | Their role right now and the next one |
-| `/stop` | Turns their alerts off |
-
-## Good to know
-
-- **Timing:** messages go out at the **Alert before each role change** time from the website Settings (default 3 minutes). To change it for Telegram only, set `LEAD_MINUTES` in `telegram-bot/wrangler.toml`.
-- **Time zone:** Dubai time (UTC+4) is set in `TZ_OFFSET_MINUTES` in `telegram-bot/wrangler.toml`.
-- **Free limits:** Cloudflare runs the check once a minute, using about 1,500 of its 100,000 free daily runs. Firebase reads stay well inside the free 50,000 a day.
-- **Changes on the website** (sick leave, settings) reach the alerts within a minute. Spin-wheel results are re-read every 30 minutes.
-- **Check it's alive:** open the worker address shown at the end of the GitHub Action run (`https://what-am-i-now-telegram.<you>.workers.dev`). It shows how many people have joined.
-- **Telegram chat IDs** (not phone numbers) are kept in Cloudflare, not in Firebase.
+GitHub repository → **Settings → Pages → Source: Deploy from a branch → `main` / `(root)` → Save.**
+The site: **https://prasant793001-stack.github.io/What-am-i-now-android/**
+On phones: **Add to Home Screen** so it opens like an app.

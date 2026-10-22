@@ -1,0 +1,22 @@
+AGENT PHOTOS
+============
+Each agent's photo is a file in this folder named exactly like their name on the roster, ending in .jpg.
+To use a real photo: replace the placeholder file with the person's photo and keep the SAME file name.
+Then double-click "Publish to GitHub.bat".
+
+  Ahmed     ->  images/Ahmed.jpg
+  Shahid    ->  images/Shahid.jpg
+  Ziko      ->  images/Ziko.jpg
+  Rayan     ->  images/Rayan.jpg
+  Hamada    ->  images/Hamada.jpg
+  Prashant  ->  images/Prashant.jpg
+  Mohammed  ->  images/Mohammed.jpg
+  Ahoud     ->  images/Ahoud.jpg
+  Mustafa   ->  images/Mustafa.jpg
+
+Tips
+- Spelling and capital letters must match the roster name (Mohammed.jpg, not mohamed.jpg).
+- Square photos look best (the site shows them in a circle). Around 400 x 400 pixels is plenty.
+- PNG photos: save/convert them as .jpg (or rename won't work).
+- New agent added in Settings? Add images/TheirName.jpg the same way.
+- No photo file? The site shows the person's initials instead.
