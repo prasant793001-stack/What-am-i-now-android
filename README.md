@@ -72,7 +72,17 @@ The bot must be running during shifts to send messages.
 **B. A Windows or Mac computer** that stays on during shifts.
 Install **Node.js LTS** (https://nodejs.org) and **Git** (https://git-scm.com). Download the repository, open a terminal in the `whatsapp-bot` folder and run `npm install`.
 
-**C. A free cloud server** (Oracle Cloud "Always Free" or Google Cloud e2-micro; both ask for a card for sign-up). Same steps as B, on Linux.
+**C. A free cloud server: Oracle Cloud "Always Free" (recommended, nothing to keep switched on)**
+1. Sign up at https://signup.cloud.oracle.com. Choose **Home region: UAE East (Dubai)** (it can't be changed later). A card is needed for verification and isn't charged.
+2. Recommended: **Upgrade to Pay As You Go** (Billing → Upgrade). You still pay nothing while you stay inside the Always Free limits, and Oracle won't reclaim the server for being "idle". Set a **budget alert of $1** to be safe.
+3. **Compute → Instances → Create instance:** image **Ubuntu 24.04**, shape **VM.Standard.A1.Flex (1 OCPU, 6 GB)** or **VM.Standard.E2.1.Micro**. Both are labelled "Always Free eligible". Keep "Generate SSH key" selected and download the private key.
+4. Open the instance and click **Cloud Shell** at the top of the Oracle console (or use SSH), connect to the server, and run:
+   ```bash
+   curl -fsSL https://raw.githubusercontent.com/prasant793001-stack/What-am-i-now-android/main/whatsapp-bot/setup-server.sh | bash -s -- 971501234567
+   ```
+   Replace the number with the bot's WhatsApp number. This installs everything and makes the bot start by itself after any reboot.
+5. Run `journalctl -u roster-bot -f`, wait for the **pairing code**, and type it into WhatsApp (see *First start*, step 3).
+6. Later updates: `bash ~/roster/whatsapp-bot/update.sh`.
 
 ### First start
 

@@ -15,7 +15,8 @@ fs.mkdirSync(DATA, { recursive: true });
 const CONFIG_FILE = path.join(HERE, 'config.json');
 const CONF = Object.assign(
   { timezone: 'Asia/Dubai', botNumber: '', leadMinutes: null, minDelaySeconds: 2, maxDelaySeconds: 5 },
-  readJson(CONFIG_FILE, {})
+  readJson(CONFIG_FILE, {}),
+  readJson(path.join(DATA, "config.json"), {}) // this machine's own settings (not on GitHub)
 );
 process.env.TZ = CONF.timezone; // the roster is worked out in this time zone, wherever the bot runs
 
