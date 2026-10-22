@@ -186,7 +186,7 @@ tr.past td{opacity:.55}
 .tl .it.past{opacity:.45}
 .calbox{display:grid;gap:10px}
 .calbox p{margin:0}
-.btn.wa{background:#1F8F4E;border-color:#1F8F4E;color:#fff;text-decoration:none;display:inline-block}
+.btn.tg{background:#2A8BD2;border-color:#2A8BD2;color:#fff;text-decoration:none;display:inline-block}
 .syncdot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--primary);margin-right:4px}
 .syncdot.off{background:var(--danger)}
 </style>
@@ -443,16 +443,16 @@ function viewSide(){
   const list=items.length?`<div class="tl" id="tl">${items.map(i=>`<div class="it ${i.cur?'cur':''} ${i.past?'past':''} ${i===nxt?'nx':''}"><span class="mono">${fmtRange(i.sl.start,i.sl.end)}</span><b>${esc(i.role.name)}</b></div>`).join('')}</div>`:'';
   return `<section class="card sidecard"><div class="row" style="justify-content:space-between;align-items:flex-start;flex-wrap:nowrap"><div><div class="clock" data-clock>${clockText(now)}</div><div class="muted">${fmtDay(now)}</div></div>${avatar(who,52)}</div>
     ${isMe?'':`<div class="row" style="justify-content:space-between"><span class="pill">Viewing ${esc(who)}</span><button class="btn sm" data-act="peek" data-name="${esc(me)}">Back to me</button></div>`}
-    ${box}${next}${list}</section>${isMe?viewWa()+viewCal():''}`;
+    ${box}${next}${list}</section>${isMe?viewTg()+viewCal():''}`;
 }
 
-/* ---------- WhatsApp alerts ---------- */
-function viewWa(){
-  const num=String(C().waNumber||'').replace(/\D/g,'');if(!num)return '';
-  const lead=+C().leadMin||3,url='https://wa.me/'+num+'?text='+encodeURIComponent('START '+me);
-  return `<section class="card calbox"><h3>WhatsApp alerts</h3><p class="muted">Get a WhatsApp message ${lead} minutes before each of your role changes. Tap the button, then press Send in WhatsApp.</p>
-    <a class="btn wa" href="${esc(url)}" target="_blank" rel="noopener" style="justify-self:start">Get alerts on WhatsApp</a>
-    <p class="muted" style="font-size:13px">Send <b>NOW</b> for your current role or <b>STOP</b> to turn alerts off.</p></section>`;
+/* ---------- Telegram alerts ---------- */
+function viewTg(){
+  const bot=String(C().tgBot||'').replace(/^@/,'').replace(/[^A-Za-z0-9_]/g,'');if(!bot)return '';
+  const lead=+C().leadMin||3,url='https://t.me/'+bot+'?start='+encodeURIComponent(String(me).replace(/[^A-Za-z0-9_-]/g,'_').slice(0,64));
+  return `<section class="card calbox"><h3>Telegram alerts</h3><p class="muted">Get a Telegram message ${lead} minutes before each of your role changes, even with the phone locked. Tap the button, then press <b>Start</b> in Telegram.</p>
+    <a class="btn tg" href="${esc(url)}" target="_blank" rel="noopener" style="justify-self:start">Get alerts on Telegram</a>
+    <p class="muted" style="font-size:13px">Send <b>/now</b> for your current role or <b>/stop</b> to turn alerts off.</p></section>`;
 }
 
 /* ---------- Google Calendar ---------- */
@@ -615,9 +615,9 @@ function viewSettings(){
     <div class="field"><b>Working days</b><div class="toggles">${[1,2,3,4,5,6,0].map(d=>`<button data-act="wday" data-d="${d}" aria-pressed="${c.workDays.includes(d)}">${DAYN[d]}</button>`).join('')}</div></div>
     <label class="field"><b>Alert before each role change</b><select id="lead" data-set="leadMin">${[1,2,3,5,10].map(m=>`<option value="${m}" ${+c.leadMin===m?'selected':''}>${m} minute${m>1?'s':''}</option>`).join('')}</select></label></section>
 
-  <section class="card" style="display:grid;gap:12px"><h3>WhatsApp alerts</h3>
-    <label class="field"><b>Bot's WhatsApp number</b><input id="wanum" type="tel" inputmode="numeric" data-set="waNumber" placeholder="e.g. 971501234567" value="${esc(c.waNumber||'')}"></label>
-    <p class="muted" style="margin:0;font-size:13px">Country code first, no + or spaces. The number the WhatsApp bot is linked to. Leave empty to hide the WhatsApp button.</p></section>
+  <section class="card" style="display:grid;gap:12px"><h3>Telegram alerts</h3>
+    <label class="field"><b>Telegram bot username</b><input id="tgbot" type="text" autocomplete="off" data-set="tgBot" placeholder="e.g. WhatAmINowRosterBot" value="${esc(c.tgBot||'')}"></label>
+    <p class="muted" style="margin:0;font-size:13px">The bot you made with @BotFather (see README). Leave empty to hide the Telegram button.</p></section>
 
   <section class="card" style="display:grid;gap:12px"><h3>Spin wheel</h3>
     <label class="field"><b>Wheel opens before the new week</b><select id="wheelh" data-set="wheelHours">${[12,24,48].map(h=>`<option value="${h}" ${+c.wheelHours===h?'selected':''}>${h} hours before Monday</option>`).join('')}</select></label>
@@ -632,7 +632,7 @@ function onSettingChange(el){
   else if(k==='slotMode')saveCfg({slotMode:el.value==='auto'?'auto':+el.value});
   else if(k==='leadMin')saveCfg({leadMin:+el.value});
   else if(k==='wheelHours')saveCfg({wheelHours:+el.value});
-  else if(k==='waNumber')saveCfg({waNumber:el.value.replace(/\D/g,'')});
+  else if(k==='tgBot')saveCfg({tgBot:el.value.trim().replace(/^@/,'').replace(/[^A-Za-z0-9_]/g,'')});
 }
 function setOrder(order){saveCfg({staff:order,anchorWeek:wkKey(new Date())})}
 

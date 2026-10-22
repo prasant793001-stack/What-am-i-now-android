@@ -1,5 +1,5 @@
-// Works out which WhatsApp messages are due, using the same roster engine as the website.
-// No WhatsApp or Firebase code here, so it can be tested on its own.
+// Works out which alert messages are due, using the same roster engine as the website.
+// No Telegram or Firebase code here, so it can be tested on its own.
 import { C, staff, sod, dkey, fmtT, fmtRange, dayRoster, allSlots, roleOf } from '../roster-engine.js';
 
 const MIN = 60000;
