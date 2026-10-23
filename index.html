@@ -196,9 +196,10 @@ footer{padding:0 0 24px;text-align:center;font-size:12px}
 <div id="toast" role="status" hidden></div>
 
 <script type="module">
-import { DAYN, MON, DEFAULTS, sod, addDays, dkey, fromKey, monday, wkKey, parseHM, fmtT, fmtRange, fmtDay, fmtCd, hash, rotate, pkey, C, staff, setData, baseOrder, cleanAssign, forbidsFor, match, buildPositions, dayRoster, allSlots, roleOf, myItems } from "./roster-engine.js?v=1.1.2";
+import * as CFG from "./firebase-config.js";
+import { DAYN, MON, DEFAULTS, sod, addDays, dkey, fromKey, monday, wkKey, parseHM, fmtT, fmtRange, fmtDay, fmtCd, hash, rotate, pkey, C, staff, setData, baseOrder, cleanAssign, forbidsFor, match, buildPositions, dayRoster, allSlots, roleOf, myItems } from "./roster-engine.js";
 
-const VERSION = '1.1.2';
+const VERSION = '1.1.0';
 const WA_DEFAULT = '971505353447'; // the WhatsApp bot's number (can be changed in Settings)
 const SEED_STAFF = ["Ahmed","Shahid","Ziko","Rayan","Hamada","Prashant","Mohammed","Ahoud","Mustafa"];
 
@@ -259,8 +260,7 @@ async function firebaseDb(fc){
 }
 
 async function startDb(){
-  // Always fetch the latest settings file (never an old cached copy).
-  let fc = null; try { fc = (await import('./firebase-config.js?t='+Date.now())).firebaseConfig; } catch(e) {}
+  const fc = CFG.firebaseConfig;
   try {
     if (!fc || !fc.apiKey || /PASTE/i.test(fc.apiKey)) { db = localDb(); demo = true; }
     else db = await firebaseDb(fc);

@@ -65,9 +65,6 @@ The bot sends from **+971 50 535 3447**. Colleagues join by tapping **Get alerts
 **Needs:**
 1. **Firebase set up** (see above). The bot reads the shared roster; in Demo mode it can't see it.
 2. **Something running the bot during shifts.** Choose one:
-   - **The Android phone with WhatsApp (recommended):** install Termux from F-Droid, then run
-     `curl -fsSL https://raw.githubusercontent.com/prasant793001-stack/What-am-i-now-android/main/whatsapp-bot/setup-android.sh | bash`.
-     Keep the phone on the charger and Wi-Fi. Update later with `~/update-bot.sh`.
    - **A Windows PC:** double-click `Start WhatsApp bot.bat`. It installs what it needs the first time and can start itself with Windows. The PC must be on (screen can be off) during shift hours.
    - **A free Oracle Cloud server** (always on, needs a card to verify): run `bash whatsapp-bot/setup-server.sh 971505353447` on it.
 3. **Link the number once:** the first start shows a pairing code. On the phone with WhatsApp for 0505353447: **Settings → Linked devices → Link a device → Link with phone number instead**, then type the code. That phone doesn't have to stay on, but should open WhatsApp at least every 2 weeks.

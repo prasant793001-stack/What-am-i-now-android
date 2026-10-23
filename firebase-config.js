@@ -1,10 +1,13 @@
-// Firebase settings for the shared team roster (project: who-am-i-now).
-// These are website keys, not passwords: access is controlled by firestore.rules.
+// Paste the values from Firebase console → Project settings → Your apps → Web app → "SDK setup and configuration" (Config).
+// These keys are safe to put on GitHub: access is controlled by the Firestore rules in firestore.rules.
 export const firebaseConfig = {
-  apiKey: "AIzaSyAgu9GFgYTCXILSZus4t30WE6UTwAPhAqY",
-  authDomain: "who-am-i-now.firebaseapp.com",
-  projectId: "who-am-i-now",
-  storageBucket: "who-am-i-now.firebasestorage.app",
-  messagingSenderId: "724968265888",
-  appId: "1:724968265888:web:7f1b3939ccff7a204d91c5"
+  apiKey: "PASTE_API_KEY_HERE",
+  authDomain: "your-project.firebaseapp.com",
+  projectId: "your-project",
+  storageBucket: "your-project.appspot.com",
+  messagingSenderId: "000000000000",
+  appId: "1:000000000000:web:0000000000000000"
 };
+
+// Optional: Google Calendar phone alarms. Paste the OAuth "Client ID" from Google Cloud (README step 5).
+export const googleClientId = "PASTE_GOOGLE_CLIENT_ID_HERE.apps.googleusercontent.com";
