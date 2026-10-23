@@ -5,7 +5,7 @@
 set -e
 echo "== Installing Node.js and Git (a few minutes)"
 yes | pkg update >/dev/null 2>&1 || true
-yes | pkg install nodejs-lts git
+yes | pkg install nodejs-lts git procps
 
 DIR="$HOME/roster"
 echo "== Downloading the roster code"
