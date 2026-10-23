@@ -3,9 +3,17 @@
 # In Termux run:
 #   curl -fsSL https://raw.githubusercontent.com/prasant793001-stack/What-am-i-now-android/main/whatsapp-bot/setup-android.sh | bash
 set -e
-echo "== Installing Node.js and Git (a few minutes)"
-yes | pkg update >/dev/null 2>&1 || true
-yes | pkg install nodejs-lts git procps
+echo "== Updating Termux (a few minutes; answer y if asked)"
+export DEBIAN_FRONTEND=noninteractive
+pkg update -y
+yes | pkg upgrade -y -o Dpkg::Options::=--force-confnew
+echo "== Installing Node.js and Git"
+yes | pkg install -y libc++ nodejs-lts git procps
+if ! node -v >/dev/null 2>&1; then
+  echo "Node.js didn't start. Trying a repair..."
+  yes | pkg reinstall -y libc++ nodejs-lts
+fi
+node -v || { echo "Node.js still won't start. Run: termux-change-repo  (pick a different mirror), then run this setup again."; exit 1; }
 
 DIR="$HOME/roster"
 echo "== Downloading the roster code"
