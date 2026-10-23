@@ -1,0 +1,5 @@
+{
+  "private": true,
+  "type": "module",
+  "description": "Lets the WhatsApp bot load roster-engine.js and firebase-config.js. The website itself needs no install."
+}

@@ -1,4 +1,4 @@
-# What Am I Now? v1.0.0
+# What Am I Now? v1.1.0
 
 A simple team roster website. Open it and you see straight away:
 
@@ -7,6 +7,7 @@ A simple team roster website. Open it and you see straight away:
 - **Roster:** the whole day's sheet. It always fits the screen, with no scrolling sideways.
 - **Spin** or **Scratch:** pick your starting role for next week. Once picked, it's fixed.
 - **Settings:** change user, team, roles, shifts, alerts
+- **WhatsApp alerts:** each person gets *their own* role on WhatsApp a few minutes before every change
 
 ## Files
 
@@ -17,6 +18,8 @@ A simple team roster website. Open it and you see straight away:
 | `firebase-config.js` | Keys for the shared team database (see below) |
 | `firestore.rules` | Database rules |
 | `images/` | Agent photos: `images/Name.jpg`. See `images/AGENTS.txt` |
+| `whatsapp-bot/` | The WhatsApp bot (bot number set in `whatsapp-bot/config.json`: 971505353447) |
+| `Start WhatsApp bot.bat` | **Double-click to run the WhatsApp bot on a Windows PC** |
 | `Publish to GitHub.bat` | **Double-click to upload all your changes to GitHub** |
 | `sw.js`, `manifest.webmanifest`, `icon-*.png` | "Add to Home Screen" and pop-up alerts |
 
@@ -54,3 +57,16 @@ Double-click **`Publish to GitHub.bat`** in this folder. It uploads everything y
 GitHub repository → **Settings → Pages → Source: Deploy from a branch → `main` / `(root)` → Save.**
 The site: **https://prasant793001-stack.github.io/What-am-i-now-android/**
 On phones: **Add to Home Screen** so it opens like an app.
+
+## WhatsApp alerts
+
+The bot sends from **+971 50 535 3447**. Colleagues join by tapping **Get alerts on WhatsApp** on the Home page. WhatsApp opens with `START Name` typed, and they press Send. `NOW` gives their current role and `STOP` turns alerts off.
+
+**Needs:**
+1. **Firebase set up** (see above). The bot reads the shared roster; in Demo mode it can't see it.
+2. **Something running the bot during shifts.** Choose one:
+   - **A Windows PC:** double-click `Start WhatsApp bot.bat`. It installs what it needs the first time and can start itself with Windows. The PC must be on (screen can be off) during shift hours.
+   - **A free Oracle Cloud server** (always on, needs a card to verify): run `bash whatsapp-bot/setup-server.sh 971505353447` on it.
+3. **Link the number once:** the first start shows a pairing code. On the phone with WhatsApp for 0505353447: **Settings → Linked devices → Link a device → Link with phone number instead**, then type the code. That phone doesn't have to stay on, but should open WhatsApp at least every 2 weeks.
+
+It's not an official WhatsApp tool, so there's a small risk WhatsApp blocks the number. Colleagues messaging START first, and saving the number as a contact, keeps the risk low.

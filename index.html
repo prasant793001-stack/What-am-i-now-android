@@ -177,6 +177,7 @@ tr.past td{opacity:.5}
 @keyframes drop{from{transform:translateY(-30px);opacity:0}to{transform:none;opacity:1}}
 @media (prefers-reduced-motion:reduce){#banner .b{animation:none}.who button{transition:none}.scard canvas{transition:none}}
 #toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:40;background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-weight:600;max-width:calc(100% - 32px);box-shadow:var(--shadow)}
+.btn.wa{background:#1F8F4E;border-color:#1F8F4E;color:#fff}
 .syncdot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--primary);margin-right:4px}
 .syncdot.off{background:var(--danger)}
 footer{padding:0 0 24px;text-align:center;font-size:12px}
@@ -198,7 +199,8 @@ footer{padding:0 0 24px;text-align:center;font-size:12px}
 import * as CFG from "./firebase-config.js";
 import { DAYN, MON, DEFAULTS, sod, addDays, dkey, fromKey, monday, wkKey, parseHM, fmtT, fmtRange, fmtDay, fmtCd, hash, rotate, pkey, C, staff, setData, baseOrder, cleanAssign, forbidsFor, match, buildPositions, dayRoster, allSlots, roleOf, myItems } from "./roster-engine.js";
 
-const VERSION = '1.0.0';
+const VERSION = '1.1.0';
+const WA_DEFAULT = '971505353447'; // the WhatsApp bot's number (can be changed in Settings)
 const SEED_STAFF = ["Ahmed","Shahid","Ziko","Rayan","Hamada","Prashant","Mohammed","Ahoud","Mustafa"];
 
 /* ---------- small helpers ---------- */
@@ -418,7 +420,16 @@ function viewHome(){
   return `<section class="hello">${avatar(me,56)}<div><h3>Hi</h3><h2 style="font-size:24px">${esc(me)}</h2></div><div class="clock"><span data-clock>${clockText(now)}</span><div class="muted" style="font-size:13px;font-family:var(--f-body)">${fmtDay(now)}</div></div></section>
     <div class="rolecards">${curCard}${nxtCard}</div>
     <div class="row"><span class="pill" data-audio></span></div>
+    ${viewWa()}
     ${list}`;
+}
+function waNumber(){ return String((cfg && cfg.waNumber) || WA_DEFAULT).replace(/\D/g,''); }
+function viewWa(){
+  const num = waNumber(); if (!num) return '';
+  const url = 'https://wa.me/'+num+'?text='+encodeURIComponent('START '+me);
+  return `<section class="card" style="display:grid;gap:10px"><h3>WhatsApp alerts</h3>
+    <p class="muted">Get a WhatsApp message ${+C().leadMin||3} minutes before each of your role changes, even with your phone locked. Tap the button, then press <b>Send</b> in WhatsApp.</p>
+    <div class="row"><a class="btn wa" href="${esc(url)}" target="_blank" rel="noopener">Get alerts on WhatsApp</a><span class="muted" style="font-size:13px">Send <b>NOW</b> for your role, <b>STOP</b> to turn off.</span></div></section>`;
 }
 
 /* ---------- full roster: fits the screen ---------- */
@@ -622,6 +633,10 @@ function viewSettings(){
     <div class="field"><b>Working days</b><div class="toggles">${[1,2,3,4,5,6,0].map(d => `<button data-act="wday" data-d="${d}" aria-pressed="${c.workDays.includes(d)}">${DAYN[d]}</button>`).join('')}</div></div>
     <label class="field"><b>Alert before each role change</b><select data-set="leadMin">${[1,2,3,5,10].map(m => `<option value="${m}" ${+c.leadMin===m?'selected':''}>${m} minute${m>1?'s':''}</option>`).join('')}</select></label></section>
 
+  <section class="card" style="display:grid;gap:12px"><h3>WhatsApp alerts</h3>
+    <label class="field"><b>Bot's WhatsApp number</b><input type="tel" inputmode="numeric" data-set="waNumber" placeholder="${WA_DEFAULT}" value="${esc((cfg&&cfg.waNumber)||'')}"></label>
+    <p class="muted" style="font-size:13px">Country code first, no + or spaces. Empty = ${WA_DEFAULT}. This is the number the WhatsApp bot is linked to.</p></section>
+
   <section class="card" style="display:grid;gap:12px"><h3>Weekly pick (Spin + Scratch)</h3>
     <label class="field"><b>Opens before the new week</b><select data-set="wheelHours">${[12,24,48].map(h => `<option value="${h}" ${+c.wheelHours===h?'selected':''}>${h} hours before Monday</option>`).join('')}</select></label>
     <p class="muted" style="font-size:13px">For the week of ${fmtDay(fromKey(w.next))}: ${w.open?'open now':'opens '+fmtDay(new Date(w.openAt))}.</p>
@@ -638,6 +653,7 @@ function onSettingChange(el){
   else if (k === 'slotMode') saveCfg({ slotMode: el.value === 'auto' ? 'auto' : +el.value });
   else if (k === 'leadMin') saveCfg({ leadMin: +el.value });
   else if (k === 'wheelHours') saveCfg({ wheelHours: +el.value });
+  else if (k === 'waNumber') saveCfg({ waNumber: el.value.replace(/\D/g,'') });
 }
 const setOrder = order => saveCfg({ staff: order, anchorWeek: wkKey(new Date()) });
 function fmt24(m){ m = Math.min(m, 23*60+59); return String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0'); }
