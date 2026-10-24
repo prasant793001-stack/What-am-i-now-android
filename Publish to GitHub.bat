@@ -28,6 +28,15 @@ if not exist ".git" (
   git reset -q origin/main
 )
 
+findstr /c:"PASTE_API_KEY" firebase-config.js >nul 2>nul
+if not errorlevel 1 (
+  echo STOP: this folder is an old copy - its firebase-config.js has no keys.
+  echo Publishing it would switch the live website back to Demo mode.
+  echo Download the latest version from GitHub ^(Code ^> Download ZIP^) and use that folder instead.
+  pause
+  exit /b 1
+)
+
 git config user.name >nul 2>nul || git config user.name "prasant793001-stack"
 git config user.email >nul 2>nul || git config user.email "prasant793001@gmail.com"
 
