@@ -1,10 +1,10 @@
 {
-  "name": "What Am I Now?",
-  "short_name": "What Am I Now",
+  "name": "BC Al Ain Routine",
+  "short_name": "BC Routine",
   "scope": "./",
   "display": "standalone",
   "background_color": "#EEF2F1",
-  "theme_color": "#0E6B5C",
+  "theme_color": "#0B0B10",
   "icons": [
     {
       "src": "icon-192.png",

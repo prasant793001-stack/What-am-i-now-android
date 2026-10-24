@@ -3,12 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>What Am I Now?</title>
-<meta name="theme-color" content="#0E6B5C">
+<title>BC Al Ain Routine</title>
+<meta name="theme-color" content="#0B0B10">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="BC Routine">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap">
@@ -45,7 +46,7 @@ header.top{position:sticky;top:0;z-index:5;background:var(--surface);border-bott
 .brand{display:flex;align-items:center;gap:10px;margin-right:auto;min-width:0}
 .brand b{font-family:var(--f-display);font-weight:800;font-size:20px;letter-spacing:-.01em}
 .brand small{display:block;color:var(--muted);font-size:12px}
-.ticket{width:34px;height:34px;border-radius:9px;background:var(--primary);color:var(--primary-ink);display:grid;place-items:center;font-family:var(--f-mono);font-weight:600;font-size:13px;flex:none}
+.logo{width:36px;height:36px;flex:none;display:block;border-radius:10px;box-shadow:0 2px 8px rgba(124,58,237,.35)}
 .tabs{display:flex;gap:3px;background:var(--sunk);border:1px solid var(--line);border-radius:12px;padding:3px}
 .tabs button{border:0;background:none;padding:7px 12px;border-radius:9px;font-weight:600;color:var(--muted);white-space:nowrap}
 .tabs button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
@@ -147,6 +148,29 @@ tr.past td{opacity:.5}
 .tm .role{font-family:var(--f-display);font-weight:800;font-size:19px;text-align:right}
 .dlbar{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between}
 .donebar{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:baseline;padding:10px 14px;border:1px dashed var(--line);border-radius:12px}
+/* profile sheet, themes, admin, unsaved-changes bar */
+.avbtn{border:0;background:none;padding:0;border-radius:50%;flex:none}
+.desc{font-size:13px;color:var(--muted);margin-top:2px}
+.who button small.desc{display:block;font-size:12px;font-weight:500;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin:0}
+.sheetback{position:fixed;inset:0;z-index:20;background:rgba(5,8,12,.55);display:grid;place-items:end center}
+.sheet{background:var(--surface);color:var(--ink);width:min(560px,100%);max-height:92vh;overflow:auto;border-radius:20px 20px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom,0px));display:grid;gap:16px;box-shadow:var(--shadow)}
+@media (min-width:700px){.sheetback{place-items:center}.sheet{border-radius:20px;padding:22px}}
+.sheet h2{margin:0}.sheet p{margin:0}
+.opt{display:grid;gap:8px}
+.opt textarea{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:10px;padding:8px 10px;font:inherit;resize:vertical;width:100%}
+.themes{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.th{border:2px solid var(--line);background:var(--surface);border-radius:12px;padding:8px 2px 6px;display:grid;justify-items:center;gap:4px;font-size:11px;font-weight:600;color:var(--muted);min-width:0}
+.th i{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--c) 0 50%,var(--c2) 50% 100%);display:block}
+.th[aria-pressed="true"]{border-color:var(--ink);color:var(--ink)}
+.th span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media (max-width:360px){.themes{grid-template-columns:repeat(4,minmax(0,1fr))}}
+#savebar{position:fixed;left:0;right:0;bottom:0;z-index:15;padding:0 12px calc(10px + env(safe-area-inset-bottom,0px))}
+#savebar .sb{max-width:720px;margin:0 auto;display:flex;align-items:center;gap:10px;background:var(--ink);color:var(--bg);border-radius:16px;padding:10px 12px 10px 16px;box-shadow:0 10px 30px rgba(0,0,0,.3)}
+#savebar .sb span{margin-right:auto;display:grid;min-width:0}#savebar small{opacity:.75;font-size:12px}
+#savebar .btn.ghost{color:var(--bg);border-color:rgba(255,255,255,.35)}
+body.hasbar main{padding-bottom:110px}
+body.cardvis #savebar{display:none}
+.savecard{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin-top:16px}
 /* phone notifications */
 ol.steps{margin:0;padding-left:20px;display:grid;gap:6px}
 .shr{vertical-align:-3px}
@@ -200,24 +224,28 @@ ol.steps{margin:0;padding-left:20px;display:grid;gap:6px}
 .syncdot.off{background:var(--danger)}
 footer{padding:0 0 24px;text-align:center;font-size:12px}
 </style>
+<script>/* the colour theme chosen on this device, applied before the page draws */try{var c=localStorage.getItem('dutyRoster.themeCss');if(c){var s=document.createElement('style');s.id='themevars';s.textContent=c;document.head.appendChild(s)}var m=localStorage.getItem('dutyRoster.mode');if(m==='light'||m==='dark')document.documentElement.dataset.theme=m}catch(e){}</script>
 </head>
 <body>
 
 <header class="top"><div class="wrap">
-  <div class="brand"><div class="ticket" aria-hidden="true">?</div><div><b>What Am I Now?</b><small id="hdrdate"></small></div></div>
+  <div class="brand"><svg class="logo" viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="bcg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#D8B4FE"/><stop offset=".55" stop-color="#A855F7"/><stop offset="1" stop-color="#7C3AED"/></linearGradient></defs><rect width="64" height="64" rx="16" fill="#0B0B10"/><rect x="3" y="3" width="58" height="58" rx="13.5" fill="none" stroke="url(#bcg)" stroke-width="2.5"/><text x="32" y="42.5" text-anchor="middle" font-family="Bricolage Grotesque, system-ui, sans-serif" font-weight="800" font-size="28" letter-spacing="-1" fill="url(#bcg)">BC</text></svg><div><b>BC Al Ain Routine</b><small id="hdrdate"></small></div></div>
   <nav class="tabs" id="tabs" aria-label="Sections"></nav>
   <div id="mebox"></div>
 </div></header>
 <main class="wrap" id="view"></main>
 <footer class="wrap muted" id="foot"></footer>
 <div id="banner" hidden></div>
+<div id="sheet" hidden></div>
+<div id="savebar" hidden></div>
 <div id="toast" role="status" hidden></div>
 
 <script type="module">
 import { DAYN, MON, DEFAULTS, sod, addDays, dkey, fromKey, monday, wkKey, parseHM, fmtT, fmtRange, fmtDay, fmtCd, hash, rotate, pkey, C, staff, setData, cleanAssign, match, buildPositions, dayRoster, allSlots, roleOf, myItems,
-  normName, isStandby, rolesAll, rulesFrom, satRule, weekOrder, wheelForbids } from "./roster-engine.js?v=1.3.0";
+  normName, isStandby, rolesAll, rulesFrom, satRule, weekOrder, wheelForbids } from "./roster-engine.js?v=1.4.0";
 
-const VERSION = '1.3.0';
+const VERSION = '1.4.0';
+const APP_NAME = 'BC Al Ain Routine';
 const WA_DEFAULT = '971505353447'; // the WhatsApp bot's number (can be changed in Settings)
 const SEED_STAFF = ["Ahmed","Shahid","Ziko","Rayan","Hamada","Prashant","Mohammed","Ahoud","Mustafa"];
 
@@ -243,8 +271,10 @@ let viewDate = sod(new Date()), hl = null;
 
 /* ---------- shared data (Firebase), or this device only (demo mode) ---------- */
 let db = null, dbState = 'loading', dbError = '', demo = false, readOnly = false;
-let cfg = null, absences = {}, wheels = {};
-function clearCache(){ setData(cfg, absences, wheels); }
+let cfg = null, absences = {}, wheels = {}, profiles = {};
+let draft = null, sheet = null; // draft = the admin's unsaved team settings; sheet = the open profile/admin panel
+const liveCfg = () => draft ? Object.assign({}, cfg || {}, draft) : cfg;
+function clearCache(){ setData(liveCfg(), absences, wheels); }
 // fresh.* = that data has been confirmed by the server, not just an offline copy (the push plan is only written from fresh data).
 let fresh = { cfg:false, abs:false, wheel:false }, pushCfg = null, pushDevices = {}, pushMeta = {}, pushLoaded = { dev:false, meta:false };
 let push = { id: LS.get('dutyRoster.pushId'), sub:null, busy:false, err:'', testAt:0, syncing:false };
@@ -310,6 +340,9 @@ async function startDb(){
     if (j !== absJ) { absJ = j; absences = a; clearCache(); render(); } queuePlan(); }, err);
   db.collection('wheel').onSnapshot((s, srv) => { fresh.wheel = srv !== false; const w={}; s.docs.forEach(d => w[d.id] = d.data()); const j = JSON.stringify(w);
     if (j !== whJ) { whJ = j; wheels = w; clearCache(); render(); } queuePlan(); }, err);
+  let profJ = null;
+  db.collection('profiles').onSnapshot(s => { const p = {}; s.docs.forEach(d => p[d.id] = d.data()); const j = JSON.stringify(p);
+    if (j !== profJ) { profJ = j; profiles = p; applyMyTheme(); render(); } }, () => {});
   // Phone notifications. Problems here never stop the roster from working.
   if (!demo) {
     db.doc('config/push').onSnapshot(s => { const was = pushReady(); pushCfg = s.exists ? s.data() : null; syncPush(); if (was !== pushReady()) render(); else refreshPushCard(); queuePlan(); }, () => {});
@@ -326,7 +359,7 @@ function writeErr(e){
 let cfgChain = Promise.resolve();
 function saveCfg(patch){
   if (!db) return toast('Still connecting to the team roster. Try again in a moment.');
-  cfg = Object.assign({}, C(), cfg || {}, patch); clearCache(); render(true);
+  cfg = Object.assign({}, DEFAULTS, cfg || {}, patch); clearCache(); render(true);
   const body = JSON.parse(JSON.stringify(cfg));
   cfgChain = cfgChain.then(() => db.doc('config/main').set(body)).catch(writeErr);
 }
@@ -341,11 +374,147 @@ function toggleAbsent(name){
 }
 
 /* ---------- photos ---------- */
-// Each agent's photo is images/<Name>.jpg. If it's missing, their initials show instead.
-const PAL = ['#0E6B5C','#2F5DA8','#B5473A','#6B4FA0','#C08A1E','#2E6F8E','#7A4E6E','#4C7A2E','#A55B2A'];
+// A photo set in someone's profile (tap your picture at the top) comes first, then images/<Name>.jpg, then initials.
+const PAL = ['#6D28D9','#2F5DA8','#B5473A','#0E6B5C','#C08A1E','#2E6F8E','#7A4E6E','#4C7A2E','#A55B2A'];
 function initials(n){ const p = String(n).trim().split(/\s+/); return ((p[0]||'?')[0] + (p[1] ? p[1][0] : (p[0]||'')[1] || '')).toUpperCase(); }
+const photoUrls = new Map(); // name -> { src, url }: profile photos turned into short blob: links, so big tables stay light
+function photoUrl(name){
+  const p = profiles[pkey(name)], src = p && typeof p.photo === 'string' && /^data:image\/(jpeg|png|webp);base64,/.test(p.photo) ? p.photo : '';
+  const hit = photoUrls.get(name);
+  if (hit && hit.src === src) return hit.url;
+  if (hit && hit.url) URL.revokeObjectURL(hit.url);
+  let url = '';
+  if (src) { try { const [head, b64] = src.split(','), bin = atob(b64), u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); url = URL.createObjectURL(new Blob([u], { type: head.slice(5, head.indexOf(';')) })); } catch(e) { url = ''; } }
+  photoUrls.set(name, { src, url }); return url;
+}
 function avatar(name, size=32){
-  return `<span class="av" style="--s:${size}px;background:${PAL[hash(name)%PAL.length]}" aria-hidden="true"><b>${esc(initials(name))}</b><img src="images/${encodeURIComponent(name)}.jpg" alt="" loading="lazy" onerror="this.remove()"></span>`;
+  const own = photoUrl(name);
+  return `<span class="av" style="--s:${size}px;background:${PAL[hash(name)%PAL.length]}" aria-hidden="true"><b>${esc(initials(name))}</b>${own ? `<img src="${own}" alt="">` : `<img src="images/${encodeURIComponent(name)}.jpg" alt="" loading="lazy" onerror="this.remove()">`}</span>`;
+}
+const profileOf = n => profiles[pkey(n)] || {};
+const descOf = n => String(profileOf(n).desc || '').trim();
+
+/* ---------- colour themes (each person picks their own; saved in their profile) ---------- */
+// [primary, text on primary, my-name highlight, highlight text] for light mode, then the same for dark mode.
+const THEMES = [
+  { id:'purple',   name:'BC Purple', l:['#6D28D9','#FFFFFF','#EDE4FD','#3B137A'], d:['#A78BFA','#1A0B3D','#2A1D4A','#E4DAFE'] },
+  { id:'teal',     name:'Teal',      l:['#0E6B5C','#FFFFFF','#D6F0E9','#0A4A3F'], d:['#38BFA4','#04211B','#173B33','#BFF0E3'] },
+  { id:'blue',     name:'Ocean',     l:['#1D4ED8','#FFFFFF','#DCE7FD','#172C6E'], d:['#7AA2F7','#0A1633','#1B2A4A','#DCE7FD'] },
+  { id:'cyan',     name:'Lagoon',    l:['#0E7490','#FFFFFF','#CFF4FC','#164E63'], d:['#22D3EE','#042B33','#12343D','#CDF5FC'] },
+  { id:'green',    name:'Emerald',   l:['#047857','#FFFFFF','#D1FAE5','#064E3B'], d:['#34D399','#022C1E','#123828','#C9F7E2'] },
+  { id:'gold',     name:'Gold', l:['#A16207','#FFFFFF','#FEF3C7','#713F12'], d:['#FACC15','#2A1F00','#3A3112','#FDF0B8'] },
+  { id:'orange',   name:'Sunset',    l:['#C2410C','#FFFFFF','#FFE4D5','#7C2D12'], d:['#FB923C','#2B1205','#3D2416','#FFE1CC'] },
+  { id:'red',      name:'Crimson',   l:['#B91C1C','#FFFFFF','#FDE2E2','#7F1D1D'], d:['#F87171','#330808','#3F1A1A','#FEDADA'] },
+  { id:'rose',     name:'Rose',      l:['#BE185D','#FFFFFF','#FCE1EE','#831843'], d:['#F472B6','#33071A','#3E1A2C','#FDD7EA'] },
+  { id:'graphite', name:'Graphite',  l:['#1F2937','#FFFFFF','#E5E7EB','#111827'], d:['#D1D5DB','#111827','#2A2F37','#E5E7EB'] },
+];
+const MODES = [['','Auto'],['light','Light'],['dark','Dark']];
+const themeById = id => THEMES.find(t => t.id === id) || THEMES[0];
+function themeCss(t){
+  const v = a => `--primary:${a[0]};--primary-ink:${a[1]};--mine:${a[2]};--mine-ink:${a[3]}`;
+  return `:root{${v(t.l)}}@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){${v(t.d)}}}:root[data-theme="dark"]{${v(t.d)}}`;
+}
+function applyTheme(id, mode){
+  let el = document.getElementById('themevars');
+  if (!el) { el = document.createElement('style'); el.id = 'themevars'; document.head.appendChild(el); }
+  el.textContent = themeCss(themeById(id));
+  if (mode === 'light' || mode === 'dark') document.documentElement.dataset.theme = mode; else delete document.documentElement.dataset.theme;
+  LS.set('dutyRoster.themeCss', el.textContent); LS.set('dutyRoster.mode', mode || '');
+}
+// The theme of whoever is chosen on this device (unless their profile sheet is open with a preview).
+function applyMyTheme(){ if (sheet && sheet.kind === 'profile') return; const p = me ? profileOf(me) : {}; applyTheme(p.theme || LS.get('dutyRoster.themeId') || 'purple', p.mode != null ? p.mode : (LS.get('dutyRoster.mode') || '')); }
+
+/* ---------- admin (team settings) ---------- */
+// A light lock so only the admin changes team settings: tap your profile picture 5 times and enter the password.
+// It keeps casual changes out; it is not strong security (anyone with the site can still read the roster).
+const ADMIN_HASH = 'bd20a36ae3667692e7859254045683339c9329e6830f88f807fbba2bcb8d6330';
+let admin = LS.get('dutyRoster.admin') === '1';
+const isAdmin = () => admin;
+async function checkAdmin(pw){
+  const norm = String(pw || '').toUpperCase().replace(/\s+/g, '');
+  if (!(window.crypto && crypto.subtle)) return false;
+  const h = [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(norm)))].map(b => b.toString(16).padStart(2,'0')).join('');
+  return h === ADMIN_HASH;
+}
+function setAdmin(on){ admin = !!on; LS.set('dutyRoster.admin', admin ? '1' : null); if (!admin && draft) { draft = null; clearCache(); renderSaveBar(); } }
+
+/* ---------- unsaved team settings: changes wait here until the admin taps Save ---------- */
+// (draft is declared with the other shared state near the top)
+function stageCfg(patch){
+  if (!isAdmin()) return toast('Only the admin can change team settings.');
+  draft = Object.assign({}, draft || {}, patch); clearCache(); render(true); renderSaveBar();
+}
+function saveDraft(){ if (!draft) return; const p = draft; draft = null; saveCfg(p); renderSaveBar(); toast('Saved. The whole team sees the changes now.'); }
+function discardDraft(){ draft = null; clearCache(); render(true); renderSaveBar(); toast('Changes discarded.'); }
+function renderSaveBar(){
+  const b = $('#savebar'); if (!b) return;
+  document.documentElement.style.scrollPaddingBottom = draft ? '120px' : '';
+  if (!draft) { b.hidden = true; b.innerHTML = ''; document.body.classList.remove('hasbar'); return; }
+  b.hidden = false; document.body.classList.add('hasbar');
+  b.innerHTML = `<div class="sb"><span><b>Unsaved team changes</b><small>Only you see them until you save.</small></span><button class="btn ghost sm" data-act="draft-discard">Discard</button><button class="btn primary" data-act="draft-save">Save changes</button></div>`;
+}
+window.addEventListener('beforeunload', e => { if (draft) { e.preventDefault(); e.returnValue = ''; } });
+// The floating bar hides while the Save card at the bottom of Settings is on screen, so there is one Save button at a time.
+let saveIO = null;
+function watchSaveCard(){
+  if (!('IntersectionObserver' in window)) return; if (saveIO) saveIO.disconnect();
+  const card = document.querySelector('.savecard'); if (!card) { document.body.classList.remove('cardvis'); return; }
+  saveIO = new IntersectionObserver(es => document.body.classList.toggle('cardvis', es.some(x => x.isIntersecting))); saveIO.observe(card);
+}
+
+/* ---------- profile sheet (tap your picture) and admin sheet (tap it 5 times) ---------- */
+let taps = 0, tapT = null;
+function meTap(){
+  taps++; clearTimeout(tapT);
+  if (taps >= 5) { taps = 0; openSheet('admin'); return; }
+  tapT = setTimeout(() => { taps = 0; openSheet('profile'); }, 380);
+}
+function openSheet(kind){
+  if (!signedIn()) return;
+  if (kind === 'profile') { const p = profileOf(me); sheet = { kind, photo: p.photo || null, desc: p.desc || '', theme: p.theme || LS.get('dutyRoster.themeId') || 'purple', mode: p.mode != null ? p.mode : (LS.get('dutyRoster.mode') || ''), busy: false }; }
+  else sheet = { kind, err: '', busy: false };
+  renderSheet();
+}
+function closeSheet(){ sheet = null; renderSheet(); applyMyTheme(); }
+function renderSheet(){
+  const s = $('#sheet'); if (!s) return;
+  if (!sheet) { s.hidden = true; s.innerHTML = ''; return; }
+  s.hidden = false;
+  let body;
+  if (sheet.kind === 'admin') {
+    body = isAdmin()
+      ? `<h2>Admin</h2><p class="muted">Admin is on for this device. Team settings are in Settings.</p>
+         <div class="row"><button class="btn primary" data-act="admin-go">Open team settings</button><button class="btn ghost danger" data-act="admin-lock">Lock admin</button><button class="btn ghost" data-act="sheet-cancel">Close</button></div>`
+      : `<h2>Admin access</h2><p class="muted">Enter the admin password to manage team settings on this device.</p>
+         <form class="addrow" data-form="admin"><input id="adminpw" type="password" autocomplete="current-password" placeholder="Admin password" aria-label="Admin password" autocapitalize="characters"><button class="btn primary" ${sheet.busy?'disabled':''}>Unlock</button></form>
+         ${sheet.err ? `<p class="errline">${esc(sheet.err)}</p>` : ''}<div class="row"><button class="btn ghost" data-act="sheet-cancel">Cancel</button></div>`;
+  } else {
+    const t = sheet, mgr = isObs(), prev = t.photo && /^data:image\//.test(t.photo) ? t.photo : '';
+    const big = `<span class="av" style="--s:92px;background:${PAL[hash(me)%PAL.length]}" aria-hidden="true"><b>${esc(initials(me))}</b>${prev ? `<img src="${prev}" alt="">` : `<img src="images/${encodeURIComponent(me)}.jpg" alt="" onerror="this.remove()">`}</span>`;
+    body = `<div class="row" style="flex-wrap:nowrap">${big}<div style="min-width:0"><h2>${esc(me)}</h2><p class="muted">${mgr ? 'Manager · view only' : 'Agent'}${isAdmin() ? ' · Admin' : ''}</p></div></div>
+      <div class="opt"><b>Photo</b><div class="row"><label class="btn" for="photoin">${prev ? 'Change photo' : 'Add a photo'}</label><input id="photoin" type="file" accept="image/*" hidden>${prev ? '<button class="btn ghost danger" data-act="photo-del">Remove photo</button>' : ''}</div></div>
+      <label class="opt"><b>About me</b><textarea id="descin" maxlength="120" rows="2" placeholder="A short line about you, e.g. Morning person ☀️">${esc(t.desc)}</textarea><small class="muted"><span data-desclen>${t.desc.length}</span>/120 · everyone can see it</small></label>
+      <div class="opt"><b>Theme colour</b><div class="themes">${THEMES.map(th => `<button class="th" data-act="theme" data-id="${th.id}" aria-pressed="${t.theme===th.id}" aria-label="${esc(th.name)}" title="${esc(th.name)}" style="--c:${th.l[0]};--c2:${th.d[0]}"><i></i><span>${esc(th.name)}</span></button>`).join('')}</div></div>
+      <div class="opt"><b>Light or dark</b><div class="toggles">${MODES.map(([v,l]) => `<button data-act="mode" data-v="${v}" aria-pressed="${t.mode===v}">${l}</button>`).join('')}</div></div>
+      <div class="row" style="justify-content:space-between;border-top:1px solid var(--line);padding-top:14px"><button class="btn ghost" data-act="signout">Change user</button>
+        <span class="row"><button class="btn ghost" data-act="sheet-cancel">Cancel</button><button class="btn primary" data-act="profile-save" ${t.busy?'disabled':''}>${t.busy?'Saving…':'Save'}</button></span></div>`;
+  }
+  s.innerHTML = `<div class="sheetback" data-act="sheet-close"><div class="sheet" role="dialog" aria-modal="true" aria-label="${sheet.kind==='admin'?'Admin':'My profile'}" data-stop>${body}</div></div>`;
+  if (sheet.kind === 'admin' && !isAdmin()) setTimeout(() => { const i = $('#adminpw'); if (i) i.focus(); }, 50);
+}
+async function readPhoto(file){
+  const img = await createImageBitmap(file), S = 192, cv = document.createElement('canvas'); cv.width = cv.height = S;
+  const m = Math.min(img.width, img.height); cv.getContext('2d').drawImage(img, (img.width-m)/2, (img.height-m)/2, m, m, 0, 0, S, S);
+  return cv.toDataURL('image/jpeg', .82);
+}
+async function saveProfileSheet(){
+  if (!sheet || sheet.kind !== 'profile' || !db) return;
+  const t = sheet, data = { photo: t.photo || null, desc: String(t.desc || '').trim().slice(0,120), theme: t.theme, mode: t.mode, at: Date.now() };
+  t.busy = true; renderSheet();
+  profiles = { ...profiles, [pkey(me)]: { ...profileOf(me), ...data } };
+  LS.set('dutyRoster.themeId', t.theme);
+  try { await db.merge('profiles/'+pkey(me), data); sheet = null; renderSheet(); applyMyTheme(); render(true); toast('Profile saved.'); }
+  catch(e) { t.busy = false; renderSheet(); toast(e && e.code === 'permission-denied' ? 'The database refused the profile. Check that firestore.rules allows profiles.' : 'Could not save. Check your connection and try again.'); }
 }
 
 /* ---------- sound + role-change alerts (while the page is open) ---------- */
@@ -436,7 +605,7 @@ async function enablePush(){
   if (!pushReady()) return toast('Phone notifications are not switched on for the team yet. See README → Phone notifications.');
   let perm = Notification.permission;
   if (perm === 'default') { try { perm = await Notification.requestPermission(); } catch(e) { perm = Notification.permission; } }
-  if (perm !== 'granted') { refreshPushCard(); return toast(IOS ? 'Notifications are off. Open iPhone Settings → Notifications → What Am I Now? and allow them.' : 'Notifications are blocked. In Chrome tap ⋮ → Settings → Site settings → Notifications and allow this site.'); }
+  if (perm !== 'granted') { refreshPushCard(); return toast(IOS ? 'Notifications are off. Open iPhone Settings → Notifications, find BC Routine and allow them.' : 'Notifications are blocked. In Chrome tap ⋮ → Settings → Site settings → Notifications and allow this site.'); }
   push.busy = true; push.err = ''; refreshPushCard();
   try {
     const reg = await swReady(); let sub = await reg.pushManager.getSubscription();
@@ -487,9 +656,9 @@ function viewPush(){
   if (!pushReady()) b = `<p class="muted">Get a notification ${lead} minutes before every role change, even when this site is closed. This needs a one-time setup first: README → <b>Phone notifications</b>.</p>`;
   else if (env === 'ios-old') b = `<p>Notifications on iPhone need iOS 16.4 or newer. Update in Settings → General → Software Update, then come back.</p>`;
   else if (env === 'ios-browser') b = `<p class="muted">On iPhone, notifications only work from the Home Screen app, not from a Safari tab.</p>
-    <ol class="steps"><li>Tap the <b>Share</b> button ${SHARE_ICON} in Safari.</li><li>Tap <b>Add to Home Screen</b>, then <b>Add</b>.</li><li>Open <b>What Am I Now?</b> from your Home Screen and tap <b>Turn on notifications</b> there.</li></ol>`;
+    <ol class="steps"><li>Tap the <b>Share</b> button ${SHARE_ICON} in Safari.</li><li>Tap <b>Add to Home Screen</b>, then <b>Add</b>.</li><li>Open <b>BC Routine</b> from your Home Screen and tap <b>Turn on notifications</b> there.</li></ol>`;
   else if (env === 'unsupported') b = `<p class="muted">This browser can't get notifications. ${IOS ? 'Use Safari and add the site to your Home Screen.' : 'Open the site in Chrome.'}</p>`;
-  else if (perm === 'denied') b = `<span class="pill bad" style="justify-self:start">Blocked on this phone</span><p class="muted">${IOS ? 'Open iPhone Settings → Notifications → What Am I Now? and turn on Allow Notifications.' : 'In Chrome tap ⋮ → Settings → Site settings → Notifications, find this site and choose Allow.'} Then come back and tap below.</p><button class="btn" data-act="push-on" style="justify-self:start">Try again</button>`;
+  else if (perm === 'denied') b = `<span class="pill bad" style="justify-self:start">Blocked on this phone</span><p class="muted">${IOS ? 'Open iPhone Settings → Notifications, find BC Routine and turn on Allow Notifications.' : 'In Chrome tap ⋮ → Settings → Site settings → Notifications, find this site and choose Allow.'} Then come back and tap below.</p><button class="btn" data-act="push-on" style="justify-self:start">Try again</button>`;
   else if (dev) b = `<span class="pill ok" style="justify-self:start">On · ${lead} min before each change</span>${serverNote()}<div class="row"><button class="btn sm" data-act="push-test" ${push.testAt?'disabled':''}>${push.testAt?'Waiting for the test…':'Send a test'}</button><button class="btn ghost sm danger" data-act="push-off" ${push.busy?'disabled':''}>Turn off</button></div>`;
   else b = `<p class="muted">Get a notification ${lead} minutes before every role change, even when this site is closed and the phone is locked.</p><button class="btn primary" data-act="push-on" style="justify-self:start" ${push.busy?'disabled':''}>${push.busy?'Turning on…':'Turn on notifications'}</button>`;
   return `<section class="card" style="display:grid;gap:10px" data-push><h3>Phone notifications</h3>${b}${push.err ? `<p class="errline">${esc(push.err)}</p>` : ''}</section>`;
@@ -514,7 +683,7 @@ function buildPlan(){
   return groups;
 }
 async function writePlan(){
-  if (planBusy || !db || demo || !pushReady() || dbState !== 'ready' || !cfg || !staff().length || !pushLoaded.dev || !pushLoaded.meta) return;
+  if (planBusy || draft || !db || demo || !pushReady() || dbState !== 'ready' || !cfg || !staff().length || !pushLoaded.dev || !pushLoaded.meta) return;
   if (!fresh.cfg || !fresh.abs || !fresh.wheel || !navigator.onLine) return;
   planBusy = true;
   try {
@@ -567,7 +736,7 @@ async function downloadPdf(d){
       if (k) doc.addPage();
       const r = dayRoster(day);
       doc.setTextColor(20,32,29); doc.setFont('helvetica','bold'); doc.setFontSize(16); doc.text(longDay(day), 10, 14);
-      doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(91,106,102); doc.text(pdfText('What Am I Now? · team roster · week of '+weekLabel(day)), W-10, 14, { align:'right' });
+      doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(91,106,102); doc.text(pdfText(APP_NAME+' · week of '+weekLabel(day)), W-10, 14, { align:'right' });
       let y = 21;
       if (r.off || r.empty) { doc.setFontSize(12); doc.text(r.off ? 'Day off: no roster.' : 'No team set up.', 10, y+4); }
       else {
@@ -580,7 +749,7 @@ async function downloadPdf(d){
             head:[['Time'].concat(r.positions.map(p => p.name))],
             body: sh.slots.map(sl => [pdfText(fmtRange(sl.start, sl.end))].concat(sl.cells)),
             styles:{ font:'helvetica', fontSize:8.5, cellPadding:1.6, halign:'center', valign:'middle', lineColor:[217,225,223], lineWidth:.2, textColor:[20,32,29] },
-            headStyles:{ fillColor:[14,107,92], textColor:255, fontStyle:'bold' },
+            headStyles:{ fillColor:[91,33,182], textColor:255, fontStyle:'bold' },
             columnStyles:{ 0:{ halign:'left', cellWidth:30, fontStyle:'bold' } },
             didParseCell: c => { if (c.column.index > 0 && r.positions[c.column.index-1] && r.positions[c.column.index-1].brk) c.cell.styles.fillColor = c.section === 'head' ? [138,120,82] : [242,238,228]; } });
           y = doc.lastAutoTable.finalY + 7;
@@ -590,7 +759,7 @@ async function downloadPdf(d){
       doc.text(pdfText('Made '+fmtDay(made)+' '+made.getFullYear()+', '+fmtT(made.getHours()*60+made.getMinutes())+(me ? ' by '+me : '')), 10, H-6);
       doc.text('Page '+(k+1)+' of 7', W-10, H-6, { align:'right' });
     });
-    const name = 'roster-week-'+wkKey(d)+'.pdf', blob = doc.output('blob');
+    const name = 'BC-Al-Ain-Routine-week-'+wkKey(d)+'.pdf', blob = doc.output('blob');
     dl.file = new File([blob], name, { type:'application/pdf' }); dl.wk = wkKey(d);
     saveBlob(blob, name);
     toast('Downloaded '+name+(canShareFile(dl.file) ? '. Tap Share PDF to send it.' : '.'));
@@ -598,7 +767,7 @@ async function downloadPdf(d){
   dl.busy = ''; refreshDl();
 }
 function downloadCsv(d){
-  const rows = [['What Am I Now? team roster', 'Week of '+weekLabel(d)], []];
+  const rows = [[APP_NAME, 'Week of '+weekLabel(d)], []];
   for (const day of weekOf(d)) {
     const r = dayRoster(day); rows.push([longDay(day)]);
     if (r.off || r.empty) rows.push(['Day off']);
@@ -609,20 +778,20 @@ function downloadCsv(d){
     rows.push([]);
   }
   const cell = c => { c = String(c ?? ''); return /[",\r\n]/.test(c) ? '"'+c.replace(/"/g,'""')+'"' : c; };
-  const name = 'roster-week-'+wkKey(d)+'.csv';
+  const name = 'BC-Al-Ain-Routine-week-'+wkKey(d)+'.csv';
   saveBlob(new Blob(['﻿'+rows.map(r => r.map(cell).join(',')).join('\r\n')], { type:'text/csv;charset=utf-8' }), name);
   toast('Downloaded '+name+'. It opens in Excel or Google Sheets.');
 }
-async function sharePdf(){ if (!canShareFile(dl.file)) return; try { await navigator.share({ files:[dl.file], title:'Team roster' }); } catch(e) {} }
+async function sharePdf(){ if (!canShareFile(dl.file)) return; try { await navigator.share({ files:[dl.file], title: APP_NAME }); } catch(e) {} }
 
 /* ---------- managers (view only) ---------- */
 const observers = () => (cfg && Array.isArray(cfg.observers) ? cfg.observers : []).filter(n => n && !staff().includes(n));
 const isObs = () => !!me && !staff().includes(me) && observers().includes(me);
-const OBS_TABS = [['home','Team now'],['roster','Roster'],['settings','Settings']];
+const OBS_TABS = [['home','Team now'],['roster','Routine'],['settings','Settings']];
 // What everyone is doing right now, for managers.
 function viewTeam(){
   const now = new Date(), day = sod(now), r = dayRoster(day), t = nowMin(now), t0 = day.getTime();
-  const hello = `<section class="hello">${avatar(me,56)}<div><h3>Manager · view only</h3><h2 style="font-size:24px">${esc(me)}</h2></div><div class="clock"><span data-clock>${clockText(now)}</span><div class="muted" style="font-size:13px;font-family:var(--f-body)">${fmtDay(now)}</div></div></section>`;
+  const hello = `<section class="hello"><button class="avbtn" data-act="me-tap" aria-label="My profile">${avatar(me,56)}</button><div><h3>Manager · view only</h3><h2 style="font-size:24px">${esc(me)}</h2>${descOf(me) ? `<p class="desc">${esc(descOf(me))}</p>` : ''}</div><div class="clock"><span data-clock>${clockText(now)}</span><div class="muted" style="font-size:13px;font-family:var(--f-body)">${fmtDay(now)}</div></div></section>`;
   let body;
   if (r.off || !r.shifts) body = `<div class="empty"><h2>Day off today</h2><p class="muted">No roster today.</p></div>`;
   else {
@@ -637,7 +806,7 @@ function viewTeam(){
         ${notes.length ? `<p class="muted" style="font-size:13px">${esc(notes.join(' · '))}</p>` : ''}</section>`;
     }
   }
-  return hello + body + `<div class="row"><button class="btn" data-act="tab" data-tab="roster">See full roster →</button></div>` + viewDl(day);
+  return hello + body + `<div class="row"><button class="btn" data-act="tab" data-tab="roster">See full routine →</button></div>` + viewDl(day);
 }
 function addObserver(v){
   v = String(v || '').trim(); if (!v) return;
@@ -647,7 +816,7 @@ function addObserver(v){
 }
 
 /* ---------- render ---------- */
-const TABS = [['home','Home'],['roster','Roster'],['spin','Spin'],['scratch','Scratch'],['settings','Settings']];
+const TABS = [['home','Home'],['roster','Routine'],['spin','Spin'],['scratch','Scratch'],['settings','Settings']];
 function signedIn(){ return !!me && (staff().includes(me) || observers().includes(me)); }
 let showPast = false; // today's finished time slots are hidden until someone taps "Show finished"
 function render(force){
@@ -667,21 +836,22 @@ function render(force){
   else if (tab === 'spin') { v.innerHTML = viewSpin(); drawWheel(); }
   else if (tab === 'scratch') { v.innerHTML = viewScratch(); setupScratch(); }
   else v.innerHTML = viewHome();
-  $('#foot').innerHTML = `What Am I Now? v${VERSION}${demo ? ' · Demo mode: saved on this device only' : ''}`;
+  $('#foot').innerHTML = `${APP_NAME} v${VERSION}${demo ? ' · Demo mode: saved on this device only' : ''}`;
   queuePlan();
+  watchSaveCard();
   updateLive();
 }
 function renderHeader(){
   const ok = navigator.onLine && dbState === 'ready';
   $('#hdrdate').innerHTML = demo ? `${fmtDay(new Date())} · <span class="pill warn" style="padding:0 8px">Demo</span>` : `<span class="syncdot ${ok?'':'off'}"></span>${fmtDay(new Date())} · ${ok?'All changes saved':'Offline, will sync'}`;
   $('#tabs').innerHTML = (isObs() ? OBS_TABS : TABS).map(([k,l]) => `<button data-act="tab" data-tab="${k}" aria-pressed="${tab===k}">${l}</button>`).join('');
-  $('#mebox').innerHTML = signedIn() ? `<button class="mechip" data-act="tab" data-tab="settings" aria-label="You are ${esc(me)}. Open settings">${avatar(me,30)}<span>${esc(me)}</span>${isObs()?'<small class="mgr">Manager</small>':''}</button>` : '';
+  $('#mebox').innerHTML = signedIn() ? `<button class="mechip" data-act="me-tap" aria-label="You are ${esc(me)}. Tap for your profile">${avatar(me,30)}<span>${esc(me)}</span>${isObs()?'<small class="mgr">Manager</small>':''}</button>` : '';
 }
 
 /* ---------- who are you (asked once per device) ---------- */
 function viewWho(){
   return `<section class="card" style="display:grid;gap:6px"><h2 style="font-size:26px">Who are you?</h2><p class="muted">Tap your name once. This device will remember you. You can change it any time in Settings.</p></section>
-  <div class="who">${staff().map(n => `<button data-act="signin" data-name="${esc(n)}">${avatar(n,84)}<span>${esc(n)}</span></button>`).join('')}</div>
+  <div class="who">${staff().map(n => `<button data-act="signin" data-name="${esc(n)}">${avatar(n,84)}<span>${esc(n)}</span>${descOf(n) ? `<small class="desc">${esc(descOf(n))}</small>` : ''}</button>`).join('')}</div>
   <section class="card" style="display:grid;gap:10px"><h3>Managers · view only</h3>
     <p class="muted" style="font-size:13px">See what everyone is doing right now and the full roster, and download it. Managers are not on the roster.</p>
     ${observers().length ? `<div class="who mgrs">${observers().map(n => `<button data-act="signin" data-name="${esc(n)}">${avatar(n,56)}<span>${esc(n)}</span><small class="muted">Manager</small></button>`).join('')}</div>` : ''}
@@ -713,11 +883,11 @@ function viewHome(){
   } else nxtCard = `<section class="rc nxt idle"><h3>Next role</h3><div class="big" style="font-size:clamp(26px,6vw,40px)">Nothing scheduled</div></section>`;
   const nx = m.items.find(i => !i.past && !i.cur);
   const pastN = m.items.filter(i => i.past).length, shown = showPast ? m.items : m.items.filter(i => !i.past);
-  const list = m.items.length ? `<section class="card" style="display:grid;gap:10px"><div class="row" style="justify-content:space-between"><h3>My day · ${fmtDay(now)}</h3><button class="btn sm" data-act="tab" data-tab="roster">See full roster →</button></div>
+  const list = m.items.length ? `<section class="card" style="display:grid;gap:10px"><div class="row" style="justify-content:space-between"><h3>My day · ${fmtDay(now)}</h3><button class="btn sm" data-act="tab" data-tab="roster">See full routine →</button></div>
     ${pastN ? `<div class="row"><span class="muted" style="font-size:13px">${showPast?'Showing':'Hiding'} ${pastN} finished</span><button class="btn sm ghost" data-act="past">${showPast?'Hide finished':'Show finished'}</button></div>` : ''}
     <div class="myday">${shown.length ? '' : '<p class="muted">All done for today.</p>'}${shown.map(i => `<div class="it ${i.cur?'cur':''} ${i.past?'past':''} ${i===nx?'nx':''}"><span class="mono">${fmtRange(i.sl.start,i.sl.end)}</span><b>${esc(i.role.name)}${i.cur?' · NOW':''}</b></div>`).join('')}</div></section>`
-    : `<div class="row"><button class="btn" data-act="tab" data-tab="roster">See full roster →</button></div>`;
-  return `<section class="hello">${avatar(me,56)}<div><h3>Hi</h3><h2 style="font-size:24px">${esc(me)}</h2></div><div class="clock"><span data-clock>${clockText(now)}</span><div class="muted" style="font-size:13px;font-family:var(--f-body)">${fmtDay(now)}</div></div></section>
+    : `<div class="row"><button class="btn" data-act="tab" data-tab="roster">See full routine →</button></div>`;
+  return `<section class="hello"><button class="avbtn" data-act="me-tap" aria-label="My profile">${avatar(me,56)}</button><div><h3>Hi</h3><h2 style="font-size:24px">${esc(me)}</h2>${descOf(me) ? `<p class="desc">${esc(descOf(me))}</p>` : ''}</div><div class="clock"><span data-clock>${clockText(now)}</span><div class="muted" style="font-size:13px;font-family:var(--f-body)">${fmtDay(now)}</div></div></section>
     <div class="rolecards">${curCard}${nxtCard}</div>
     <div class="row"><span class="pill" data-audio></span></div>
     ${pushReady() ? viewPush() : ''}
@@ -937,15 +1107,28 @@ function setupScratch(){
 }
 
 /* ---------- settings ---------- */
-function viewObsSettings(){
-  return `<section><h2>Settings</h2></section><div class="sgrid">
-  <section class="card" style="display:grid;gap:12px"><h3>You on this device</h3><div class="row">${avatar(me,56)}<div><b style="font-size:18px">${esc(me)}</b><p class="muted" style="font-size:13px">Manager · view only. Remembered on this device.</p></div></div>
-    <div class="row"><button class="btn" data-act="signout">Change user</button><button class="btn ghost" data-act="copy-link">Copy my personal link</button></div></section>
-  <section class="card" style="display:grid;gap:8px"><h3>About</h3><p><b>What Am I Now?</b> v${VERSION}</p><p class="muted" style="font-size:13px">Managers can see everything but can't change the roster. Team settings are changed by the agents.</p></section></div>`;
-}
 function viewSettings(){
-  if (isObs()) return viewObsSettings();
-  const c = C(), thisWk = wkKey(new Date()), order = staff().length ? weekOrder(thisWk) : [], pos = buildPositions(order.length), w = pickWindow(), roles = rolesAll();
+  const c = C(), adm = isAdmin(), agent = staff().includes(me), perm = window.Notification ? Notification.permission : 'unsupported';
+  const you = `<section class="card" style="display:grid;gap:12px"><h3>You on this device</h3>
+    ${signedIn() ? `<div class="row" style="flex-wrap:nowrap">${avatar(me,56)}<div style="min-width:0"><b style="font-size:18px">${esc(me)}</b><p class="muted" style="font-size:13px">${isObs()?'Manager · view only. ':''}${descOf(me) ? esc(descOf(me)) : 'Remembered on this device.'}</p></div></div>
+      <div class="row"><button class="btn primary" data-act="profile-open">Edit profile, photo &amp; theme</button><button class="btn" data-act="signout">Change user</button><button class="btn ghost" data-act="copy-link">Copy my personal link</button></div>`
+      : `<p class="muted">Nobody chosen yet.</p><button class="btn primary" data-act="tab" data-tab="home" style="justify-self:start">Choose who you are</button>`}
+  </section>`;
+  const alerts = agent ? `<section class="card" style="display:grid;gap:12px"><h3>Alerts on this device</h3>
+    <div class="row"><button class="btn ${audioReady()?'':'accent'}" data-act="test-alert">${audioReady()?'Play test alert':'Turn on sound & test'}</button>
+      ${!demo && pushReady() && pushEnv()==='ok' ? '' : perm==='default'?'<button class="btn" data-act="notif">Allow pop-up notifications</button>':perm==='granted'?'<span class="pill ok">Pop-ups allowed</span>':''}
+      <button class="btn" data-act="wake" aria-pressed="${!!wakeLock}">${wakeLock?'Screen stays on ✓':'Keep screen on'}</button></div>
+    <p class="muted" style="font-size:13px">Keep this page open (on a till, or your phone with the screen on). It chimes ${+c.leadMin||3} minutes before each change.</p></section>
+  ${viewPush()}` : '';
+  const adminCard = adm
+    ? `<section class="card" style="display:grid;gap:10px"><h3>Admin</h3><p class="muted" style="font-size:13px">Admin is on for this device. Change the team settings below, then tap <b>Save changes</b> at the bottom.</p><button class="btn ghost danger" data-act="admin-lock" style="justify-self:start">Lock admin on this device</button></section>`
+    : `<section class="card" style="display:grid;gap:8px"><h3>Team settings</h3><p class="muted" style="font-size:13px">The team, roles, shifts and Saturday settings are managed by the admin.</p></section>`;
+  const about = `<section class="card" style="display:grid;gap:8px"><h3>About</h3><p><b>${APP_NAME}</b> v${VERSION}</p>
+    <p class="muted" style="font-size:13px">${demo?'Demo mode: everything is saved on this device only. Fill in firebase-config.js to share the roster with the team.':'Shared roster: saved changes reach everyone instantly.'}</p></section>`;
+  if (!adm) return `${readOnly?'<div class="pill bad">View only: you can\'t change settings</div>':''}
+    <section><h2>Settings</h2></section><div class="sgrid">${you}${alerts}${adminCard}${about}</div>`;
+
+  const thisWk = wkKey(new Date()), order = staff().length ? weekOrder(thisWk) : [], pos = buildPositions(order.length), w = pickWindow(), roles = rolesAll();
   const rf = rulesFrom();
   let satStart = fromKey(rf); while (satStart.getDay() !== 6) satStart = addDays(satStart, 1); const satTxt = dkey(satStart) > dkey(new Date()) ? ' (starts '+fmtDay(satStart)+')' : '';
   const sr = satRule(), offRoles = new Set(sr.roles.map(normName)), satRoles = roles.filter(r => !offRoles.has(normName(r.name))), satN = staff().length - sr.staff.length;
@@ -955,36 +1138,23 @@ function viewSettings(){
   else if (satN > satRoles.length) satMsg = `Saturday: ${satN} people but only ${satRoles.length} roles, so ${satN-satRoles.length} ${satN-satRoles.length>1?'people sit':'person sits'} out each slot (shown as Break). Add a role such as TAB4, or take one more person off.`;
   else { const used = buildPositions(satN, satRoles).map(p => p.name), left = satRoles.map(r => r.name).filter(n => !used.includes(n)); satMsg = `Saturday: ${satN} people for ${satRoles.length} roles, so ${left.map(esc).join(', ')} won't be filled.`; }
   const ov = c.wheelOverride && c.wheelOverride.wk === w.next && Date.now() < c.wheelOverride.until;
-  const perm = window.Notification ? Notification.permission : 'unsupported';
+  const waNum = draft && 'waNumber' in draft ? draft.waNumber : ((cfg && cfg.waNumber) || '');
   return `${readOnly?'<div class="pill bad">View only: you can\'t change settings</div>':''}
-  <section><h2>Settings</h2><p class="muted" style="margin-top:4px">Team settings save for everyone straight away.</p></section>
-  <div class="sgrid">
-  <section class="card" style="display:grid;gap:12px"><h3>You on this device</h3>
-    ${signedIn() ? `<div class="row">${avatar(me,56)}<div><b style="font-size:18px">${esc(me)}</b><p class="muted" style="font-size:13px">Remembered on this device.</p></div></div>
-      <div class="row"><button class="btn" data-act="signout">Change user</button><button class="btn ghost" data-act="copy-link">Copy my personal link</button></div>`
-      : `<p class="muted">Nobody chosen yet.</p><button class="btn primary" data-act="tab" data-tab="home" style="justify-self:start">Choose who you are</button>`}
-  </section>
-
-  <section class="card" style="display:grid;gap:12px"><h3>Alerts on this device</h3>
-    <div class="row"><button class="btn ${audioReady()?'':'accent'}" data-act="test-alert">${audioReady()?'Play test alert':'Turn on sound & test'}</button>
-      ${!demo && pushReady() && pushEnv()==='ok' ? '' : perm==='default'?'<button class="btn" data-act="notif">Allow pop-up notifications</button>':perm==='granted'?'<span class="pill ok">Pop-ups allowed</span>':''}
-      <button class="btn" data-act="wake" aria-pressed="${!!wakeLock}">${wakeLock?'Screen stays on ✓':'Keep screen on'}</button></div>
-    <p class="muted" style="font-size:13px">Keep this page open (on a till, or your phone with the screen on). It chimes ${+c.leadMin||3} minutes before each change.</p></section>
-
-  ${staff().includes(me) ? viewPush() : ''}
+  <section><h2>Settings</h2><p class="muted" style="margin-top:4px">Team changes wait until you tap <b>Save changes</b> at the bottom.</p></section>
+  <div class="sgrid">${you}${alerts}${adminCard}
 
   <section class="card" style="display:grid;gap:10px"><h3>Team · this week's Monday order</h3><p class="muted" style="font-size:13px">Row 1 opens Monday as ${esc((pos[0]||{}).name||'Greeter')}, row 2 as ${esc((pos[1]||{}).name||'SAS1')}, and so on. Each day the order moves up by one, so yesterday's Greeter starts the day on Break.</p>
     <div class="list">${order.map((n,i) => `<div class="li"><span class="mono muted" style="width:22px">${i+1}</span>${avatar(n,30)}<span class="grow">${esc(n)} <span class="muted" style="font-weight:500">· ${esc((pos[i]||{}).name||'')}</span></span>
       <button class="icon" data-act="staff-move" data-i="${i}" data-d="-1" aria-label="Move ${esc(n)} up" ${i?'':'disabled'}>↑</button><button class="icon" data-act="staff-move" data-i="${i}" data-d="1" aria-label="Move ${esc(n)} down" ${i<order.length-1?'':'disabled'}>↓</button><button class="icon" data-act="staff-del" data-i="${i}" aria-label="Remove ${esc(n)}">✕</button></div>`).join('') || '<p class="muted">No agents yet.</p>'}</div>
     <form class="addrow" data-form="staff"><input id="newstaff" placeholder="Add agent name" autocomplete="off" maxlength="30"><button class="btn primary">Add</button></form>
-    <p class="muted" style="font-size:12px">Photo: put a picture named exactly <span class="mono">images/Name.jpg</span> in the website folder, then Publish.</p></section>
+    <p class="muted" style="font-size:12px">Photos: everyone can add their own by tapping their picture at the top. A file named <span class="mono">images/Name.jpg</span> in the website folder is used otherwise.</p></section>
 
   <section class="card" style="display:grid;gap:10px"><h3>Roles · in priority order</h3><p class="muted" style="font-size:13px">When someone is on leave, the last working role is dropped first so the front desk stays covered.</p>
     <div class="list">${roles.map((r,i) => `<div class="li"><span class="grow">${esc(r.name)}</span><label class="row" style="gap:4px;font-size:13px"><input type="checkbox" data-set="role-brk" data-i="${i}" ${r.brk?'checked':''}> Break</label>
       <button class="icon" data-act="role-move" data-i="${i}" data-d="-1" aria-label="Move up" ${i?'':'disabled'}>↑</button><button class="icon" data-act="role-move" data-i="${i}" data-d="1" aria-label="Move down" ${i<roles.length-1?'':'disabled'}>↓</button><button class="icon" data-act="role-del" data-i="${i}" aria-label="Remove ${esc(r.name)}">✕</button></div>`).join('')}</div>
     <form class="addrow" data-form="role"><input id="newrole" placeholder="Add role, e.g. SAS4" autocomplete="off" maxlength="20"><button class="btn primary">Add</button></form></section>
 
-  <section class="card" style="display:grid;gap:10px"><h3>Managers · view only</h3><p class="muted" style="font-size:13px">Managers see what everyone is doing right now and the full roster, and can download it. They are not on the roster and can't change it.</p>
+  <section class="card" style="display:grid;gap:10px"><h3>Managers · view only</h3><p class="muted" style="font-size:13px">Managers see what everyone is doing right now and the full routine, and can download it. They are not on the roster and can't change it.</p>
     <div class="list">${observers().map(n => `<div class="li">${avatar(n,30)}<span class="grow">${esc(n)}</span><button class="icon" data-act="obs-del" data-name="${esc(n)}" aria-label="Remove ${esc(n)}">✕</button></div>`).join('') || '<p class="muted">No managers yet.</p>'}</div>
     <form class="addrow" data-form="observer"><input placeholder="Manager's name" autocomplete="off" maxlength="30" aria-label="Manager's name"><button class="btn primary">Add</button></form></section>
 
@@ -1002,29 +1172,29 @@ function viewSettings(){
     <label class="field"><b>Alert and notification before each role change</b><select data-set="leadMin">${[1,2,3,4,5,10].map(m => `<option value="${m}" ${+c.leadMin===m?'selected':''}>${m} minute${m>1?'s':''}</option>`).join('')}</select></label></section>
 
   <section class="card" style="display:grid;gap:12px"><h3>WhatsApp alerts</h3>
-    <label class="field"><b>Bot's WhatsApp number</b><input type="tel" inputmode="numeric" data-set="waNumber" placeholder="${WA_DEFAULT}" value="${esc((cfg&&cfg.waNumber)||'')}"></label>
+    <label class="field"><b>Bot's WhatsApp number</b><input type="tel" inputmode="numeric" data-set="waNumber" placeholder="${WA_DEFAULT}" value="${esc(waNum)}"></label>
     <p class="muted" style="font-size:13px">Country code first, no + or spaces. Empty = ${WA_DEFAULT}. This is the number the WhatsApp bot is linked to.</p></section>
 
   <section class="card" style="display:grid;gap:12px"><h3>Weekly pick (Spin + Scratch)</h3>
     <label class="field"><b>Opens before the new week</b><select data-set="wheelHours">${[12,24,48].map(h => `<option value="${h}" ${+c.wheelHours===h?'selected':''}>${h} hours before Monday</option>`).join('')}</select></label>
-    <p class="muted" style="font-size:13px">For the week of ${fmtDay(fromKey(w.next))}: ${w.open?'open now':'opens '+fmtDay(new Date(w.openAt))}.</p>
+    <p class="muted" style="font-size:13px">For the week of ${fmtDay(fromKey(w.next))}: ${w.open?'open now':'opens '+fmtDay(new Date(w.openAt))}. The button below works straight away.</p>
     <div class="row">${ov?`<button class="btn" data-act="wheel-close">Close it early</button>`:`<button class="btn" data-act="wheel-open">Open now for 24 hours</button>`}</div></section>
-
-  <section class="card" style="display:grid;gap:8px"><h3>About</h3><p><b>What Am I Now?</b> v${VERSION}</p>
-    <p class="muted" style="font-size:13px">${demo?'Demo mode: everything is saved on this device only. Fill in firebase-config.js to share the roster with the team.':'Shared roster: changes reach everyone instantly.'}</p></section>
-  </div>`;
+  ${about}
+  </div>
+  <section class="card savecard"><div><h3>Save changes</h3><p class="muted" style="font-size:13px">${draft ? 'You have unsaved team changes. Nobody else sees them until you save.' : 'Everything is saved.'}</p></div>
+    <div class="row">${draft ? '<button class="btn ghost" data-act="draft-discard">Discard</button>' : ''}<button class="btn primary" data-act="draft-save" ${draft?'':'disabled'}>Save changes</button></div></section>`;
 }
 function onSettingChange(el){
   const c = C(), k = el.dataset.set, i = +el.dataset.i;
-  if (k === 'role-brk') { const roles = rolesAll(); roles[i].brk = el.checked; saveCfg({ roles }); }
-  else if (k === 'sat-on') { const sr = satRule(); saveCfg({ satRule: { ...sr, on: el.checked } }); }
-  else if (k.startsWith('shift-')) { const shifts = c.shifts.map(s => ({...s})), f = {'shift-name':'name','shift-start':'start','shift-end':'end'}[k], v = el.value.trim(); if (!v) return render(true); shifts[i][f] = v; saveCfg({ shifts }); }
-  else if (k === 'slotMode') saveCfg({ slotMode: el.value === 'auto' ? 'auto' : +el.value });
-  else if (k === 'leadMin') saveCfg({ leadMin: +el.value });
-  else if (k === 'wheelHours') saveCfg({ wheelHours: +el.value });
-  else if (k === 'waNumber') saveCfg({ waNumber: el.value.replace(/\D/g,'') });
+  if (k === 'role-brk') { const roles = rolesAll(); roles[i].brk = el.checked; stageCfg({ roles }); }
+  else if (k === 'sat-on') { const sr = satRule(); stageCfg({ satRule: { ...sr, on: el.checked } }); }
+  else if (k.startsWith('shift-')) { const shifts = c.shifts.map(s => ({...s})), f = {'shift-name':'name','shift-start':'start','shift-end':'end'}[k], v = el.value.trim(); if (!v) return render(true); shifts[i][f] = v; stageCfg({ shifts }); }
+  else if (k === 'slotMode') stageCfg({ slotMode: el.value === 'auto' ? 'auto' : +el.value });
+  else if (k === 'leadMin') stageCfg({ leadMin: +el.value });
+  else if (k === 'wheelHours') stageCfg({ wheelHours: +el.value });
+  else if (k === 'waNumber') stageCfg({ waNumber: el.value.replace(/\D/g,'') });
 }
-const setOrder = order => saveCfg({ staff: order, anchorWeek: wkKey(new Date()) });
+const setOrder = order => stageCfg({ staff: order, anchorWeek: wkKey(new Date()) });
 function fmt24(m){ m = Math.min(m, 23*60+59); return String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0'); }
 
 let wakeLock = null, wantWake = false;
@@ -1038,11 +1208,11 @@ document.addEventListener('click', e => {
   const a = el.dataset.act, c = C();
   switch (a) {
     case 'tab': tab = el.dataset.tab; LS.set('dutyRoster.tab', tab); if (tab === 'roster') viewDate = sod(new Date()); scratch = { lock:false, res:null, busy:false, revealed:false }; render(true); window.scrollTo(0,0); break;
-    case 'signin': me = el.dataset.name; rememberMe(me); setUrlMe(me); hl = null; unlockAudio(); tab = 'home'; LS.set('dutyRoster.tab', tab); render(true); toast('Hi '+me+'! This device will remember you.');
+    case 'signin': me = el.dataset.name; rememberMe(me); setUrlMe(me); hl = null; unlockAudio(); applyMyTheme(); tab = 'home'; LS.set('dutyRoster.tab', tab); render(true); toast('Hi '+me+'! This device will remember you.');
       if (!staff().includes(me)) break;
       if (pushReady() && pushEnv() === 'ok' && Notification.permission !== 'denied') enablePush();
       else try { if (window.Notification && Notification.permission === 'default') Notification.requestPermission(); } catch(err) {} break;
-    case 'signout': forgetDevice(); me = null; rememberMe(null); setUrlMe(null); hl = null; tab = 'home'; render(true); break;
+    case 'signout': forgetDevice(); sheet = null; renderSheet(); me = null; rememberMe(null); setUrlMe(null); hl = null; tab = 'home'; applyMyTheme(); render(true); break;
     case 'seed': saveCfg({ staff: SEED_STAFF.slice(), anchorWeek: wkKey(new Date()), rulesFrom: '2000-01-01' }); toast('Team added. Everyone can now choose their name.'); break;
     case 'test-alert': unlockAudio(); setTimeout(() => { const s = Math.ceil((new Date().getHours()*60+new Date().getMinutes()+3)/5)*5; fireAlert({ role:'Greeter', brk:false, at:s, end:s+30, from:'SAS1', hideAt:Date.now()+20000 }); }, 120); break;
     case 'notif': try { Notification.requestPermission().then(() => render(true)).catch(() => {}); } catch(err) {} break;
@@ -1058,31 +1228,56 @@ document.addEventListener('click', e => {
     case 'dl-pdf': downloadPdf(el.dataset.week ? fromKey(el.dataset.week) : viewDate); break;
     case 'dl-csv': downloadCsv(el.dataset.week ? fromKey(el.dataset.week) : viewDate); break;
     case 'dl-share': sharePdf(); break;
-    case 'obs-del': { const n = el.dataset.name; if (el.dataset.confirm !== '1') { el.dataset.confirm = '1'; el.textContent = '?'; toast('Tap ✕ again to remove '+n+'.'); return; } saveCfg({ observers: observers().filter(x => x !== n) }); break; }
+    case 'obs-del': { const n = el.dataset.name; if (el.dataset.confirm !== '1') { el.dataset.confirm = '1'; el.textContent = '?'; toast('Tap ✕ again to remove '+n+'.'); return; } stageCfg({ observers: observers().filter(x => x !== n) }); break; }
     case 'push-on': enablePush(); break;
     case 'push-off': disablePush(); break;
     case 'push-test': testPush(); break;
     case 'scratch-new': scratch = { lock:false, res:null, busy:false, revealed:false }; render(true); break;
     case 'staff-move': { const o = weekOrder(wkKey(new Date())).slice(), i = +el.dataset.i, j = i + +el.dataset.d; [o[i],o[j]] = [o[j],o[i]]; setOrder(o); break; }
     case 'staff-del': { const o = weekOrder(wkKey(new Date())).slice(), i = +el.dataset.i; if (el.dataset.confirm !== '1') { el.dataset.confirm = '1'; el.textContent = '?'; el.setAttribute('aria-label','Tap again to remove'); toast('Tap ✕ again to remove '+o[i]+'.'); return; } o.splice(i,1); setOrder(o); break; }
-    case 'role-move': { const r = rolesAll(), i = +el.dataset.i, j = i + +el.dataset.d; [r[i],r[j]] = [r[j],r[i]]; saveCfg({ roles: r }); break; }
-    case 'role-del': { const r = rolesAll(); if (r.length <= 1) return; r.splice(+el.dataset.i,1); saveCfg({ roles: r }); break; }
-    case 'sat-staff': { const sr = satRule(), n = el.dataset.name, s = sr.staff.includes(n) ? sr.staff.filter(x => x !== n) : [...sr.staff, n]; saveCfg({ satRule: { ...sr, staff: s } }); break; }
-    case 'sat-role': { const sr = satRule(), n = el.dataset.name, has = sr.roles.some(x => normName(x) === normName(n)), r = has ? sr.roles.filter(x => normName(x) !== normName(n)) : [...sr.roles, n]; saveCfg({ satRule: { ...sr, roles: r } }); break; }
-    case 'shift-add': { const s = c.shifts.slice(), last = s[s.length-1]; s.push({ name:'Shift '+(s.length+1), start: last ? last.end : '08:00', end: last ? fmt24(parseHM(last.end)+270) : '12:30' }); saveCfg({ shifts: s }); break; }
-    case 'shift-del': { if (c.shifts.length <= 1) return; const s = c.shifts.slice(); s.splice(+el.dataset.i,1); saveCfg({ shifts: s }); break; }
-    case 'wday': { const d = +el.dataset.d; let w = c.workDays.slice(); w = w.includes(d) ? w.filter(x => x !== d) : [...w,d]; if (!w.length) return; saveCfg({ workDays: w, anchorWeek: wkKey(new Date()), staff: weekOrder(wkKey(new Date())) }); break; }
-    case 'wheel-open': { const w = pickWindow(); saveCfg({ wheelOverride: { wk: w.next, until: Date.now()+24*3600000 } }); toast('Spin and Scratch are open for 24 hours.'); break; }
-    case 'wheel-close': saveCfg({ wheelOverride: null }); break;
+    case 'role-move': { const r = rolesAll(), i = +el.dataset.i, j = i + +el.dataset.d; [r[i],r[j]] = [r[j],r[i]]; stageCfg({ roles: r }); break; }
+    case 'role-del': { const r = rolesAll(); if (r.length <= 1) return; r.splice(+el.dataset.i,1); stageCfg({ roles: r }); break; }
+    case 'sat-staff': { const sr = satRule(), n = el.dataset.name, s = sr.staff.includes(n) ? sr.staff.filter(x => x !== n) : [...sr.staff, n]; stageCfg({ satRule: { ...sr, staff: s } }); break; }
+    case 'sat-role': { const sr = satRule(), n = el.dataset.name, has = sr.roles.some(x => normName(x) === normName(n)), r = has ? sr.roles.filter(x => normName(x) !== normName(n)) : [...sr.roles, n]; stageCfg({ satRule: { ...sr, roles: r } }); break; }
+    case 'shift-add': { const s = c.shifts.slice(), last = s[s.length-1]; s.push({ name:'Shift '+(s.length+1), start: last ? last.end : '08:00', end: last ? fmt24(parseHM(last.end)+270) : '12:30' }); stageCfg({ shifts: s }); break; }
+    case 'shift-del': { if (c.shifts.length <= 1) return; const s = c.shifts.slice(); s.splice(+el.dataset.i,1); stageCfg({ shifts: s }); break; }
+    case 'wday': { const d = +el.dataset.d; let w = c.workDays.slice(); w = w.includes(d) ? w.filter(x => x !== d) : [...w,d]; if (!w.length) return; stageCfg({ workDays: w, anchorWeek: wkKey(new Date()), staff: weekOrder(wkKey(new Date())) }); break; }
+    case 'wheel-open': { if (!isAdmin()) return toast('Only the admin can do this.'); const w = pickWindow(); saveCfg({ wheelOverride: { wk: w.next, until: Date.now()+24*3600000 } }); toast('Spin and Scratch are open for 24 hours.'); break; }
+    case 'wheel-close': if (!isAdmin()) return toast('Only the admin can do this.'); saveCfg({ wheelOverride: null }); break;
+    case 'me-tap': meTap(); break;
+    case 'profile-open': openSheet('profile'); break;
+    case 'sheet-close': if (e.target.closest('[data-stop]')) return; closeSheet(); break;
+    case 'sheet-cancel': closeSheet(); break;
+    case 'theme': if (sheet) { sheet.theme = el.dataset.id; applyTheme(sheet.theme, sheet.mode); renderSheet(); } break;
+    case 'mode': if (sheet) { sheet.mode = el.dataset.v; applyTheme(sheet.theme, sheet.mode); renderSheet(); } break;
+    case 'photo-del': if (sheet) { sheet.photo = null; renderSheet(); } break;
+    case 'profile-save': saveProfileSheet(); break;
+    case 'admin-go': sheet = null; renderSheet(); tab = 'settings'; LS.set('dutyRoster.tab', tab); render(true); window.scrollTo(0,0); break;
+    case 'admin-lock': setAdmin(false); sheet = null; renderSheet(); render(true); toast('Admin is locked on this device.'); break;
+    case 'draft-save': saveDraft(); break;
+    case 'draft-discard': discardDraft(); break;
   }
 });
-document.addEventListener('change', e => { if (e.target.dataset && e.target.dataset.set) onSettingChange(e.target); });
+document.addEventListener('change', e => {
+  if (e.target.id === 'photoin') { const f = e.target.files && e.target.files[0]; if (!f || !sheet) return;
+    readPhoto(f).then(url => { if (sheet) { sheet.photo = url; renderSheet(); } }).catch(() => toast('That file could not be read as a photo. Try a JPG or PNG.')); return; }
+  if (e.target.dataset && e.target.dataset.set) onSettingChange(e.target);
+});
+document.addEventListener('input', e => { if (e.target.id === 'descin' && sheet) { sheet.desc = e.target.value; const n = document.querySelector('[data-desclen]'); if (n) n.textContent = e.target.value.length; } });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && sheet) closeSheet(); });
 document.addEventListener('submit', e => {
   e.preventDefault(); const f = e.target.dataset.form;
   if (f === 'staff') { const v = $('#newstaff').value.trim(); if (!v) return; if (staff().includes(v)) return toast(v+' is already on the team.'); setOrder([...(staff().length ? weekOrder(wkKey(new Date())) : []), v]); }
+  if (f === 'admin') { const pw = ($('#adminpw') || {}).value; if (!sheet) return; sheet.busy = true; sheet.err = ''; renderSheet();
+    checkAdmin(pw).then(ok => { if (!sheet) return; sheet.busy = false;
+      if (ok) { setAdmin(true); sheet = null; renderSheet(); tab = 'settings'; LS.set('dutyRoster.tab', tab); render(true); window.scrollTo(0,0); toast('Admin unlocked on this device.'); }
+      else { sheet.err = 'Wrong password. Try again.'; renderSheet(); } }); return; }
+  if (f === 'observer' && !e.target.dataset.signin) { const inp = e.target.querySelector('input'), v = String((inp && inp.value) || '').trim(); if (!v) return;
+    if (staff().includes(v)) return toast(v+' is on the team already. Managers are people who are not on the roster.');
+    if (!observers().includes(v)) stageCfg({ observers: [...observers(), v] }); return; }
   if (f === 'observer') { const inp = e.target.querySelector('input'), n = addObserver(inp && inp.value); if (!n) return;
     if (e.target.dataset.signin) { me = n; rememberMe(me); setUrlMe(me); hl = null; tab = 'home'; LS.set('dutyRoster.tab', tab); render(true); toast('Hi '+me+'! You can see the team roster here.'); } else toast(n+' added as a manager.'); }
-  if (f === 'role') { const v = $('#newrole').value.trim(); if (!v) return; if (isStandby({ name: v })) return toast('Standby is not used. Add a working role instead.'); const r = rolesAll(), bi = r.findIndex(x => x.brk); r.splice(bi < 0 ? r.length : bi, 0, { name: v }); saveCfg({ roles: r }); }
+  if (f === 'role') { const v = $('#newrole').value.trim(); if (!v) return; if (isStandby({ name: v })) return toast('Standby is not used. Add a working role instead.'); const r = rolesAll(), bi = r.findIndex(x => x.brk); r.splice(bi < 0 ? r.length : bi, 0, { name: v }); stageCfg({ roles: r }); }
 });
 
 /* ---------- live clock ---------- */
@@ -1105,6 +1300,7 @@ setInterval(tickNow, 1000);
 setInterval(renderHeader, 15000);
 window.addEventListener('online', () => { renderHeader(); updateLive(); });
 window.addEventListener('offline', () => { renderHeader(); if (!demo) toast('You are offline. Changes will save when the connection is back.'); });
+applyMyTheme();
 render(true);
 startDb();
 </script>

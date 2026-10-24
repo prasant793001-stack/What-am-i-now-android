@@ -1,14 +1,17 @@
-# What Am I Now? v1.3.0
+# What Am I Now? v1.4.0
+
+Shown to the team as **BC Al Ain Routine** (black and purple BC logo; "BC Routine" on phone home screens). The repository, website address and Firebase project keep their old names.
 
 A simple team roster website. Open it and you see straight away:
 
 - **Current role:** what you're doing now, from what time to what time
 - **Next role:** what's next, from what time to what time
-- **Roster:** the whole day's sheet. It always fits the screen, with no scrolling sideways. Today's finished time slots drop off the top as the day goes on (tap **Show finished** to see them again).
+- **Routine** (the Roster page): the whole day's sheet. It always fits the screen, with no scrolling sideways. Today's finished time slots drop off the top as the day goes on (tap **Show finished** to see them again).
 - **Download:** the whole week (7 days, every time slot) as a **PDF** to keep or share, or as **Excel (CSV)**. On the Roster page, under the sheet.
 - **Managers:** a view-only profile that shows what everyone is doing right now, the full roster and the download, without being on the roster
 - **Spin** or **Scratch:** pick your starting role for next week. Once picked, it's fixed.
-- **Settings:** change user, team, roles, shifts, alerts
+- **My profile:** tap your picture at the top to change your photo, write a short line about yourself, pick one of 10 theme colours and light/dark, or change user. Tap **Save**.
+- **Settings:** your device and alerts for everyone; team, roles, shifts, Saturday and managers for the **admin** only. Team changes wait until the admin taps **Save changes** at the bottom.
 - **WhatsApp alerts:** each person gets *their own* role on WhatsApp a few minutes before every change
 - **Phone notifications:** a notification on Android or iPhone a few minutes before every change, even with the site closed (one-time setup below)
 
@@ -35,11 +38,25 @@ A simple team roster website. Open it and you see straight away:
 - **Saturday** (Settings → Saturday): by default Hamada and Ahoud are off, and TAB3, SAS3 and Break are not used. Change who is off and which roles are dropped there. With 7 people and 7 roles (Greeter, SAS1, SAS2, GA, TAB1, TAB2, TAB4) everyone has a role all day. If there are more people than roles, the extra person sits out each slot and shows as Break, so add TAB4 under Roles if it isn't there.
 - **Standby is never used**, in the roster, Spin or Scratch. If there are more people than roles, the extras show as Break.
 
+## Admin
+
+Team settings (team order, roles, managers, Saturday, shifts, alert time, WhatsApp number, weekly pick) can only be changed by the admin.
+
+- **Unlock:** tap your profile picture at the top **5 times quickly**, then enter the admin password (capitals and spaces don't matter). The password isn't written in this README because the repository is public. The device stays unlocked until you tap **Lock admin** in Settings.
+- **Change and save:** edit anything in Settings. A bar shows "Unsaved team changes"; nobody else sees them (and phone notifications don't use them) until you tap **Save changes** at the bottom, or **Discard** to throw them away.
+- This is a light lock to stop casual changes. It isn't strong security: the roster database is still open to anyone with the website.
+
+## Profiles and themes
+
+Tap your picture (top right, or on Home) once. You can add or change your **photo** (it's cropped square and saved for the team), write **About me** (up to 120 characters, shown on Home and the "Who are you?" screen), pick a **theme colour** (BC Purple, Teal, Ocean, Lagoon, Emerald, Gold, Sunset, Crimson, Rose, Graphite) and **Light / Dark / Auto**, or **Change user**. The theme previews straight away; **Save** keeps it, **Cancel** goes back. Your theme follows you to any device where you choose your name.
+
+A photo set here takes the place of `images/Name.jpg`; remove it to go back to the file.
+
 ## Managers (view only)
 
-On the "Who are you?" screen a manager types their name and taps **I'm a manager** (or picks their name once it's listed). Agents can also add or remove managers in **Settings → Managers**.
+On the "Who are you?" screen a manager types their name and taps **I'm a manager** (or picks their name once it's listed). The admin can also add or remove managers in **Settings → Managers**.
 
-Managers get three pages: **Team now** (everyone's role right now and their next one, updating by itself), **Roster** (the full sheet for any day), and **Settings** (change user). They can download the week, but can't mark sick leave, spin, scratch or change team settings. They don't count as part of the roster.
+Managers get three pages: **Team now** (everyone's role right now and their next one, updating by itself), **Routine** (the full sheet for any day), and **Settings** (change user). They have a profile too (photo, about, theme). They can download the week, but can't mark sick leave, spin, scratch or change team settings. They don't count as part of the roster.
 
 ## How the site remembers things
 
@@ -102,8 +119,8 @@ As soon as the keys line shows ✓, the website shows **Turn on notifications** 
 
 **C. Each person, once per phone**
 - **Android:** open the site in **Chrome** → Home → **Turn on notifications** → **Allow** → **Send a test**, then lock the phone. It arrives within a minute.
-- **iPhone (iOS 16.4 or newer):** Apple only allows notifications from sites added to the Home Screen. In **Safari** tap **Share** → **Add to Home Screen** → **Add**. Open **What Am I Now?** from the Home Screen (not Safari), tap your name, then **Turn on notifications** → **Allow** → **Send a test**.
-- Tapped **Don't Allow** by mistake? iPhone: Settings → Notifications → What Am I Now? → Allow. Android: Chrome ⋮ → Settings → Site settings → Notifications → allow the site.
+- **iPhone (iOS 16.4 or newer):** Apple only allows notifications from sites added to the Home Screen. In **Safari** tap **Share** → **Add to Home Screen** → **Add**. Open **BC Routine** from the Home Screen (not Safari; it may still be called *What Am I Now?* if it was added before), tap your name, then **Turn on notifications** → **Allow** → **Send a test**.
+- Tapped **Don't Allow** by mistake? iPhone: Settings → Notifications → BC Routine → Allow. Android: Chrome ⋮ → Settings → Site settings → Notifications → allow the site.
 
 The website keeps a 14-day notification plan for everyone who turned notifications on, and any open copy of the site updates it within seconds when sick leave, picks or settings change. If nobody opens the site for 14 days, notifications pause until someone does. Notifications follow the phone's Focus / Do Not Disturb settings; on Samsung, Xiaomi, Oppo and Huawei set Chrome's battery use to **Unrestricted**.
 
