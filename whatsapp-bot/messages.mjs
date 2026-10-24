@@ -69,6 +69,7 @@ export function nowText(name, now) {
   const day = sod(now), r = dayRoster(day);
   if (r.off) return `🗓️ *${name}*, today is a day off. No roster.`;
   if (r.empty) return 'The roster has no team set up yet.';
+  if ((r.dayOff || []).includes(name)) return `🗓️ *${name}*, you're off on Saturdays. No roster for you today.`;
   if ((r.absent || []).includes(name)) return `🤒 *${name}*, you're marked on leave today. Get well soon.`;
   const t = (now - day.getTime()) / MIN, items = personDay(r, name);
   const cur = items.find(i => i.sl.start <= t && t < i.sl.end), nxt = items.find(i => i.sl.start > t);

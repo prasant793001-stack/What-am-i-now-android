@@ -19,6 +19,14 @@ if errorlevel 1 (
   exit /b
 )
 
+rem Safety check: only ever publish a complete copy of the current website.
+rem An old copy (for example the app folder with www and android inside) would replace the live site.
+set "MISSING="
+for %%F in (index.html roster-engine.js firebase-config.js sw.js) do if not exist "%%F" set "MISSING=%%F"
+if defined MISSING goto :wrongfolder
+if exist "www\index.html" goto :wrongfolder
+if exist "android\app" goto :wrongfolder
+
 if not exist ".git" (
   echo First time only: connecting this folder to GitHub...
   git init -q -b main
@@ -60,6 +68,15 @@ echo.
 echo DONE! Your changes are on GitHub. The website updates in about 1 minute.
 timeout /t 10
 exit /b 0
+
+:wrongfolder
+echo.
+if defined MISSING echo STOP: %MISSING% is missing, so this folder is not a full copy of the website.
+if not defined MISSING echo STOP: this is the old app folder - it still has the www and android folders.
+echo Publishing it would replace the live website with an old version.
+echo Download the latest version from GitHub: Code, then Download ZIP. Unzip it and publish from that folder.
+pause
+exit /b 1
 
 :failed
 echo.

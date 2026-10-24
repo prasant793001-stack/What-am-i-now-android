@@ -1,0 +1,8 @@
+# Optional: only needed if you deploy from a computer with `npx wrangler deploy` instead of pasting
+# worker.js into the Cloudflare dashboard. Secrets are added with `npx wrangler secret put NAME`.
+name = "what-am-i-now-push"
+main = "worker.js"
+compatibility_date = "2025-06-01"
+
+[triggers]
+crons = ["* * * * *"]

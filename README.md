@@ -1,4 +1,4 @@
-# What Am I Now? v1.1.0
+# What Am I Now? v1.2.0
 
 A simple team roster website. Open it and you see straight away:
 
@@ -8,6 +8,7 @@ A simple team roster website. Open it and you see straight away:
 - **Spin** or **Scratch:** pick your starting role for next week. Once picked, it's fixed.
 - **Settings:** change user, team, roles, shifts, alerts
 - **WhatsApp alerts:** each person gets *their own* role on WhatsApp a few minutes before every change
+- **Phone notifications:** a notification on Android or iPhone a few minutes before every change, even with the site closed (one-time setup below)
 
 ## Files
 
@@ -21,7 +22,18 @@ A simple team roster website. Open it and you see straight away:
 | `whatsapp-bot/` | The WhatsApp bot (bot number set in `whatsapp-bot/config.json`: 971505353447) |
 | `Start WhatsApp bot.bat` | **Double-click to run the WhatsApp bot on a Windows PC** |
 | `Publish to GitHub.bat` | **Double-click to upload all your changes to GitHub** |
-| `sw.js`, `manifest.webmanifest`, `icon-*.png` | "Add to Home Screen" and pop-up alerts |
+| `sw.js`, `manifest.webmanifest`, `icon-*.png`, `badge-96.png` | "Add to Home Screen", pop-up alerts and phone notifications |
+| `push-server/worker.js` | The free notification server for phone notifications (paste into Cloudflare, see below) |
+
+## How the roster rotates
+
+- **During a shift** everyone moves one role per slot: Greeter → Break → the last TAB (TAB3, or TAB4 when it's in use) → TAB2 → … → SAS1 → Greeter.
+- **Next day** carries on along that same order, but nobody starts a shift on Break straight after opening as Greeter. Yesterday's Greeter starts on the last TAB that day (TAB3, TAB4 or TAB2, whichever is last) and everyone else moves along with them. Example: Prashant is Greeter on day 1, so on day 2 he starts on TAB3, not Break.
+- If sick leave would still put yesterday's Greeter on Break in the first slot, they swap with whoever has the last working role.
+- **Saturday** (Settings → Saturday): by default Hamada and Ahoud are off, and TAB3, SAS3 and Break are not used. Change who is off and which roles are dropped there. With 7 people and 7 roles (Greeter, SAS1, SAS2, GA, TAB1, TAB2, TAB4) everyone has a role all day. If there are more people than roles, the extra person sits out each slot and shows as Break, so add TAB4 under Roles if it isn't there.
+- **Standby is never used**, in the roster, Spin or Scratch. If there are more people than roles, the extras show as Break.
+- **Spin / Scratch:** the person who is Greeter on the last day before the new week can't get the Break spot for Monday.
+- These rules start the day after v1.2.0 is first opened, so a shift that is already running never changes halfway through. Settings shows the start date.
 
 ## How the site remembers things
 
@@ -51,6 +63,43 @@ Double-click **`Publish to GitHub.bat`** in this folder. It uploads everything y
 
 - First time only: if Git isn't installed it installs it (then double-click again), and a GitHub sign-in window opens once.
 - Use this folder as your working copy. The first publish makes GitHub match this folder.
+- It refuses to publish an incomplete or old folder (for example the old app folder with `www` and `android` inside), because that would replace the live website.
+
+## Phone notifications (Android + iPhone)
+
+A website can't wake a closed phone by itself. A tiny free server does that: it runs every minute on **Cloudflare Workers** (free plan, no card), reads the roster plan the website keeps in Firebase, and sends each phone a notification a few minutes before its next role (Settings → "Alert and notification before each role change": 3, 4 or 5 minutes). It works next to the WhatsApp alerts; people can use either or both.
+
+You set it up once, in about 15 minutes. No Firestore rules change is needed.
+
+**A. Firebase key for the server**
+1. Firebase console (project **who-am-i-now**) → ⚙ **Project settings** → **Service accounts** → **Generate new private key** → **Generate key**. A `.json` file downloads.
+2. Keep it private. **Never put it in this folder or on GitHub.** You paste it into Cloudflare in step B5.
+
+**B. The notification server**
+1. Sign up free at https://dash.cloudflare.com.
+2. **Workers & Pages** (newer menus: **Compute → Workers & Pages**) → **Create** → **Create Worker** / **Start with Hello World** → name it `what-am-i-now-push` → **Deploy**.
+3. **Edit code** → delete everything → paste the whole of **`push-server/worker.js`** from this folder → **Deploy**.
+4. Open the Worker's address (`https://what-am-i-now-push.YOUR-NAME.workers.dev`). It shows two **push keys**. Keep the page open.
+5. Worker → **Settings → Variables and Secrets → Add**, four times:
+
+   | Name | Type | Value |
+   |---|---|---|
+   | `VAPID_PUBLIC_KEY` | Text | the public key from the page |
+   | `VAPID_PRIVATE_KEY` | Secret | the private key from the same page |
+   | `VAPID_SUBJECT` | Text | `mailto:prasant793001@gmail.com` (or another email you own) |
+   | `FIREBASE_SERVICE_ACCOUNT` | Secret | open the `.json` file from step A in Notepad, copy **all** of it, paste |
+
+6. **Settings → Trigger Events** (or **Triggers**) → **Add** → **Cron Triggers** → `* * * * *` (every minute) → **Add**.
+7. Reload the Worker's address. Every line turns ✓ (the "Phones" and "Roster plan" lines once the first phone turns notifications on; "Every-minute run" within 10 minutes). The page works as a health check at any time.
+
+As soon as the keys line shows ✓, the website shows **Turn on notifications** on the Home page.
+
+**C. Each person, once per phone**
+- **Android:** open the site in **Chrome** → Home → **Turn on notifications** → **Allow** → **Send a test**, then lock the phone. It arrives within a minute.
+- **iPhone (iOS 16.4 or newer):** Apple only allows notifications from sites added to the Home Screen. In **Safari** tap **Share** → **Add to Home Screen** → **Add**. Open **What Am I Now?** from the Home Screen (not Safari), tap your name, then **Turn on notifications** → **Allow** → **Send a test**.
+- Tapped **Don't Allow** by mistake? iPhone: Settings → Notifications → What Am I Now? → Allow. Android: Chrome ⋮ → Settings → Site settings → Notifications → allow the site.
+
+The website keeps a 14-day notification plan for everyone who turned notifications on, and any open copy of the site updates it within seconds when sick leave, picks or settings change. If nobody opens the site for 14 days, notifications pause until someone does. Notifications follow the phone's Focus / Do Not Disturb settings; on Samsung, Xiaomi, Oppo and Huawei set Chrome's battery use to **Unrestricted**.
 
 ## Website address
 
@@ -71,5 +120,7 @@ The bot sends from **+971 50 535 3447**. Colleagues join by tapping **Get alerts
    - **A Windows PC:** double-click `Start WhatsApp bot.bat`. It installs what it needs the first time and can start itself with Windows. The PC must be on (screen can be off) during shift hours.
    - **A free Oracle Cloud server** (always on, needs a card to verify): run `bash whatsapp-bot/setup-server.sh 971505353447` on it.
 3. **Link the number once:** the first start shows a pairing code. On the phone with WhatsApp for 0505353447: **Settings → Linked devices → Link a device → Link with phone number instead**, then type the code. That phone doesn't have to stay on, but should open WhatsApp at least every 2 weeks.
+
+**After updating the website, update the bot too** so its messages follow the same roster rules: on the Android phone run `~/update-bot.sh`; on a Windows PC, get the latest files into the bot's folder (Publish to GitHub.bat also downloads them), then close and restart `Start WhatsApp bot.bat`.
 
 It's not an official WhatsApp tool, so there's a small risk WhatsApp blocks the number. Colleagues messaging START first, and saving the number as a contact, keeps the risk low.
