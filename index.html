@@ -36,7 +36,8 @@
 [hidden]{display:none!important}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45;padding-bottom:env(safe-area-inset-bottom,0px)}
 button,input,select{font:inherit;color:inherit}
-button{cursor:pointer}
+button{cursor:pointer;touch-action:manipulation}
+[data-act]{-webkit-tap-highlight-color:transparent}
 :focus-visible{outline:2px solid var(--primary);outline-offset:2px}
 .wrap{max-width:1280px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 header.top{position:sticky;top:0;z-index:5;background:var(--surface);border-bottom:1px solid var(--line);padding-top:env(safe-area-inset-top,0px)}
@@ -135,6 +136,17 @@ tr.cur td{background:var(--now)}
 tr.cur td.time{color:var(--red);font-weight:700}
 tr.past td{opacity:.5}
 .empty{border:1px dashed var(--line);border-radius:16px;padding:28px;text-align:center;display:grid;gap:10px;justify-items:center;background:var(--surface)}
+/* managers, downloads, finished shifts */
+.mechip .mgr{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.who.mgrs{grid-template-columns:repeat(auto-fill,minmax(110px,1fr))}
+.who.mgrs button{padding:12px 6px 10px;font-size:15px;gap:4px}
+.team{display:grid;gap:6px}
+.tm{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:8px 12px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.tm.brk{background:var(--brk)}
+.tm b{display:block}.tm span.muted{display:block;font-size:12px}
+.tm .role{font-family:var(--f-display);font-weight:800;font-size:19px;text-align:right}
+.dlbar{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between}
+.donebar{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:baseline;padding:10px 14px;border:1px dashed var(--line);border-radius:12px}
 /* phone notifications */
 ol.steps{margin:0;padding-left:20px;display:grid;gap:6px}
 .shr{vertical-align:-3px}
@@ -144,7 +156,9 @@ ol.steps{margin:0;padding-left:20px;display:grid;gap:6px}
 @media (max-width:820px){.pickgrid{grid-template-columns:1fr}}
 .stage{display:grid;justify-items:center;gap:14px;position:relative}
 .wheelwrap{position:relative;width:min(340px,100%);aspect-ratio:1}
-.wheelwrap canvas{width:100%;height:100%;display:block}
+.wheelwrap canvas{width:100%;height:100%;display:block;will-change:transform;border-radius:50%}
+.wheelwrap[data-act]{cursor:pointer}
+.hub{position:absolute;left:50%;top:50%;width:18.5%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;background:var(--surface);border:4px solid var(--ink);display:grid;place-items:center;font-family:var(--f-display);font-weight:800;font-size:clamp(13px,4.2vw,19px);color:var(--ink);pointer-events:none}
 .pointer{position:absolute;left:50%;top:-6px;transform:translateX(-50%);width:0;height:0;border-left:14px solid transparent;border-right:14px solid transparent;border-top:24px solid var(--ink);filter:drop-shadow(0 2px 2px rgba(0,0,0,.25))}
 .result{border-radius:14px;padding:12px 14px;text-align:center;font-weight:600}
 .result.good{background:var(--mine);color:var(--mine-ink)}
@@ -201,9 +215,9 @@ footer{padding:0 0 24px;text-align:center;font-size:12px}
 
 <script type="module">
 import { DAYN, MON, DEFAULTS, sod, addDays, dkey, fromKey, monday, wkKey, parseHM, fmtT, fmtRange, fmtDay, fmtCd, hash, rotate, pkey, C, staff, setData, cleanAssign, match, buildPositions, dayRoster, allSlots, roleOf, myItems,
-  normName, isStandby, rolesAll, rulesFrom, satRule, weekOrder, wheelForbids } from "./roster-engine.js?v=1.2.0";
+  normName, isStandby, rolesAll, rulesFrom, satRule, weekOrder, wheelForbids } from "./roster-engine.js?v=1.3.0";
 
-const VERSION = '1.2.0';
+const VERSION = '1.3.0';
 const WA_DEFAULT = '971505353447'; // the WhatsApp bot's number (can be changed in Settings)
 const SEED_STAFF = ["Ahmed","Shahid","Ziko","Rayan","Hamada","Prashant","Mohammed","Ahoud","Mustafa"];
 
@@ -418,7 +432,7 @@ async function saveDevice(sub){
 }
 // Called straight from a tap: iPhone only shows the permission question when it comes from a tap.
 async function enablePush(){
-  if (!me || pushEnv() !== 'ok') { refreshPushCard(); return; }
+  if (!me || !staff().includes(me) || pushEnv() !== 'ok') { refreshPushCard(); return; }
   if (!pushReady()) return toast('Phone notifications are not switched on for the team yet. See README → Phone notifications.');
   let perm = Notification.permission;
   if (perm === 'default') { try { perm = await Notification.requestPermission(); } catch(e) { perm = Notification.permission; } }
@@ -443,7 +457,7 @@ async function disablePush(){
 function forgetDevice(){ if (push.sub && db && !demo) db.update('config/push-devices', { ['devices.'+devIdFor(push.sub.endpoint)]: DEL }).catch(() => {}); }
 // Keeps this phone's entry up to date (new person chosen, renewed push address) without asking again.
 async function syncPush(){
-  if (push.syncing || pushEnv() !== 'ok' || !pushReady() || !pushLoaded.dev || !signedIn()) return;
+  if (push.syncing || pushEnv() !== 'ok' || !pushReady() || !pushLoaded.dev || !staff().includes(me)) return;
   if (Notification.permission !== 'granted') { push.sub = null; return; }
   push.syncing = true;
   try {
@@ -517,12 +531,129 @@ async function writePlan(){
 /* ---------- toast ---------- */
 let toastT; function toast(m){ const t = $('#toast'); t.textContent = m; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => t.hidden = true, 3800); }
 
+/* ---------- download the week (PDF to keep and share, Excel/CSV for spreadsheets) ---------- */
+// The PDF maker (jsPDF, in vendor/) only loads when someone taps Download.
+const DAYS_LONG = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const MONTHS_LONG = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+let dl = { busy:'', file:null, wk:null }, pdfLoad = null;
+function loadScript(src){ return new Promise((res, rej) => { const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = () => { s.remove(); rej(new Error('Could not load the PDF maker. Check the internet connection and try again.')); }; document.head.appendChild(s); }); }
+function pdfMaker(){
+  if (!pdfLoad) pdfLoad = (async () => {
+    if (!(window.jspdf && window.jspdf.jsPDF)) await loadScript('vendor/jspdf.umd.min.js?v=4.2.1');
+    if (!window.jspdf.jsPDF.API.autoTable) await loadScript('vendor/jspdf.plugin.autotable.min.js?v=5.0.9');
+    return window.jspdf.jsPDF;
+  })().catch(e => { pdfLoad = null; throw e; });
+  return pdfLoad;
+}
+const weekOf = d => { const m = monday(d); return [...Array(7)].map((_,i) => addDays(m,i)); };
+const weekLabel = d => { const w = weekOf(d); return fmtDay(w[0])+' – '+fmtDay(w[6])+' '+w[6].getFullYear(); };
+const longDay = d => DAYS_LONG[d.getDay()]+' '+d.getDate()+' '+MONTHS_LONG[d.getMonth()]+' '+d.getFullYear();
+const pdfText = s => String(s).replace(/[–—]/g,'-').replace(/→/g,'>');
+function dayNotes(r){ return [r.absent && r.absent.length ? 'On leave: '+r.absent.join(', ') : '', r.dayOff && r.dayOff.length ? 'Off on Saturdays: '+r.dayOff.join(', ') : ''].filter(Boolean); }
+function saveBlob(blob, name){ const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 4000); }
+function canShareFile(f){ try { return !!(f && navigator.canShare && navigator.canShare({ files:[f] })); } catch(e) { return false; } }
+function viewDl(d){
+  const share = dl.file && dl.wk === wkKey(d) && canShareFile(dl.file);
+  return `<section class="card dlbar" data-dl data-week="${dkey(d)}"><div><h3>Download this week</h3><p class="muted" style="font-size:13px">${esc(weekLabel(d))} · all 7 days, every time slot. Keep it as a record or share it.</p></div>
+    <div class="row"><button class="btn primary" data-act="dl-pdf" data-week="${dkey(d)}" ${dl.busy?'disabled':''}>${dl.busy==='pdf'?'Making PDF…':'PDF'}</button><button class="btn" data-act="dl-csv" data-week="${dkey(d)}" ${dl.busy?'disabled':''}>Excel (CSV)</button>${share?'<button class="btn" data-act="dl-share">Share PDF</button>':''}</div></section>`;
+}
+function refreshDl(){ document.querySelectorAll('[data-dl]').forEach(el => el.outerHTML = viewDl(fromKey(el.dataset.week))); }
+async function downloadPdf(d){
+  if (dl.busy) return; dl.busy = 'pdf'; refreshDl();
+  try {
+    const jsPDF = await pdfMaker(), doc = new jsPDF({ orientation:'landscape', unit:'mm', format:'a4' });
+    const W = doc.internal.pageSize.getWidth(), H = doc.internal.pageSize.getHeight(), made = new Date(), days = weekOf(d);
+    days.forEach((day, k) => {
+      if (k) doc.addPage();
+      const r = dayRoster(day);
+      doc.setTextColor(20,32,29); doc.setFont('helvetica','bold'); doc.setFontSize(16); doc.text(longDay(day), 10, 14);
+      doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(91,106,102); doc.text(pdfText('What Am I Now? · team roster · week of '+weekLabel(day)), W-10, 14, { align:'right' });
+      let y = 21;
+      if (r.off || r.empty) { doc.setFontSize(12); doc.text(r.off ? 'Day off: no roster.' : 'No team set up.', 10, y+4); }
+      else {
+        doc.setFontSize(9.5); doc.text(pdfText(['On duty: '+r.order.length+' of '+r.full.length].concat(dayNotes(r)).join('  ·  ')), 10, y); y += 5;
+        for (const sh of r.shifts) {
+          if (!sh.slots.length) continue;
+          doc.setTextColor(20,32,29); doc.setFont('helvetica','bold'); doc.setFontSize(11);
+          doc.text(pdfText(sh.name+'   '+fmtRange(parseHM(sh.start), parseHM(sh.end))), 10, y+4); y += 6;
+          doc.autoTable({ startY:y, margin:{ left:10, right:10 }, theme:'grid',
+            head:[['Time'].concat(r.positions.map(p => p.name))],
+            body: sh.slots.map(sl => [pdfText(fmtRange(sl.start, sl.end))].concat(sl.cells)),
+            styles:{ font:'helvetica', fontSize:8.5, cellPadding:1.6, halign:'center', valign:'middle', lineColor:[217,225,223], lineWidth:.2, textColor:[20,32,29] },
+            headStyles:{ fillColor:[14,107,92], textColor:255, fontStyle:'bold' },
+            columnStyles:{ 0:{ halign:'left', cellWidth:30, fontStyle:'bold' } },
+            didParseCell: c => { if (c.column.index > 0 && r.positions[c.column.index-1] && r.positions[c.column.index-1].brk) c.cell.styles.fillColor = c.section === 'head' ? [138,120,82] : [242,238,228]; } });
+          y = doc.lastAutoTable.finalY + 7;
+        }
+      }
+      doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(120,130,128);
+      doc.text(pdfText('Made '+fmtDay(made)+' '+made.getFullYear()+', '+fmtT(made.getHours()*60+made.getMinutes())+(me ? ' by '+me : '')), 10, H-6);
+      doc.text('Page '+(k+1)+' of 7', W-10, H-6, { align:'right' });
+    });
+    const name = 'roster-week-'+wkKey(d)+'.pdf', blob = doc.output('blob');
+    dl.file = new File([blob], name, { type:'application/pdf' }); dl.wk = wkKey(d);
+    saveBlob(blob, name);
+    toast('Downloaded '+name+(canShareFile(dl.file) ? '. Tap Share PDF to send it.' : '.'));
+  } catch(e) { toast((e && e.message) || 'Could not make the PDF.'); }
+  dl.busy = ''; refreshDl();
+}
+function downloadCsv(d){
+  const rows = [['What Am I Now? team roster', 'Week of '+weekLabel(d)], []];
+  for (const day of weekOf(d)) {
+    const r = dayRoster(day); rows.push([longDay(day)]);
+    if (r.off || r.empty) rows.push(['Day off']);
+    else {
+      rows.push(['On duty: '+r.order.length+' of '+r.full.length].concat(dayNotes(r)));
+      for (const sh of r.shifts) { rows.push([sh.name, 'Time'].concat(r.positions.map(p => p.name))); for (const sl of sh.slots) rows.push(['', fmtRange(sl.start, sl.end)].concat(sl.cells)); }
+    }
+    rows.push([]);
+  }
+  const cell = c => { c = String(c ?? ''); return /[",\r\n]/.test(c) ? '"'+c.replace(/"/g,'""')+'"' : c; };
+  const name = 'roster-week-'+wkKey(d)+'.csv';
+  saveBlob(new Blob(['﻿'+rows.map(r => r.map(cell).join(',')).join('\r\n')], { type:'text/csv;charset=utf-8' }), name);
+  toast('Downloaded '+name+'. It opens in Excel or Google Sheets.');
+}
+async function sharePdf(){ if (!canShareFile(dl.file)) return; try { await navigator.share({ files:[dl.file], title:'Team roster' }); } catch(e) {} }
+
+/* ---------- managers (view only) ---------- */
+const observers = () => (cfg && Array.isArray(cfg.observers) ? cfg.observers : []).filter(n => n && !staff().includes(n));
+const isObs = () => !!me && !staff().includes(me) && observers().includes(me);
+const OBS_TABS = [['home','Team now'],['roster','Roster'],['settings','Settings']];
+// What everyone is doing right now, for managers.
+function viewTeam(){
+  const now = new Date(), day = sod(now), r = dayRoster(day), t = nowMin(now), t0 = day.getTime();
+  const hello = `<section class="hello">${avatar(me,56)}<div><h3>Manager · view only</h3><h2 style="font-size:24px">${esc(me)}</h2></div><div class="clock"><span data-clock>${clockText(now)}</span><div class="muted" style="font-size:13px;font-family:var(--f-body)">${fmtDay(now)}</div></div></section>`;
+  let body;
+  if (r.off || !r.shifts) body = `<div class="empty"><h2>Day off today</h2><p class="muted">No roster today.</p></div>`;
+  else {
+    const slots = allSlots(r), cur = slots.find(s => s.start <= t && t < s.end), nxt = slots.find(s => s.start > t), ref = cur || nxt, notes = dayNotes(r);
+    if (!ref) body = `<div class="empty"><h2>Finished for today</h2><p class="muted">The last role ended at ${fmtT(slots.length ? slots[slots.length-1].end : 0)}.</p></div>`;
+    else {
+      const later = cur ? slots.find(s => s.start >= cur.end) : null;
+      const head = cur ? `Right now · ${fmtRange(cur.start, cur.end)} · next change in <span class="mono" data-cd="${t0+cur.end*60000}"></span>` : `Starts at ${fmtT(nxt.start)} · in <span class="mono" data-cd="${t0+nxt.start*60000}"></span>`;
+      body = `<section class="card" style="display:grid;gap:10px"><h3>${head}</h3>
+        <div class="team">${r.positions.map((p, j) => { const who = ref.cells[j], nx = later ? roleOf(r, later, who) : null;
+          return `<div class="tm ${p.brk?'brk':''}">${avatar(who,36)}<div><b>${esc(who)}</b><span class="muted">${nx ? 'next: '+esc(nx.name)+' at '+fmtT(later.start) : ''}</span></div><span class="role">${esc(p.name)}</span></div>`; }).join('')}</div>
+        ${notes.length ? `<p class="muted" style="font-size:13px">${esc(notes.join(' · '))}</p>` : ''}</section>`;
+    }
+  }
+  return hello + body + `<div class="row"><button class="btn" data-act="tab" data-tab="roster">See full roster →</button></div>` + viewDl(day);
+}
+function addObserver(v){
+  v = String(v || '').trim(); if (!v) return;
+  if (staff().includes(v)) return toast(v+' is on the team already. Managers are people who are not on the roster.');
+  if (!observers().includes(v)) saveCfg({ observers: [...observers(), v] });
+  return v;
+}
+
 /* ---------- render ---------- */
 const TABS = [['home','Home'],['roster','Roster'],['spin','Spin'],['scratch','Scratch'],['settings','Settings']];
-function signedIn(){ return me && staff().includes(me); }
+function signedIn(){ return !!me && (staff().includes(me) || observers().includes(me)); }
+let showPast = false; // today's finished time slots are hidden until someone taps "Show finished"
 function render(force){
   renderHeader();
   if (scratch.lock) return; // don't rebuild the page while someone is scratching
+  if (spin.anim && tab === 'spin') return; // or while the wheel is turning
   const active = document.activeElement;
   if (!force && active && active.closest && active.closest('#view') && /INPUT|SELECT/.test(active.tagName)) return;
   const v = $('#view');
@@ -531,6 +662,7 @@ function render(force){
   if (tab === 'settings') v.innerHTML = viewSettings();
   else if (!staff().length) v.innerHTML = `<div class="empty"><h2>No team set up yet</h2><p class="muted">Start with the 9 agents from the current roster sheet, or add your own in Settings.</p><div class="row" style="justify-content:center"><button class="btn primary" data-act="seed">Set up with current team</button><button class="btn" data-act="tab" data-tab="settings">Open settings</button></div></div>`;
   else if (!signedIn()) v.innerHTML = viewWho();
+  else if (isObs() && (tab === 'spin' || tab === 'scratch')) { tab = 'home'; v.innerHTML = viewTeam(); }
   else if (tab === 'roster') v.innerHTML = viewRoster();
   else if (tab === 'spin') { v.innerHTML = viewSpin(); drawWheel(); }
   else if (tab === 'scratch') { v.innerHTML = viewScratch(); setupScratch(); }
@@ -542,14 +674,18 @@ function render(force){
 function renderHeader(){
   const ok = navigator.onLine && dbState === 'ready';
   $('#hdrdate').innerHTML = demo ? `${fmtDay(new Date())} · <span class="pill warn" style="padding:0 8px">Demo</span>` : `<span class="syncdot ${ok?'':'off'}"></span>${fmtDay(new Date())} · ${ok?'All changes saved':'Offline, will sync'}`;
-  $('#tabs').innerHTML = TABS.map(([k,l]) => `<button data-act="tab" data-tab="${k}" aria-pressed="${tab===k}">${l}</button>`).join('');
-  $('#mebox').innerHTML = signedIn() ? `<button class="mechip" data-act="tab" data-tab="settings" aria-label="You are ${esc(me)}. Open settings">${avatar(me,30)}<span>${esc(me)}</span></button>` : '';
+  $('#tabs').innerHTML = (isObs() ? OBS_TABS : TABS).map(([k,l]) => `<button data-act="tab" data-tab="${k}" aria-pressed="${tab===k}">${l}</button>`).join('');
+  $('#mebox').innerHTML = signedIn() ? `<button class="mechip" data-act="tab" data-tab="settings" aria-label="You are ${esc(me)}. Open settings">${avatar(me,30)}<span>${esc(me)}</span>${isObs()?'<small class="mgr">Manager</small>':''}</button>` : '';
 }
 
 /* ---------- who are you (asked once per device) ---------- */
 function viewWho(){
   return `<section class="card" style="display:grid;gap:6px"><h2 style="font-size:26px">Who are you?</h2><p class="muted">Tap your name once. This device will remember you. You can change it any time in Settings.</p></section>
-  <div class="who">${staff().map(n => `<button data-act="signin" data-name="${esc(n)}">${avatar(n,84)}<span>${esc(n)}</span></button>`).join('')}</div>`;
+  <div class="who">${staff().map(n => `<button data-act="signin" data-name="${esc(n)}">${avatar(n,84)}<span>${esc(n)}</span></button>`).join('')}</div>
+  <section class="card" style="display:grid;gap:10px"><h3>Managers · view only</h3>
+    <p class="muted" style="font-size:13px">See what everyone is doing right now and the full roster, and download it. Managers are not on the roster.</p>
+    ${observers().length ? `<div class="who mgrs">${observers().map(n => `<button data-act="signin" data-name="${esc(n)}">${avatar(n,56)}<span>${esc(n)}</span><small class="muted">Manager</small></button>`).join('')}</div>` : ''}
+    <form class="addrow" data-form="observer" data-signin="1"><input placeholder="Manager's name" autocomplete="off" maxlength="30" aria-label="Manager's name"><button class="btn">${observers().length ? 'Add manager' : "I'm a manager"}</button></form></section>`;
 }
 
 /* ---------- home: current role + next role ---------- */
@@ -564,6 +700,7 @@ function myRoles(now){
   return { r, items, cur, nxt, nxtDay, why, t0 };
 }
 function viewHome(){
+  if (isObs()) return viewTeam();
   const now = new Date(), m = myRoles(now), today = dkey(m.nxtDay) === dkey(now);
   const curCard = m.cur
     ? `<section class="rc cur"><h3>Current role</h3><div class="big">${esc(m.cur.role.name)}</div><div class="when">${fmtT(m.cur.sl.start)} – ${fmtT(m.cur.sl.end)}</div><div class="cd">Ends in <span class="mono" data-cd="${m.t0+m.cur.sl.end*60000}"></span></div></section>`
@@ -575,8 +712,10 @@ function viewHome(){
     nxtCard = `<section class="rc nxt"><h3>Next role</h3><div class="big">${esc(m.nxt.role.name)}</div><div class="when">${dayLbl}${fmtT(m.nxt.sl.start)} – ${fmtT(m.nxt.sl.end)}</div><div class="cd">Starts in <span class="mono" data-cd="${startMs}"></span></div></section>`;
   } else nxtCard = `<section class="rc nxt idle"><h3>Next role</h3><div class="big" style="font-size:clamp(26px,6vw,40px)">Nothing scheduled</div></section>`;
   const nx = m.items.find(i => !i.past && !i.cur);
+  const pastN = m.items.filter(i => i.past).length, shown = showPast ? m.items : m.items.filter(i => !i.past);
   const list = m.items.length ? `<section class="card" style="display:grid;gap:10px"><div class="row" style="justify-content:space-between"><h3>My day · ${fmtDay(now)}</h3><button class="btn sm" data-act="tab" data-tab="roster">See full roster →</button></div>
-    <div class="myday">${m.items.map(i => `<div class="it ${i.cur?'cur':''} ${i.past?'past':''} ${i===nx?'nx':''}"><span class="mono">${fmtRange(i.sl.start,i.sl.end)}</span><b>${esc(i.role.name)}${i.cur?' · NOW':''}</b></div>`).join('')}</div></section>`
+    ${pastN ? `<div class="row"><span class="muted" style="font-size:13px">${showPast?'Showing':'Hiding'} ${pastN} finished</span><button class="btn sm ghost" data-act="past">${showPast?'Hide finished':'Show finished'}</button></div>` : ''}
+    <div class="myday">${shown.length ? '' : '<p class="muted">All done for today.</p>'}${shown.map(i => `<div class="it ${i.cur?'cur':''} ${i.past?'past':''} ${i===nx?'nx':''}"><span class="mono">${fmtRange(i.sl.start,i.sl.end)}</span><b>${esc(i.role.name)}${i.cur?' · NOW':''}</b></div>`).join('')}</div></section>`
     : `<div class="row"><button class="btn" data-act="tab" data-tab="roster">See full roster →</button></div>`;
   return `<section class="hello">${avatar(me,56)}<div><h3>Hi</h3><h2 style="font-size:24px">${esc(me)}</h2></div><div class="clock"><span data-clock>${clockText(now)}</span><div class="muted" style="font-size:13px;font-family:var(--f-body)">${fmtDay(now)}</div></div></section>
     <div class="rolecards">${curCard}${nxtCard}</div>
@@ -599,20 +738,24 @@ function viewRoster(){
   const now = new Date(), r = dayRoster(viewDate), isToday = dkey(viewDate) === dkey(now), tnow = nowMin(now);
   const mon = monday(viewDate), wd = C().workDays || [];
   const strip = `<div class="weekbar"><button class="arrow" data-act="wk" data-dir="-1" aria-label="Previous week">‹</button><div class="days">${[...Array(7)].map((_,i) => { const d = addDays(mon,i); return `<button data-act="day" data-key="${dkey(d)}" aria-pressed="${dkey(d)===dkey(viewDate)}" class="${dkey(d)===dkey(now)?'istoday':''} ${wd.includes(d.getDay())?'':'off'}"><span>${DAYN[d.getDay()]}</span><b>${d.getDate()}</b></button>`; }).join('')}</div><button class="arrow" data-act="wk" data-dir="1" aria-label="Next week">›</button></div>`;
-  if (r.off) return strip + `<div class="empty"><h2>${fmtDay(viewDate)} is a day off</h2><p class="muted">Change working days in Settings.</p></div>`;
-  const att = `<section class="card" style="display:grid;gap:10px"><div class="row" style="justify-content:space-between"><h3>On duty · ${fmtDay(viewDate)} · ${r.order.length} of ${r.full.length}</h3><span class="muted" style="font-size:13px">Tap a name to mark sick leave</span></div>
-    <div class="chips">${r.full.map(n => { const out = r.absent.includes(n); return `<button class="chip ${out?'out':''}" data-act="absent" data-name="${esc(n)}" aria-pressed="${out}">${avatar(n,26)}<span class="nm">${esc(n)}</span>${out?'<span>· Leave</span>':''}</button>`; }).join('')}</div>
+  if (r.off) return strip + `<div class="empty"><h2>${fmtDay(viewDate)} is a day off</h2><p class="muted">Change working days in Settings.</p></div>` + viewDl(viewDate);
+  const att = `<section class="card" style="display:grid;gap:10px"><div class="row" style="justify-content:space-between"><h3>On duty · ${fmtDay(viewDate)} · ${r.order.length} of ${r.full.length}</h3><span class="muted" style="font-size:13px">${isObs()?'View only':'Tap a name to mark sick leave'}</span></div>
+    <div class="chips">${r.full.map(n => { const out = r.absent.includes(n), inner = `${avatar(n,26)}<span class="nm">${esc(n)}</span>${out?'<span>· Leave</span>':''}`; return isObs() ? `<span class="chip ${out?'out':''}">${inner}</span>` : `<button class="chip ${out?'out':''}" data-act="absent" data-name="${esc(n)}" aria-pressed="${out}">${inner}</button>`; }).join('')}</div>
     ${r.dayOff && r.dayOff.length ? `<p class="muted" style="font-size:13px">Off on Saturdays: ${r.dayOff.map(esc).join(', ')}</p>` : ''}</section>`;
+  const pastN = isToday ? r.shifts.reduce((n, sh) => n + sh.slots.filter(sl => sl.end <= tnow).length, 0) : 0;
+  const pastBar = pastN ? `<div class="row"><span class="muted" style="font-size:13px">${showPast?'Showing':'Hiding'} ${pastN} finished time slot${pastN>1?'s':''}</span><button class="btn sm" data-act="past">${showPast?'Hide finished':'Show finished'}</button></div>` : '';
   const tables = r.order.length ? r.shifts.map(sh => {
     const len = sh.slots.length ? sh.slots[0].end - sh.slots[0].start : 0;
+    const rows = isToday && !showPast ? sh.slots.filter(sl => sl.end > tnow) : sh.slots;
+    if (!rows.length) return `<section class="donebar"><b>${esc(sh.name)}</b><span class="mono muted">${fmtRange(parseHM(sh.start),parseHM(sh.end))}</span><span class="pill">Finished</span></section>`;
     return `<section><div class="shifthead"><h2>${esc(sh.name)}</h2><span class="mono muted">${fmtRange(parseHM(sh.start),parseHM(sh.end))}</span><span class="pill">${C().slotMode==='auto'?'~':''}${len} min per role</span></div>
     <div class="sheetwrap"><table class="sheet"><colgroup><col class="tcol">${r.positions.map(() => '<col>').join('')}</colgroup>
     <thead><tr><th>Time</th>${r.positions.map(p => `<th class="${p.brk?'brkh':''}">${esc(p.name)}</th>`).join('')}</tr></thead><tbody>
-    ${sh.slots.map(sl => { const cur = isToday && sl.start <= tnow && tnow < sl.end, past = isToday && sl.end <= tnow;
+    ${rows.map(sl => { const cur = isToday && sl.start <= tnow && tnow < sl.end, past = isToday && sl.end <= tnow;
       return `<tr class="${cur?'cur':''} ${past?'past':''}"><td class="time">${fmtT(sl.start,false)}<span class="end">${fmtT(sl.end,false)}</span></td>${sl.cells.map((n,j) => `<td class="${r.positions[j].brk?'brk':''}"><button class="cell ${n===me?'me':''} ${n===hl&&n!==me?'hl':''}" data-act="hl" data-name="${esc(n)}">${avatar(n,24)}<span>${esc(n)}</span></button></td>`).join('')}</tr>`; }).join('')}
     </tbody></table></div></section>`; }).join('') : `<div class="empty"><h2>Everyone is on leave</h2></div>`;
-  const tip = hl && hl !== me ? `<div class="row"><span class="pill warn">Highlighting ${esc(hl)}</span><button class="btn sm" data-act="hl" data-name="">Clear</button></div>` : `<p class="muted" style="font-size:13px">Your name is green. Tap any name to highlight that person.</p>`;
-  return strip + att + tip + tables;
+  const tip = hl && hl !== me ? `<div class="row"><span class="pill warn">Highlighting ${esc(hl)}</span><button class="btn sm" data-act="hl" data-name="">Clear</button></div>` : `<p class="muted" style="font-size:13px">${isObs()?'Tap any name to highlight that person.':'Your name is green. Tap any name to highlight that person.'}</p>`;
+  return strip + att + tip + pastBar + tables + viewDl(viewDate);
 }
 
 /* ---------- weekly role pick (shared by Spin and Scratch) ---------- */
@@ -657,6 +800,8 @@ function drawsCard(hideMine){
 }
 
 /* ---------- spin wheel ---------- */
+// The wheel picture is drawn once and spinning just rotates it, so it stays smooth on phones. It starts turning on the
+// first tap while the database picks the spot, and extra taps are ignored, so one tap is always enough.
 let spin = { anim:false, rot:0, land:null, forbidden:false, wk:null, done:false };
 function viewSpin(){
   const w = pickWindow(), assign = cleanAssign(wheels[w.next]), mineDone = me in assign && !(spin.anim && spin.wk === w.next);
@@ -665,8 +810,8 @@ function viewSpin(){
   else if (mineDone) result = `<div class="result good">Your spot for next week<b>${esc(spotName(assign[me]))}</b>Spot ${assign[me]+1} in Monday's first slot</div>`;
   const canSpin = w.open && !mineDone && !spin.anim && !readOnly;
   return pickHeader('Spin wheel', 'Each agent spins once to pick their starting spot. The order then rotates daily.') + `
-  <div class="pickgrid"><section class="card stage"><div class="wheelwrap"><canvas id="wheel" width="680" height="680" aria-label="Spinning wheel"></canvas><div class="pointer" aria-hidden="true"></div></div>
-    <button class="btn accent" data-act="spin" ${canSpin?'':'disabled'} style="font-size:17px;padding:12px 28px">${spin.anim?'Spinning…':mineDone?'You have picked':w.open?(spin.forbidden&&spin.wk===w.next?'Spin again':'Spin for '+esc(me)):'Closed'}</button>${result}</section>
+  <div class="pickgrid"><section class="card stage"><div class="wheelwrap" ${canSpin?'data-act="spin" role="button" aria-label="Spin the wheel"':''}><canvas id="wheel" width="680" height="680" aria-label="Spinning wheel"></canvas><div class="hub" aria-hidden="true">SPIN</div><div class="pointer" aria-hidden="true"></div></div>
+    <button class="btn accent" id="spinbtn" data-act="spin" ${canSpin?'':'disabled'} style="font-size:17px;padding:12px 28px">${spin.anim?'Spinning…':mineDone?'You have picked':w.open?(spin.forbidden&&spin.wk===w.next?'Spin again':'Spin for '+esc(me)):'Closed'}</button>${result}</section>
   ${drawsCard(spin.anim)}</div>`;
 }
 const SEGC = ['#0E6B5C','#2F5DA8','#B5473A','#6B4FA0','#C08A1E','#2E6F8E','#7A4E6E','#4C7A2E','#A55B2A','#3E4E56'];
@@ -674,8 +819,8 @@ function drawWheel(){
   const cv = $('#wheel'); if (!cv) return;
   const ctx = cv.getContext('2d'), S = cv.width, R = S/2-8, n = Math.max(1, staff().length);
   const w = pickWindow(), assign = cleanAssign(wheels[w.next]), owner = {}; for (const [p,i] of Object.entries(assign)) if (!(spin.anim && p === me)) owner[i] = p;
-  const labels = spotLabels(), seg = 2*Math.PI/n, css = getComputedStyle(document.documentElement);
-  ctx.clearRect(0,0,S,S); ctx.save(); ctx.translate(S/2,S/2); ctx.rotate(spin.rot);
+  const labels = spotLabels(), seg = 2*Math.PI/n;
+  ctx.clearRect(0,0,S,S); ctx.save(); ctx.translate(S/2,S/2);
   for (let i = 0; i < n; i++) {
     const a0 = -Math.PI/2 + i*seg; ctx.beginPath(); ctx.moveTo(0,0); ctx.arc(0,0,R,a0,a0+seg); ctx.closePath();
     ctx.fillStyle = owner[i] ? '#9AA6A2' : SEGC[i%SEGC.length]; ctx.fill(); ctx.strokeStyle = 'rgba(255,255,255,.85)'; ctx.lineWidth = 3; ctx.stroke();
@@ -684,20 +829,52 @@ function drawWheel(){
     if (owner[i]) { ctx.font = '600 '+Math.round(S/30)+'px Figtree, system-ui, sans-serif'; ctx.fillText(owner[i], R-18, 14); }
     ctx.restore();
   }
-  ctx.restore(); ctx.beginPath(); ctx.arc(S/2,S/2,S/11,0,2*Math.PI); ctx.fillStyle = css.getPropertyValue('--surface').trim() || '#fff'; ctx.fill(); ctx.lineWidth = 4; ctx.strokeStyle = css.getPropertyValue('--ink').trim() || '#000'; ctx.stroke();
-  ctx.fillStyle = css.getPropertyValue('--ink').trim() || '#000'; ctx.font = '800 '+Math.round(S/20)+'px "Bricolage Grotesque", system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('SPIN', S/2, S/2+1);
+  ctx.restore();
+  cv.style.transform = 'rotate('+spin.rot+'rad)';
 }
 async function doSpin(){
-  const w = pickWindow(); if (spin.anim || !w.open || !db) return; unlockAudio();
+  const w = pickWindow();
+  if (spin.anim || !db || !staff().includes(me)) return;
+  if (!w.open) return toast('The wheel opens '+fmtDay(new Date(w.openAt))+'.');
+  if (me in cleanAssign(wheels[w.next])) return toast('You have already picked for next week.');
+  if (readOnly) return toast('View only.');
   if (!demo && !navigator.onLine) return toast("Connect to the internet to spin, so two people can't land the same spot.");
-  let res; try { res = await claimSpot(); } catch(e) { return writeErr(e); }
-  if (res.already) return toast('You have already picked for next week.');
-  const n = staff().length, { land, forbidden } = res;
-  const seg = 2*Math.PI/n, start = spin.rot, want = -(land+.5)*seg, delta = ((want-start)%(2*Math.PI)+2*Math.PI)%(2*Math.PI) + 2*Math.PI*6 + (Math.random()-.5)*seg*.6;
-  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches, dur = reduce ? 300 : 4800, t0 = performance.now();
-  spin = { anim:true, rot:start, land, forbidden, wk:w.next, done:false }; render(true); let lastSeg = Math.floor(start/seg);
-  const step = t => { const k = Math.min(1,(t-t0)/dur), e = 1-Math.pow(1-k,4); spin.rot = start+delta*e; const sg = Math.floor(spin.rot/seg); if (sg !== lastSeg) { lastSeg = sg; clickTick(); } drawWheel();
-    if (k < 1) requestAnimationFrame(step); else { spin.anim = false; spin.done = true; spin.rot = spin.rot%(2*Math.PI); if (audioReady()) { forbidden ? tone(220,actx.currentTime,.4,.2,'sawtooth') : chime(); } render(true); } };
+  unlockAudio();
+  const n = staff().length, seg = 2*Math.PI/n, TAU = 2*Math.PI;
+  spin = { anim:true, rot:spin.rot, land:null, forbidden:false, wk:w.next, done:false };
+  const btn = $('#spinbtn'); if (btn) { btn.disabled = true; btn.textContent = 'Spinning…'; }
+  let res = null, failed = null;
+  claimSpot().then(r => { res = r; }, e => { failed = e; });
+  setTimeout(() => { if (!res && !failed) failed = { slow: true }; }, 15000);
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches, VMAX = TAU*1.6/1000; // 1.6 turns a second
+  let last = performance.now(), v = 0, started = last, lastSeg = Math.floor(spin.rot/seg), stop = null;
+  const show = () => { const c = $('#wheel'); if (c) c.style.transform = 'rotate('+spin.rot+'rad)'; const sg = Math.floor(spin.rot/seg); if (sg !== lastSeg) { lastSeg = sg; clickTick(); } };
+  const step = now => {
+    const dt = Math.min(64, now - last); last = now;
+    if (!stop) {
+      if (!reduce) { v = Math.min(VMAX, v + VMAX*dt/350); spin.rot += v*dt; }
+      if ((res || failed) && (reduce || now - started > 900)) {
+        if (failed || res.already) stop = { from: spin.rot, delta: reduce ? 0 : v*600/4, dur: reduce ? 1 : 600, at: now };
+        else {
+          const want = -(res.land + .5)*seg + (reduce ? 0 : (Math.random()-.5)*seg*.6);
+          let delta = ((want - spin.rot) % TAU + TAU) % TAU;
+          if (!reduce) while (delta < v*2600/4) delta += TAU;
+          stop = { from: spin.rot, delta, dur: reduce ? 300 : Math.max(2600, Math.min(5200, 4*delta/Math.max(v,1e-4))), at: now };
+        }
+      }
+    } else {
+      const k = Math.min(1, (now - stop.at)/stop.dur);
+      spin.rot = stop.from + stop.delta*(1 - Math.pow(1-k, 4));
+      if (k >= 1) {
+        spin.anim = false; spin.rot = spin.rot % TAU; show();
+        if (failed) { failed.slow ? toast('The connection is slow. Check the internet and try again.') : writeErr(failed); }
+        else if (res.already) toast('You have already picked for next week.');
+        else { spin.land = res.land; spin.forbidden = res.forbidden; spin.done = true; if (audioReady()) { res.forbidden ? tone(220,actx.currentTime,.4,.2,'sawtooth') : chime(); } }
+        render(true); return;
+      }
+    }
+    show(); requestAnimationFrame(step);
+  };
   requestAnimationFrame(step);
 }
 
@@ -760,9 +937,16 @@ function setupScratch(){
 }
 
 /* ---------- settings ---------- */
+function viewObsSettings(){
+  return `<section><h2>Settings</h2></section><div class="sgrid">
+  <section class="card" style="display:grid;gap:12px"><h3>You on this device</h3><div class="row">${avatar(me,56)}<div><b style="font-size:18px">${esc(me)}</b><p class="muted" style="font-size:13px">Manager · view only. Remembered on this device.</p></div></div>
+    <div class="row"><button class="btn" data-act="signout">Change user</button><button class="btn ghost" data-act="copy-link">Copy my personal link</button></div></section>
+  <section class="card" style="display:grid;gap:8px"><h3>About</h3><p><b>What Am I Now?</b> v${VERSION}</p><p class="muted" style="font-size:13px">Managers can see everything but can't change the roster. Team settings are changed by the agents.</p></section></div>`;
+}
 function viewSettings(){
+  if (isObs()) return viewObsSettings();
   const c = C(), thisWk = wkKey(new Date()), order = staff().length ? weekOrder(thisWk) : [], pos = buildPositions(order.length), w = pickWindow(), roles = rolesAll();
-  const rf = rulesFrom(), rfTxt = rf > dkey(new Date()) ? ' (from '+fmtDay(fromKey(rf))+')' : '';
+  const rf = rulesFrom();
   let satStart = fromKey(rf); while (satStart.getDay() !== 6) satStart = addDays(satStart, 1); const satTxt = dkey(satStart) > dkey(new Date()) ? ' (starts '+fmtDay(satStart)+')' : '';
   const sr = satRule(), offRoles = new Set(sr.roles.map(normName)), satRoles = roles.filter(r => !offRoles.has(normName(r.name))), satN = staff().length - sr.staff.length;
   let satMsg;
@@ -787,9 +971,9 @@ function viewSettings(){
       <button class="btn" data-act="wake" aria-pressed="${!!wakeLock}">${wakeLock?'Screen stays on ✓':'Keep screen on'}</button></div>
     <p class="muted" style="font-size:13px">Keep this page open (on a till, or your phone with the screen on). It chimes ${+c.leadMin||3} minutes before each change.</p></section>
 
-  ${signedIn() ? viewPush() : ''}
+  ${staff().includes(me) ? viewPush() : ''}
 
-  <section class="card" style="display:grid;gap:10px"><h3>Team · this week's Monday order</h3><p class="muted" style="font-size:13px">Row 1 opens Monday as ${esc((pos[0]||{}).name||'Greeter')}, row 2 as ${esc((pos[1]||{}).name||'SAS1')}, and so on. Each new day carries on along the same order (Greeter → Break → last TAB …), but yesterday's Greeter skips Break and starts on the last TAB, and everyone else moves with them${esc(rfTxt)}.</p>
+  <section class="card" style="display:grid;gap:10px"><h3>Team · this week's Monday order</h3><p class="muted" style="font-size:13px">Row 1 opens Monday as ${esc((pos[0]||{}).name||'Greeter')}, row 2 as ${esc((pos[1]||{}).name||'SAS1')}, and so on. Each day the order moves up by one, so yesterday's Greeter starts the day on Break.</p>
     <div class="list">${order.map((n,i) => `<div class="li"><span class="mono muted" style="width:22px">${i+1}</span>${avatar(n,30)}<span class="grow">${esc(n)} <span class="muted" style="font-weight:500">· ${esc((pos[i]||{}).name||'')}</span></span>
       <button class="icon" data-act="staff-move" data-i="${i}" data-d="-1" aria-label="Move ${esc(n)} up" ${i?'':'disabled'}>↑</button><button class="icon" data-act="staff-move" data-i="${i}" data-d="1" aria-label="Move ${esc(n)} down" ${i<order.length-1?'':'disabled'}>↓</button><button class="icon" data-act="staff-del" data-i="${i}" aria-label="Remove ${esc(n)}">✕</button></div>`).join('') || '<p class="muted">No agents yet.</p>'}</div>
     <form class="addrow" data-form="staff"><input id="newstaff" placeholder="Add agent name" autocomplete="off" maxlength="30"><button class="btn primary">Add</button></form>
@@ -799,6 +983,10 @@ function viewSettings(){
     <div class="list">${roles.map((r,i) => `<div class="li"><span class="grow">${esc(r.name)}</span><label class="row" style="gap:4px;font-size:13px"><input type="checkbox" data-set="role-brk" data-i="${i}" ${r.brk?'checked':''}> Break</label>
       <button class="icon" data-act="role-move" data-i="${i}" data-d="-1" aria-label="Move up" ${i?'':'disabled'}>↑</button><button class="icon" data-act="role-move" data-i="${i}" data-d="1" aria-label="Move down" ${i<roles.length-1?'':'disabled'}>↓</button><button class="icon" data-act="role-del" data-i="${i}" aria-label="Remove ${esc(r.name)}">✕</button></div>`).join('')}</div>
     <form class="addrow" data-form="role"><input id="newrole" placeholder="Add role, e.g. SAS4" autocomplete="off" maxlength="20"><button class="btn primary">Add</button></form></section>
+
+  <section class="card" style="display:grid;gap:10px"><h3>Managers · view only</h3><p class="muted" style="font-size:13px">Managers see what everyone is doing right now and the full roster, and can download it. They are not on the roster and can't change it.</p>
+    <div class="list">${observers().map(n => `<div class="li">${avatar(n,30)}<span class="grow">${esc(n)}</span><button class="icon" data-act="obs-del" data-name="${esc(n)}" aria-label="Remove ${esc(n)}">✕</button></div>`).join('') || '<p class="muted">No managers yet.</p>'}</div>
+    <form class="addrow" data-form="observer"><input placeholder="Manager's name" autocomplete="off" maxlength="30" aria-label="Manager's name"><button class="btn primary">Add</button></form></section>
 
   <section class="card" style="display:grid;gap:12px"><h3>Saturday</h3>
     <label style="display:flex;gap:10px;align-items:flex-start;font-weight:600"><input type="checkbox" data-set="sat-on" ${sr.on?'checked':''} style="margin-top:4px;flex:none"> Use a smaller team on Saturdays${esc(satTxt)}</label>
@@ -851,6 +1039,7 @@ document.addEventListener('click', e => {
   switch (a) {
     case 'tab': tab = el.dataset.tab; LS.set('dutyRoster.tab', tab); if (tab === 'roster') viewDate = sod(new Date()); scratch = { lock:false, res:null, busy:false, revealed:false }; render(true); window.scrollTo(0,0); break;
     case 'signin': me = el.dataset.name; rememberMe(me); setUrlMe(me); hl = null; unlockAudio(); tab = 'home'; LS.set('dutyRoster.tab', tab); render(true); toast('Hi '+me+'! This device will remember you.');
+      if (!staff().includes(me)) break;
       if (pushReady() && pushEnv() === 'ok' && Notification.permission !== 'denied') enablePush();
       else try { if (window.Notification && Notification.permission === 'default') Notification.requestPermission(); } catch(err) {} break;
     case 'signout': forgetDevice(); me = null; rememberMe(null); setUrlMe(null); hl = null; tab = 'home'; render(true); break;
@@ -862,9 +1051,14 @@ document.addEventListener('click', e => {
     case 'banner-close': bannerData = null; clearInterval(alarmT); renderBanner(); break;
     case 'day': viewDate = fromKey(el.dataset.key); render(true); break;
     case 'wk': viewDate = addDays(viewDate, 7 * +el.dataset.dir); render(true); break;
-    case 'absent': if (readOnly) return toast('View only.'); toggleAbsent(el.dataset.name); break;
+    case 'absent': if (readOnly || isObs()) return toast('View only.'); toggleAbsent(el.dataset.name); break;
     case 'hl': hl = el.dataset.name && el.dataset.name !== hl ? el.dataset.name : null; render(true); break;
     case 'spin': doSpin(); break;
+    case 'past': showPast = !showPast; render(true); break;
+    case 'dl-pdf': downloadPdf(el.dataset.week ? fromKey(el.dataset.week) : viewDate); break;
+    case 'dl-csv': downloadCsv(el.dataset.week ? fromKey(el.dataset.week) : viewDate); break;
+    case 'dl-share': sharePdf(); break;
+    case 'obs-del': { const n = el.dataset.name; if (el.dataset.confirm !== '1') { el.dataset.confirm = '1'; el.textContent = '?'; toast('Tap ✕ again to remove '+n+'.'); return; } saveCfg({ observers: observers().filter(x => x !== n) }); break; }
     case 'push-on': enablePush(); break;
     case 'push-off': disablePush(); break;
     case 'push-test': testPush(); break;
@@ -886,6 +1080,8 @@ document.addEventListener('change', e => { if (e.target.dataset && e.target.data
 document.addEventListener('submit', e => {
   e.preventDefault(); const f = e.target.dataset.form;
   if (f === 'staff') { const v = $('#newstaff').value.trim(); if (!v) return; if (staff().includes(v)) return toast(v+' is already on the team.'); setOrder([...(staff().length ? weekOrder(wkKey(new Date())) : []), v]); }
+  if (f === 'observer') { const inp = e.target.querySelector('input'), n = addObserver(inp && inp.value); if (!n) return;
+    if (e.target.dataset.signin) { me = n; rememberMe(me); setUrlMe(me); hl = null; tab = 'home'; LS.set('dutyRoster.tab', tab); render(true); toast('Hi '+me+'! You can see the team roster here.'); } else toast(n+' added as a manager.'); }
   if (f === 'role') { const v = $('#newrole').value.trim(); if (!v) return; if (isStandby({ name: v })) return toast('Standby is not used. Add a working role instead.'); const r = rolesAll(), bi = r.findIndex(x => x.brk); r.splice(bi < 0 ? r.length : bi, 0, { name: v }); saveCfg({ roles: r }); }
 });
 
@@ -902,7 +1098,7 @@ function tickNow(){
   const t = nowMin(now); let sig = dkey(now)+'|';
   if (cfg && staff().length) { const sl = allSlots(dayRoster(sod(now))); sig += sl.filter(s => s.start <= t).length+'|'+sl.filter(s => s.end <= t).length; }
   if (cfg) sig += '|'+pickWindow().open;
-  if (sig !== lastSig) { const first = !lastSig; lastSig = sig; if (!first && tab !== 'settings' && !spin.anim && !scratch.lock) render(); }
+  if (sig !== lastSig) { const first = !lastSig; if (lastSig && lastSig.slice(0,10) !== sig.slice(0,10)) showPast = false; lastSig = sig; if (!first && tab !== 'settings' && !spin.anim && !scratch.lock) render(); }
   updateLive();
 }
 setInterval(tickNow, 1000);

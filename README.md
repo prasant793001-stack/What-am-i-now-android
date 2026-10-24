@@ -1,10 +1,12 @@
-# What Am I Now? v1.2.0
+# What Am I Now? v1.3.0
 
 A simple team roster website. Open it and you see straight away:
 
 - **Current role:** what you're doing now, from what time to what time
 - **Next role:** what's next, from what time to what time
-- **Roster:** the whole day's sheet. It always fits the screen, with no scrolling sideways.
+- **Roster:** the whole day's sheet. It always fits the screen, with no scrolling sideways. Today's finished time slots drop off the top as the day goes on (tap **Show finished** to see them again).
+- **Download:** the whole week (7 days, every time slot) as a **PDF** to keep or share, or as **Excel (CSV)**. On the Roster page, under the sheet.
+- **Managers:** a view-only profile that shows what everyone is doing right now, the full roster and the download, without being on the roster
 - **Spin** or **Scratch:** pick your starting role for next week. Once picked, it's fixed.
 - **Settings:** change user, team, roles, shifts, alerts
 - **WhatsApp alerts:** each person gets *their own* role on WhatsApp a few minutes before every change
@@ -24,16 +26,20 @@ A simple team roster website. Open it and you see straight away:
 | `Publish to GitHub.bat` | **Double-click to upload all your changes to GitHub** |
 | `sw.js`, `manifest.webmanifest`, `icon-*.png`, `badge-96.png` | "Add to Home Screen", pop-up alerts and phone notifications |
 | `push-server/worker.js` | The free notification server for phone notifications (paste into Cloudflare, see below) |
+| `vendor/` | The PDF maker used by Download (jsPDF, MIT licence). Loads only when someone taps PDF |
 
 ## How the roster rotates
 
-- **During a shift** everyone moves one role per slot: Greeter → Break → the last TAB (TAB3, or TAB4 when it's in use) → TAB2 → … → SAS1 → Greeter.
-- **Next day** carries on along that same order, but nobody starts a shift on Break straight after opening as Greeter. Yesterday's Greeter starts on the last TAB that day (TAB3, TAB4 or TAB2, whichever is last) and everyone else moves along with them. Example: Prashant is Greeter on day 1, so on day 2 he starts on TAB3, not Break.
-- If sick leave would still put yesterday's Greeter on Break in the first slot, they swap with whoever has the last working role.
+- **During a shift** everyone moves one role per slot: Greeter → Break → the last TAB → TAB2 → … → SAS1 → Greeter.
+- **Next day** the order moves up by one, so it carries straight on: yesterday's Greeter starts the day on Break.
 - **Saturday** (Settings → Saturday): by default Hamada and Ahoud are off, and TAB3, SAS3 and Break are not used. Change who is off and which roles are dropped there. With 7 people and 7 roles (Greeter, SAS1, SAS2, GA, TAB1, TAB2, TAB4) everyone has a role all day. If there are more people than roles, the extra person sits out each slot and shows as Break, so add TAB4 under Roles if it isn't there.
 - **Standby is never used**, in the roster, Spin or Scratch. If there are more people than roles, the extras show as Break.
-- **Spin / Scratch:** the person who is Greeter on the last day before the new week can't get the Break spot for Monday.
-- These rules start the day after v1.2.0 is first opened, so a shift that is already running never changes halfway through. Settings shows the start date.
+
+## Managers (view only)
+
+On the "Who are you?" screen a manager types their name and taps **I'm a manager** (or picks their name once it's listed). Agents can also add or remove managers in **Settings → Managers**.
+
+Managers get three pages: **Team now** (everyone's role right now and their next one, updating by itself), **Roster** (the full sheet for any day), and **Settings** (change user). They can download the week, but can't mark sick leave, spin, scratch or change team settings. They don't count as part of the roster.
 
 ## How the site remembers things
 

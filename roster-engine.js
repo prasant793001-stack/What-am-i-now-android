@@ -30,13 +30,11 @@ const staff=()=>(S.cfg&&Array.isArray(S.cfg.staff))?S.cfg.staff:[];
 function setData(cfg,absences,wheels){S.cfg=cfg||null;S.absences=absences||{};S.wheels=wheels||{};cache=new Map()}
 /* ---------- roster engine ---------- */
 // How a day is built:
-//  * Each week has a cyclic queue of the whole team (weekQueue). In a day's first slot the roles go out in queue order
-//    from that day's starting person; every later slot moves everyone one step: Greeter → Break → last TAB → … → SAS1.
-//  * Next day: everyone carries on along that same sequence, but nobody can start a shift on Break straight after opening
-//    as Greeter. Yesterday's Greeter starts on the last working role (TAB3, or TAB4 / TAB2 when that is the last one that
-//    day) and everyone else follows in the same order.
+//  * Each week has a queue of the whole team (weekQueue). In a day's first slot the roles go out in queue order; every
+//    later slot moves everyone one step: Greeter → Break → last TAB → … → SAS1 → Greeter.
+//  * Next day: the queue moves up by one, so the order carries straight on (yesterday's Greeter starts on Break).
 //  * Saturday: the people and roles picked in Settings → Saturday are taken out for that day (no Standby is ever added).
-//  * Days before config.rulesFrom keep the old one-step rotation, so a day that is already running never changes mid-shift.
+//    Saturday changes start from config.rulesFrom, so a day that is already running never changes mid-shift.
 const normName=s=>String(s||'').toLowerCase().replace(/[^a-z0-9]/g,'');
 const isStandby=r=>/stand\s*-?\s*by/i.test(String((r&&r.name)||''));
 function rolesAll(){return (C().roles||[]).filter(r=>r&&r.name&&!isStandby(r)).map(r=>({name:String(r.name),brk:!!r.brk}))}
@@ -67,17 +65,13 @@ function weekQueue(wk){
   cache.set(ck,res);return res;
 }
 function match(people,free,bad){const res=[],used=new Set();const go=k=>{if(k===people.length)return true;for(const i of free){if(used.has(i)||bad(people[k],i))continue;used.add(i);res[k]=i;if(go(k+1))return true;used.delete(i)}return false};return go(0)?res.slice():null}
-// Who may not land where on next week's wheel: last week's spot 1 and 2 openers can't repeat them, and the person who is
-// Greeter on the last working day before that Monday can't start Monday on Break.
+// Who may not land where on next week's pick: last week's spot 1 and 2 openers can't repeat them.
 function wheelForbids(wk){
   const ck='w'+wk;if(cache.has(ck))return cache.get(ck);
-  const days=weekDays(dkey(addDays(fromKey(wk),-7))),same={},brk={},all={};
+  const prev=weekQueue(dkey(addDays(fromKey(wk),-7))),same={},all={};
   const add=(m,p,i)=>{if(p)(m[p]=m[p]||new Set()).add(i)};
-  const mon=days.length?dayFull(days[0]):[];add(same,mon[0],0);add(same,mon[1],1);
-  let lastG=null;const first=weekDays(wk)[0];
-  if(days.length&&first&&isNew(first)){lastG=dayFull(days[days.length-1])[0]||null;buildPositions(staff().length).forEach((p,i)=>{if(p.brk)add(brk,lastG,i)})}
-  for(const m of [same,brk])for(const [p,set] of Object.entries(m))for(const i of set)add(all,p,i);
-  const res={same,brk,all,mon0:mon[0]||null,mon1:mon[1]||null,lastG,lastDay:days[days.length-1]||null};cache.set(ck,res);return res;
+  add(same,prev[0],0);add(same,prev[1],1);add(all,prev[0],0);add(all,prev[1],1);
+  const res={same,brk:{},all,mon0:prev[0]||null,mon1:prev[1]||null,lastG:null,lastDay:null};cache.set(ck,res);return res;
 }
 function wheelOrder(wk){
   const s=staff(),n=s.length,a=cleanAssign(S.wheels[wk]),forb=wheelForbids(wk).all,order=Array(n).fill(null);
@@ -94,32 +88,10 @@ function buildPositions(n,roles){
   return pos;
 }
 function lastWorking(pos){for(let j=pos.length-1;j>=1;j--)if(!pos[j].brk)return j;return -1}
-// Old rotation (days before rulesFrom): the week's queue moves up one place per working day.
+// Daily rotation: the week's queue moves up one place per working day.
 function oldFull(d){const wk=wkKey(d);let idx=0;for(const x of weekDays(wk)){if(dkey(x)>=dkey(d))break;idx++}return rotate(weekQueue(wk),idx)}
-function isReset(d){const wk=wkKey(d),f=weekDays(wk)[0];if(!f||dkey(f)!==dkey(d))return false;const anchor=C().anchorWeek||wkKey(new Date());return wk<=anchor||hasWheel(wk)}
-// Next day from the day before: yesterday's Greeter lands on today's last working role; the rest follow in queue order.
-function stepFull(prev,d){
-  const sch=new Set(scheduled(d)),Q=weekQueue(wkKey(d)),cyc=Q.filter(x=>sch.has(x)),n=cyc.length;if(!n)return[];
-  let a=prev[0];
-  if(!sch.has(a)){const i=Q.indexOf(a);a=null;if(i>=0)for(let k=1;k<=Q.length;k++){const x=Q[(i+k)%Q.length];if(sch.has(x)){a=x;break}}}
-  if(a==null)return cyc;
-  const pos=buildPositions(n,dayRoles(d)),lw=lastWorking(pos),t=lw<0?n-1:lw;
-  return rotate(cyc,cyc.indexOf(a)-t);
-}
 // Everyone scheduled for a working day, in first-slot order (before sick leave is taken out).
-function dayFull(d){
-  const k='f'+dkey(d);if(cache.has(k))return cache.get(k);
-  const todo=[];let x=d,base;
-  for(let guard=0;;guard++){
-    const kk='f'+dkey(x);if(cache.has(kk)){base=cache.get(kk);break}
-    if(!isNew(x)){base=oldFull(x);cache.set(kk,base);break}
-    const p=prevWorkDay(x);
-    if(!p||isReset(x)||guard>4000){const sch=new Set(scheduled(x));base=weekQueue(wkKey(x)).filter(q=>sch.has(q));cache.set(kk,base);break}
-    todo.push(x);x=p;
-  }
-  while(todo.length){const y=todo.pop();base=stepFull(base,y);cache.set('f'+dkey(y),base)}
-  return cache.get(k);
-}
+function dayFull(d){const k='f'+dkey(d);if(cache.has(k))return cache.get(k);const off=dayOffStaff(d),res=oldFull(d).filter(x=>!off.includes(x));cache.set(k,res);return res}
 // The week's Monday order including people who are off that day (Settings list).
 function weekOrder(wk){const days=weekDays(wk),Q=weekQueue(wk);if(!days.length)return Q;const f=dayFull(days[0]);const i=f.length?Q.indexOf(f[0]):0;return rotate(Q,Math.max(0,i))}
 function buildSlots(s,e,n,mode){
@@ -136,9 +108,6 @@ function dayRoster(date){
     const full=dayFull(date),dayOff=dayOffStaff(date);
     const absent=((S.absences[key]||{}).names||[]).filter(x=>full.includes(x));
     const order=full.filter(x=>!absent.includes(x)),positions=buildPositions(order.length,dayRoles(date));
-    // Sick leave can push yesterday's Greeter onto Break in the first slot: swap them with whoever has the last working role.
-    if(isNew(date)&&order.length>1){const pd=prevWorkDay(date);if(pd){const pa=(S.absences[dkey(pd)]||{}).names||[],y=dayFull(pd).find(x=>!pa.includes(x)),iy=order.indexOf(y);
-      if(iy>0&&positions[iy].brk){const t=lastWorking(positions);if(t>0)[order[iy],order[t]]=[order[t],order[iy]]}}}
     const shifts=(c.shifts||[]).map(sh=>({...sh,slots:buildSlots(parseHM(sh.start),parseHM(sh.end),order.length,c.slotMode).map((sl,i)=>({...sl,cells:positions.map((_,j)=>order[(i+j)%order.length])}))}));
     res={key,full,order,absent,dayOff,positions,shifts};
   }
