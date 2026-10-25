@@ -1,4 +1,4 @@
-# What Am I Now? v1.4.0
+# What Am I Now? v1.5.0
 
 Shown to the team as **BC Al Ain Routine** (black and purple BC logo; "BC Routine" on phone home screens). The repository, website address and Firebase project keep their old names.
 
@@ -6,13 +6,14 @@ A simple team roster website. Open it and you see straight away:
 
 - **Current role:** what you're doing now, from what time to what time
 - **Next role:** what's next, from what time to what time
+- **On the floor now:** four boxes on Home showing who is Greeter, Greeter Assistant (GA), SAS 1 and TAB 1 right now, until when, and who's next
 - **Routine** (the Roster page): the whole day's sheet. It always fits the screen, with no scrolling sideways. Today's finished time slots drop off the top as the day goes on (tap **Show finished** to see them again).
-- **Download:** the whole week (7 days, every time slot) as a **PDF** to keep or share, or as **Excel (CSV)**. On the Roster page, under the sheet.
+- **Download:** the whole week (7 days, every time slot) as a **PDF** to keep or share, or as **Excel (CSV)**. On the Routine page, under the sheet.
 - **Managers:** a view-only profile that shows what everyone is doing right now, the full roster and the download, without being on the roster
 - **Spin** or **Scratch:** pick your starting role for next week. Once picked, it's fixed.
-- **My profile:** tap your picture at the top to change your photo, write a short line about yourself, pick one of 10 theme colours and light/dark, or change user. Tap **Save**.
-- **Settings:** your device and alerts for everyone; team, roles, shifts, Saturday and managers for the **admin** only. Team changes wait until the admin taps **Save changes** at the bottom.
-- **WhatsApp alerts:** each person gets *their own* role on WhatsApp a few minutes before every change
+- **My profile:** tap your picture at the top to change your photo, write a short line about yourself, pick a style or colour for the whole site, or change user. Tap **Save**.
+- **Settings:** your device and alerts for everyone; team, roles, shifts, Saturday, managers, photos and **Push to GitHub** for the **admin** only. Every change shows straight away as a preview; one **Save changes** at the bottom sends it all to the team.
+- **WhatsApp alerts:** each person gets *their own* role on WhatsApp a few minutes before every change (join from Settings → Alerts)
 - **Phone notifications:** a notification on Android or iPhone a few minutes before every change, even with the site closed (one-time setup below)
 
 ## Files
@@ -43,18 +44,22 @@ A simple team roster website. Open it and you see straight away:
 Team settings (team order, roles, managers, Saturday, shifts, alert time, WhatsApp number, weekly pick) can only be changed by the admin.
 
 - **Unlock:** tap your profile picture at the top **5 times quickly**, then enter the admin password (capitals and spaces don't matter). The password isn't written in this README because the repository is public. The device stays unlocked until you tap **Lock admin** in Settings.
-- **Change and save:** edit anything in Settings. A bar shows "Unsaved team changes"; nobody else sees them (and phone notifications don't use them) until you tap **Save changes** at the bottom, or **Discard** to throw them away.
+- **Change, check, then save once:** everything you add, remove or move in Settings shows straight away on your device, everywhere in the site (new managers, photos, roles, the routine), so you can check it looks right. A bar says "Preview · not saved yet". Nobody else sees the changes, and phone notifications don't use them, until you tap **Save changes** at the bottom. **Discard** throws them all away.
+- **Photos for everyone:** in Settings → Team (and Managers), tap a person's picture to choose their photo. It shows straight away and is saved with **Save changes**.
 - This is a light lock to stop casual changes. It isn't strong security: the roster database is still open to anyone with the website.
 
 ## Profiles and themes
 
-Tap your picture (top right, or on Home) once. You can add or change your **photo** (it's cropped square and saved for the team), write **About me** (up to 120 characters, shown on Home and the "Who are you?" screen), pick a **theme colour** (BC Purple, Teal, Ocean, Lagoon, Emerald, Gold, Sunset, Crimson, Rose, Graphite) and **Light / Dark / Auto**, or **Change user**. The theme previews straight away; **Save** keeps it, **Cancel** goes back. Your theme follows you to any device where you choose your name.
+Tap your picture (top right, or on Home) once. You can add or change your **photo** (it's cropped square and saved for the team), write **About me** (up to 120 characters, shown on Home and the "Who are you?" screen), choose how the whole site looks for you, or **Change user**. The look previews straight away; **Save** keeps it, **Cancel** goes back. It follows you to any device where you choose your name, and only changes the site for you.
+
+- **Styles** (a complete look with its own background): **Boys** (navy and electric blue), **Ladies** (blush and plum), **Managers** (navy and gold; managers start with this), **Fun** (bright and playful), **Punchy** (black and neon), **Luxury** (black and gold), **Cute** (pastel pink and mint), **Lovely** (rose and peach), **Empowering** (indigo and flame).
+- **Colours** (recolour the whole site and follow **Light / Dark / Auto**): BC Purple (the default), Teal, Ocean, Lagoon, Emerald, Gold, Sunset, Crimson, Rose, Graphite.
 
 A photo set here takes the place of `images/Name.jpg`; remove it to go back to the file.
 
 ## Managers (view only)
 
-On the "Who are you?" screen a manager types their name and taps **I'm a manager** (or picks their name once it's listed). The admin can also add or remove managers in **Settings → Managers**.
+The admin adds or removes managers in **Settings → Managers**. Managers then pick their name on the "Who are you?" screen, under the team.
 
 Managers get three pages: **Team now** (everyone's role right now and their next one, updating by itself), **Routine** (the full sheet for any day), and **Settings** (change user). They have a profile too (photo, about, theme). They can download the week, but can't mark sick leave, spin, scratch or change team settings. They don't count as part of the roster.
 
@@ -78,9 +83,21 @@ To share it with the team (free, no card needed), create a Firebase project and 
 
 ## Photos
 
-Replace each file in `images/` with the real photo, **keeping the same name** (e.g. `images/Ahmed.jpg`). Names must match the roster exactly, including capital letters. Square photos look best. If a photo file is missing, the person's initials show instead.
+The easiest way: everyone taps their picture in the app and adds a photo, or the admin adds them for everyone in **Settings → Team** and taps **Save changes** (then **Push to GitHub** to keep copies here). Or replace each file in `images/` with the real photo, **keeping the same name** (e.g. `images/Ahmed.jpg`). Names must match the roster exactly, including capital letters. Square photos look best. If a photo file is missing, the person's initials show instead.
 
-## Publish to GitHub (one click)
+## Push to GitHub from the app (admin)
+
+After adding photos in Settings, the admin can send them to GitHub straight from the app: **Settings → Push to GitHub**. It puts everyone's photo into `images/` (as `images/Name.jpg`) and a backup of the team settings into `backup/team-settings.json`, in one commit. Only changed files are sent; the website updates about a minute later. If there are unsaved changes, the button says **Save & push** and does both.
+
+It needs a GitHub token once per device (kept only on that device, never in the team database):
+1. On github.com: your picture → **Settings** → **Developer settings** → **Personal access tokens** → **Fine-grained tokens** → **Generate new token**.
+2. Name it (e.g. "BC Routine app"), pick an expiry, **Repository access → Only select repositories → What-am-i-now-android**.
+3. **Permissions → Repository permissions → Contents → Read and write**. **Generate token** and copy it.
+4. In the app: Settings → Push to GitHub → paste it in **GitHub token** → **Push to GitHub**.
+
+Use it only on your own phone or PC, and tap **Forget token** on any other device. Photos don't need GitHub to show: they appear for the team as soon as you tap **Save changes**.
+
+## Publish to GitHub from a PC folder (one click)
 
 Double-click **`Publish to GitHub.bat`** in this folder. It uploads everything you changed, and the website updates about a minute later.
 
@@ -132,7 +149,7 @@ On phones: **Add to Home Screen** so it opens like an app.
 
 ## WhatsApp alerts
 
-The bot sends from **+971 50 535 3447**. Colleagues join by tapping **Get alerts on WhatsApp** on the Home page. WhatsApp opens with `START Name` typed, and they press Send. `NOW` gives their current role and `STOP` turns alerts off.
+The bot sends from **+971 50 535 3447**. Colleagues join by tapping **Get alerts on WhatsApp** in **Settings → Alerts on this device**. WhatsApp opens with `START Name` typed, and they press Send. `NOW` gives their current role and `STOP` turns alerts off.
 
 **Needs:**
 1. **Firebase set up** (see above). The bot reads the shared roster; in Demo mode it can't see it.

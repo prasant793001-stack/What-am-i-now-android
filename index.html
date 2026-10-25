@@ -152,10 +152,10 @@ tr.past td{opacity:.5}
 .avbtn{border:0;background:none;padding:0;border-radius:50%;flex:none}
 .desc{font-size:13px;color:var(--muted);margin-top:2px}
 .who button small.desc{display:block;font-size:12px;font-weight:500;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin:0}
-.sheetback{position:fixed;inset:0;z-index:20;background:rgba(5,8,12,.55);display:grid;place-items:end center}
-.sheet{background:var(--surface);color:var(--ink);width:min(560px,100%);max-height:92vh;overflow:auto;border-radius:20px 20px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom,0px));display:grid;gap:16px;box-shadow:var(--shadow)}
-@media (min-width:700px){.sheetback{place-items:center}.sheet{border-radius:20px;padding:22px}}
-.sheet h2{margin:0}.sheet p{margin:0}
+.pback{position:fixed;inset:0;z-index:20;background:rgba(5,8,12,.55);display:grid;place-items:end center}
+.panel{background:var(--surface);color:var(--ink);width:min(560px,100%);max-height:92vh;overflow:auto;border-radius:20px 20px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom,0px));display:grid;gap:16px;box-shadow:var(--shadow)}
+@media (min-width:700px){.pback{place-items:center}.panel{border-radius:20px;padding:22px}}
+.panel h2{margin:0}.panel p{margin:0}
 .opt{display:grid;gap:8px}
 .opt textarea{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:10px;padding:8px 10px;font:inherit;resize:vertical;width:100%}
 .themes{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
@@ -171,6 +171,28 @@ tr.past td{opacity:.5}
 body.hasbar main{padding-bottom:110px}
 body.cardvis #savebar{display:none}
 .savecard{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin-top:16px}
+/* home: who is on the front roles now */
+.onnow{display:grid;gap:12px}
+.rbs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+@media (max-width:760px){.rbs{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.rb{display:grid;grid-template-columns:auto minmax(0,1fr);grid-template-areas:"lbl lbl" "av who" "meta meta";gap:6px 10px;align-items:center;padding:12px;border:1px solid var(--line);border-radius:14px;background:var(--sunk);min-width:0}
+.rb>small{grid-area:lbl;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700;line-height:1.2}
+.rb>.av{grid-area:av}
+.rb>b.who{grid-area:who;min-width:0;font-family:var(--f-display);font-weight:800;font-size:19px;line-height:1.1;overflow-wrap:anywhere}
+.rb>.meta{grid-area:meta;font-size:12px;line-height:1.3}.rb>.meta b{font-weight:700;color:var(--ink)}
+.rb.mine{background:var(--mine);color:var(--mine-ink);border-color:var(--primary)}.rb.mine>small,.rb.mine>.meta,.rb.mine>.meta b{color:inherit}
+.rb.off{opacity:.6}
+@media (max-width:380px){.rb{padding:10px;gap:5px 8px}.rb>.av{--s:34px!important}.rb>b.who{font-size:16px}}
+/* settings: admin photo buttons */
+.avpick{position:relative;border:0;background:none;padding:0;border-radius:50%;flex:none;line-height:0}
+.avpick i{position:absolute;right:-4px;bottom:-4px;font-size:11px;font-style:normal;line-height:1;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px}
+/* profile panel: styles */
+.styles{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.stl{display:flex;align-items:center;gap:10px;border:2px solid var(--line);background:var(--surface);border-radius:12px;padding:8px;text-align:left;min-width:0;color:var(--ink)}
+.stl i{width:38px;height:38px;border-radius:10px;flex:none;background:radial-gradient(circle at 70% 30%,var(--c) 0 22%,transparent 23%),linear-gradient(135deg,var(--b) 0 46%,var(--a) 46%);border:1px solid rgba(127,127,127,.35)}
+.stl span{display:grid;min-width:0}.stl b{font-size:14px}.stl small{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stl[aria-pressed="true"]{border-color:var(--ink)}
+.btn.wa.sm{padding:5px 12px;font-size:13px}
 /* phone notifications */
 ol.steps{margin:0;padding-left:20px;display:grid;gap:6px}
 .shr{vertical-align:-3px}
@@ -242,9 +264,9 @@ footer{padding:0 0 24px;text-align:center;font-size:12px}
 
 <script type="module">
 import { DAYN, MON, DEFAULTS, sod, addDays, dkey, fromKey, monday, wkKey, parseHM, fmtT, fmtRange, fmtDay, fmtCd, hash, rotate, pkey, C, staff, setData, cleanAssign, match, buildPositions, dayRoster, allSlots, roleOf, myItems,
-  normName, isStandby, rolesAll, rulesFrom, satRule, weekOrder, wheelForbids } from "./roster-engine.js?v=1.4.0";
+  normName, isStandby, rolesAll, rulesFrom, satRule, weekOrder, wheelForbids } from "./roster-engine.js?v=1.5.0";
 
-const VERSION = '1.4.0';
+const VERSION = '1.5.0';
 const APP_NAME = 'BC Al Ain Routine';
 const WA_DEFAULT = '971505353447'; // the WhatsApp bot's number (can be changed in Settings)
 const SEED_STAFF = ["Ahmed","Shahid","Ziko","Rayan","Hamada","Prashant","Mohammed","Ahoud","Mustafa"];
@@ -342,7 +364,7 @@ async function startDb(){
     if (j !== whJ) { whJ = j; wheels = w; clearCache(); render(); } queuePlan(); }, err);
   let profJ = null;
   db.collection('profiles').onSnapshot(s => { const p = {}; s.docs.forEach(d => p[d.id] = d.data()); const j = JSON.stringify(p);
-    if (j !== profJ) { profJ = j; profiles = p; applyMyTheme(); render(); } }, () => {});
+    profilesLoaded = true; if (j !== profJ) { profJ = j; profiles = p; applyMyTheme(); render(); } }, () => { profilesLoaded = true; });
   // Phone notifications. Problems here never stop the roster from working.
   if (!demo) {
     db.doc('config/push').onSnapshot(s => { const was = pushReady(); pushCfg = s.exists ? s.data() : null; syncPush(); if (was !== pushReady()) render(); else refreshPushCard(); queuePlan(); }, () => {});
@@ -374,13 +396,16 @@ function toggleAbsent(name){
 }
 
 /* ---------- photos ---------- */
-// A photo set in someone's profile (tap your picture at the top) comes first, then images/<Name>.jpg, then initials.
+// A photo set in someone's profile (by them, or by the admin in Settings) comes first, then images/<Name>.jpg, then initials.
 const PAL = ['#6D28D9','#2F5DA8','#B5473A','#0E6B5C','#C08A1E','#2E6F8E','#7A4E6E','#4C7A2E','#A55B2A'];
 function initials(n){ const p = String(n).trim().split(/\s+/); return ((p[0]||'?')[0] + (p[1] ? p[1][0] : (p[0]||'')[1] || '')).toUpperCase(); }
-const photoUrls = new Map(); // name -> { src, url }: profile photos turned into short blob: links, so big tables stay light
+const isPhoto = s => typeof s === 'string' && /^data:image\/(jpeg|png|webp);base64,/.test(s);
+// The admin's unsaved photo changes (name -> data URL, or null to remove); shown straight away, saved with Save changes.
+let draftPhotos = {};
+function photoSrc(name){ if (name in draftPhotos) return isPhoto(draftPhotos[name]) ? draftPhotos[name] : ''; const p = profiles[pkey(name)]; return p && isPhoto(p.photo) ? p.photo : ''; }
+const photoUrls = new Map(); // name -> { src, url }: photos turned into short blob: links, so big tables stay light
 function photoUrl(name){
-  const p = profiles[pkey(name)], src = p && typeof p.photo === 'string' && /^data:image\/(jpeg|png|webp);base64,/.test(p.photo) ? p.photo : '';
-  const hit = photoUrls.get(name);
+  const src = photoSrc(name), hit = photoUrls.get(name);
   if (hit && hit.src === src) return hit.url;
   if (hit && hit.url) URL.revokeObjectURL(hit.url);
   let url = '';
@@ -394,35 +419,77 @@ function avatar(name, size=32){
 const profileOf = n => profiles[pkey(n)] || {};
 const descOf = n => String(profileOf(n).desc || '').trim();
 
-/* ---------- colour themes (each person picks their own; saved in their profile) ---------- */
-// [primary, text on primary, my-name highlight, highlight text] for light mode, then the same for dark mode.
-const THEMES = [
-  { id:'purple',   name:'BC Purple', l:['#6D28D9','#FFFFFF','#EDE4FD','#3B137A'], d:['#A78BFA','#1A0B3D','#2A1D4A','#E4DAFE'] },
-  { id:'teal',     name:'Teal',      l:['#0E6B5C','#FFFFFF','#D6F0E9','#0A4A3F'], d:['#38BFA4','#04211B','#173B33','#BFF0E3'] },
-  { id:'blue',     name:'Ocean',     l:['#1D4ED8','#FFFFFF','#DCE7FD','#172C6E'], d:['#7AA2F7','#0A1633','#1B2A4A','#DCE7FD'] },
-  { id:'cyan',     name:'Lagoon',    l:['#0E7490','#FFFFFF','#CFF4FC','#164E63'], d:['#22D3EE','#042B33','#12343D','#CDF5FC'] },
-  { id:'green',    name:'Emerald',   l:['#047857','#FFFFFF','#D1FAE5','#064E3B'], d:['#34D399','#022C1E','#123828','#C9F7E2'] },
-  { id:'gold',     name:'Gold', l:['#A16207','#FFFFFF','#FEF3C7','#713F12'], d:['#FACC15','#2A1F00','#3A3112','#FDF0B8'] },
-  { id:'orange',   name:'Sunset',    l:['#C2410C','#FFFFFF','#FFE4D5','#7C2D12'], d:['#FB923C','#2B1205','#3D2416','#FFE1CC'] },
-  { id:'red',      name:'Crimson',   l:['#B91C1C','#FFFFFF','#FDE2E2','#7F1D1D'], d:['#F87171','#330808','#3F1A1A','#FEDADA'] },
-  { id:'rose',     name:'Rose',      l:['#BE185D','#FFFFFF','#FCE1EE','#831843'], d:['#F472B6','#33071A','#3E1A2C','#FDD7EA'] },
-  { id:'graphite', name:'Graphite',  l:['#1F2937','#FFFFFF','#E5E7EB','#111827'], d:['#D1D5DB','#111827','#2A2F37','#E5E7EB'] },
+/* ---------- themes: everyone gets their own look for the whole site ---------- */
+// Colours recolour every part of the site and follow Light / Dark / Auto. Styles are complete looks with their own
+// background and their own light or dark feel.
+const COLOURS = [ // id, name, hue, saturation, main colour (light), main colour (dark), text on the dark main colour
+  ['purple','BC Purple',266,70,'#6D28D9','#A78BFA','#1A0B3D'], ['teal','Teal',168,60,'#0E6B5C','#38BFA4','#04211B'],
+  ['blue','Ocean',222,70,'#1D4ED8','#7AA2F7','#0A1633'],       ['cyan','Lagoon',192,70,'#0E7490','#22D3EE','#042B33'],
+  ['green','Emerald',158,60,'#047857','#34D399','#022C1E'],     ['gold','Gold',42,70,'#A16207','#FACC15','#2A1F00'],
+  ['orange','Sunset',22,75,'#C2410C','#FB923C','#2B1205'],      ['red','Crimson',0,70,'#B91C1C','#F87171','#330808'],
+  ['rose','Rose',330,65,'#BE185D','#F472B6','#33071A'],         ['graphite','Graphite',220,8,'#1F2937','#D1D5DB','#111827'],
+];
+const STYLES = [
+  { id:'boys', name:'Boys', tag:'Navy and electric blue', mode:'dark', art:'linear-gradient(160deg,#0A1222 0%,#0E1F3D 55%,#0A1222 100%)',
+    v:{bg:'#0A1222',surface:'#111C33',sunk:'#0D172B',ink:'#E8F0FF',muted:'#93A7C9',line:'#1F2E4D',primary:'#3B82F6','primary-ink':'#FFFFFF',accent:'#22D3EE','accent-ink':'#022C36',mine:'#16346A','mine-ink':'#D6E6FF',now:'#0F2B47',red:'#E5484D','red-bg':'#3B1218',brk:'#16223D',danger:'#F87171','danger-bg':'#3B1218'} },
+  { id:'ladies', name:'Ladies', tag:'Blush and plum', mode:'light', art:'radial-gradient(1200px 600px at 100% -10%,#FFD6E8 0%,transparent 60%),radial-gradient(900px 500px at -10% 110%,#F3E1FF 0%,transparent 60%)',
+    v:{bg:'#FFF4F8',surface:'#FFFFFF',sunk:'#FFF0F6',ink:'#3A1530',muted:'#8B5B7B',line:'#F3D2E1',primary:'#B83280','primary-ink':'#FFFFFF',accent:'#F9A8D4','accent-ink':'#4A0D2E',mine:'#FCE3F0','mine-ink':'#7A1149',now:'#FFE9F2',red:'#D6336C','red-bg':'#FFE3EC',brk:'#FBEFF5',danger:'#BE123C','danger-bg':'#FFE4EA'} },
+  { id:'managers', name:'Managers', tag:'Navy and gold, crisp', mode:'light', art:'linear-gradient(180deg,#E3E8F0 0,#F2F4F7 280px)',
+    v:{bg:'#F2F4F7',surface:'#FFFFFF',sunk:'#F7F8FA',ink:'#0F172A',muted:'#556274',line:'#DCE1E8',primary:'#12355B','primary-ink':'#FFFFFF',accent:'#C9A227','accent-ink':'#231A00',mine:'#E2EBF5','mine-ink':'#12355B',now:'#FBF5E2',red:'#9F1D2B','red-bg':'#FBE9EA',brk:'#EEF1F5',danger:'#B42318','danger-bg':'#FDECEA'} },
+  { id:'fun', name:'Fun', tag:'Bright and playful', mode:'light', size:'240px 240px', art:'radial-gradient(circle at 12% 18%,#FDE68A 0 6px,transparent 7px),radial-gradient(circle at 78% 12%,#A7F3D0 0 5px,transparent 6px),radial-gradient(circle at 88% 64%,#FBCFE8 0 7px,transparent 8px),radial-gradient(circle at 24% 78%,#BFDBFE 0 5px,transparent 6px),radial-gradient(circle at 52% 44%,#DDD6FE 0 4px,transparent 5px)',
+    v:{bg:'#FFFBEB',surface:'#FFFFFF',sunk:'#FFF7D6',ink:'#1E1B4B',muted:'#6B6797',line:'#FDE68A',primary:'#7C3AED','primary-ink':'#FFFFFF',accent:'#F97316','accent-ink':'#FFFFFF',mine:'#D1FAE5','mine-ink':'#065F46',now:'#E0F2FE',red:'#EC4899','red-bg':'#FCE7F3',brk:'#FEF3C7',danger:'#DB2777','danger-bg':'#FCE7F3'} },
+  { id:'punchy', name:'Punchy', tag:'Black and neon', mode:'dark', art:'linear-gradient(135deg,rgba(255,45,85,.12) 0,transparent 35%),linear-gradient(315deg,rgba(250,204,21,.09) 0,transparent 40%)',
+    v:{bg:'#0A0A0A',surface:'#151515',sunk:'#101010',ink:'#FAFAFA',muted:'#A3A3A3',line:'#2A2A2A',primary:'#FF2D55','primary-ink':'#FFFFFF',accent:'#FACC15','accent-ink':'#141000',mine:'#3D0A18','mine-ink':'#FFD1DC',now:'#2A2400',red:'#FF2D55','red-bg':'#2B0A12',brk:'#1C1C1C',danger:'#FF6B81','danger-bg':'#2B0A12'} },
+  { id:'luxury', name:'Luxury', tag:'Black and gold', mode:'dark', art:'radial-gradient(900px 500px at 50% -15%,rgba(212,175,55,.18),transparent 70%)',
+    v:{bg:'#0C0A07',surface:'#17130C',sunk:'#120F09',ink:'#F5EEDC',muted:'#B8AA86',line:'#30281A',primary:'#D4AF37','primary-ink':'#1A1404',accent:'#E9D9A6','accent-ink':'#1A1404',mine:'#2C2412','mine-ink':'#F3E3A8',now:'#221C0F',red:'#8E1B2C','red-bg':'#2A0F15',brk:'#1B160D',danger:'#E57373','danger-bg':'#2A0F15'} },
+  { id:'cute', name:'Cute', tag:'Pastel pink and mint', mode:'light', art:'linear-gradient(160deg,#FDE2F3 0%,#EDE9FE 50%,#DCFCE7 100%)',
+    v:{bg:'#FDF2F8',surface:'#FFFFFF',sunk:'#FDF4FA',ink:'#4A2545',muted:'#9A6E93',line:'#F5D0E6',primary:'#DB2777','primary-ink':'#FFFFFF',accent:'#A7F3D0','accent-ink':'#064E3B',mine:'#FCE7F3','mine-ink':'#9D174D',now:'#E8FBF3',red:'#F43F5E','red-bg':'#FFE4E8',brk:'#FBEFF6',danger:'#E11D48','danger-bg':'#FFE4E6'} },
+  { id:'lovely', name:'Lovely', tag:'Rose and peach', mode:'light', art:'radial-gradient(800px 420px at 85% 0%,#FFD9D2 0%,transparent 65%),radial-gradient(700px 400px at 0% 100%,#FFE7D1 0%,transparent 65%)',
+    v:{bg:'#FFF6F3',surface:'#FFFFFF',sunk:'#FFF0EC',ink:'#3D1414',muted:'#8E5D57',line:'#F5D3CC',primary:'#B4233C','primary-ink':'#FFFFFF',accent:'#F4A261','accent-ink':'#3A1A05',mine:'#FDE2E4','mine-ink':'#7F1D2D',now:'#FFF0E0',red:'#D7263D','red-bg':'#FDE3E6',brk:'#FAEDEA',danger:'#C2183A','danger-bg':'#FDE3E6'} },
+  { id:'empower', name:'Empowering', tag:'Indigo and flame', mode:'dark', art:'linear-gradient(160deg,#120B2E 0%,#2A1166 60%,#3B0F55 100%)',
+    v:{bg:'#120B2E',surface:'#1C1442',sunk:'#170F38',ink:'#F4EFFF',muted:'#B7AADB',line:'#2F2565',primary:'#F97316','primary-ink':'#1C0A00',accent:'#FBBF24','accent-ink':'#231700',mine:'#3B2A7A','mine-ink':'#EEE7FF',now:'#2A1F57',red:'#E11D48','red-bg':'#3A0F22',brk:'#1F1749',danger:'#FB7185','danger-bg':'#3A0F22'} },
 ];
 const MODES = [['','Auto'],['light','Light'],['dark','Dark']];
-const themeById = id => THEMES.find(t => t.id === id) || THEMES[0];
-function themeCss(t){
-  const v = a => `--primary:${a[0]};--primary-ink:${a[1]};--mine:${a[2]};--mine-ink:${a[3]}`;
-  return `:root{${v(t.l)}}@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){${v(t.d)}}}:root[data-theme="dark"]{${v(t.d)}}`;
+const styleOf = id => STYLES.find(s => s.id === id) || null;
+const colourOf = id => COLOURS.find(c => c[0] === id) || null;
+const themeName = id => (styleOf(id) || {}).name || (colourOf(id) || [])[1] || 'BC Purple';
+function colourVars(c, dark){
+  const [, , h, s, pl, pd, pdi] = c, S = k => Math.min(100, Math.round(s*k));
+  return dark
+    ? { bg:`hsl(${h} ${S(.32)}% 6.5%)`, surface:`hsl(${h} ${S(.28)}% 10.5%)`, sunk:`hsl(${h} ${S(.28)}% 8.5%)`, ink:`hsl(${h} 25% 92%)`, muted:`hsl(${h} 12% 66%)`, line:`hsl(${h} ${S(.22)}% 19%)`,
+        primary:pd, 'primary-ink':pdi, mine:`hsl(${h} ${S(.55)}% 20%)`, 'mine-ink':`hsl(${h} 75% 88%)`, brk:`hsl(${h} ${S(.2)}% 13%)` }
+    : { bg:`hsl(${h} ${S(.5)}% 95%)`, surface:`hsl(${h} ${S(.6)}% 99.3%)`, sunk:`hsl(${h} ${S(.45)}% 97%)`, ink:`hsl(${h} 35% 12%)`, muted:`hsl(${h} 12% 38%)`, line:`hsl(${h} ${S(.35)}% 87%)`,
+        primary:pl, 'primary-ink':'#FFFFFF', mine:`hsl(${h} ${S(1.1)}% 92%)`, 'mine-ink':`hsl(${h} 70% 24%)`, brk:`hsl(${h} ${S(.3)}% 93%)` };
+}
+const cssVars = o => Object.entries(o).map(([k,x]) => `--${k}:${x}`).join(';');
+function themeCss(id){
+  const st = styleOf(id);
+  if (st) {
+    const shadow = st.mode === 'dark' ? '0 1px 2px rgba(0,0,0,.35),0 8px 24px rgba(0,0,0,.3)' : '0 1px 2px rgba(20,20,40,.06),0 8px 24px rgba(20,20,40,.08)';
+    return `:root[data-theme]{${cssVars(st.v)};--shadow:${shadow};color-scheme:${st.mode}}body{background-image:${st.art};background-attachment:fixed${st.size ? ';background-size:'+st.size : ''}}`;
+  }
+  const c = colourOf(id) || COLOURS[0], L = cssVars(colourVars(c,false)), D = cssVars(colourVars(c,true));
+  return `:root{${L}}:root[data-theme="light"]{${L}}@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){${D}}}:root[data-theme="dark"]{${D}}`;
 }
 function applyTheme(id, mode){
+  const st = styleOf(id), m = st ? st.mode : mode;
   let el = document.getElementById('themevars');
   if (!el) { el = document.createElement('style'); el.id = 'themevars'; document.head.appendChild(el); }
-  el.textContent = themeCss(themeById(id));
-  if (mode === 'light' || mode === 'dark') document.documentElement.dataset.theme = mode; else delete document.documentElement.dataset.theme;
-  LS.set('dutyRoster.themeCss', el.textContent); LS.set('dutyRoster.mode', mode || '');
+  el.textContent = themeCss(id);
+  if (m === 'light' || m === 'dark') document.documentElement.dataset.theme = m; else delete document.documentElement.dataset.theme;
+  LS.set('dutyRoster.themeCss', el.textContent); LS.set('dutyRoster.mode', m || '');
+  const bar = document.querySelector('meta[name="theme-color"]'); if (bar) bar.content = getComputedStyle(document.documentElement).getPropertyValue('--surface').trim() || '#0B0B10';
 }
-// The theme of whoever is chosen on this device (unless their profile sheet is open with a preview).
-function applyMyTheme(){ if (sheet && sheet.kind === 'profile') return; const p = me ? profileOf(me) : {}; applyTheme(p.theme || LS.get('dutyRoster.themeId') || 'purple', p.mode != null ? p.mode : (LS.get('dutyRoster.mode') || '')); }
+const defaultTheme = () => isObs() ? 'managers' : 'purple';
+// The theme of whoever is chosen on this device (unless their profile panel is open with a preview).
+let profilesLoaded = false;
+function applyMyTheme(){
+  if (sheet && sheet.kind === 'profile') return;
+  const p = me ? profileOf(me) : {}, saved = me ? LS.get('dutyRoster.theme.'+pkey(me)) : null;
+  const id = p.theme || saved || defaultTheme(), mode = p.mode != null ? p.mode : (LS.get('dutyRoster.mode') || '');
+  if (me && p.theme) LS.set('dutyRoster.theme.'+pkey(me), p.theme);
+  applyTheme(id, mode);
+}
 
 /* ---------- admin (team settings) ---------- */
 // A light lock so only the admin changes team settings: tap your profile picture 5 times and enter the password.
@@ -436,24 +503,34 @@ async function checkAdmin(pw){
   const h = [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(norm)))].map(b => b.toString(16).padStart(2,'0')).join('');
   return h === ADMIN_HASH;
 }
-function setAdmin(on){ admin = !!on; LS.set('dutyRoster.admin', admin ? '1' : null); if (!admin && draft) { draft = null; clearCache(); renderSaveBar(); } }
+function setAdmin(on){ admin = !!on; LS.set('dutyRoster.admin', admin ? '1' : null); if (!admin && hasDraft()) { draft = null; draftPhotos = {}; clearCache(); renderSaveBar(); } }
 
-/* ---------- unsaved team settings: changes wait here until the admin taps Save ---------- */
+/* ---------- admin changes show straight away (on this device) and are saved for everyone in one go ---------- */
 // (draft is declared with the other shared state near the top)
+const hasDraft = () => !!draft || Object.keys(draftPhotos).length > 0;
 function stageCfg(patch){
   if (!isAdmin()) return toast('Only the admin can change team settings.');
   draft = Object.assign({}, draft || {}, patch); clearCache(); render(true); renderSaveBar();
 }
-function saveDraft(){ if (!draft) return; const p = draft; draft = null; saveCfg(p); renderSaveBar(); toast('Saved. The whole team sees the changes now.'); }
-function discardDraft(){ draft = null; clearCache(); render(true); renderSaveBar(); toast('Changes discarded.'); }
-function renderSaveBar(){
-  const b = $('#savebar'); if (!b) return;
-  document.documentElement.style.scrollPaddingBottom = draft ? '120px' : '';
-  if (!draft) { b.hidden = true; b.innerHTML = ''; document.body.classList.remove('hasbar'); return; }
-  b.hidden = false; document.body.classList.add('hasbar');
-  b.innerHTML = `<div class="sb"><span><b>Unsaved team changes</b><small>Only you see them until you save.</small></span><button class="btn ghost sm" data-act="draft-discard">Discard</button><button class="btn primary" data-act="draft-save">Save changes</button></div>`;
+function stagePhoto(name, url){ if (!isAdmin()) return; draftPhotos = { ...draftPhotos, [name]: url }; render(true); renderSaveBar(); }
+function profileErr(e){ toast(e && e.code === 'permission-denied' ? 'The database refused the photo. Check that firestore.rules allows profiles.' : 'A photo could not be saved. Check your connection and try again.'); }
+function saveDraft(){
+  if (!hasDraft()) return Promise.resolve();
+  const p = draft, ph = draftPhotos, jobs = []; draft = null; draftPhotos = {};
+  for (const [n, url] of Object.entries(ph)) { const photo = isPhoto(url) ? url : null; profiles = { ...profiles, [pkey(n)]: { ...profileOf(n), photo } }; jobs.push(db.merge('profiles/'+pkey(n), { photo, at: Date.now() }).catch(profileErr)); }
+  if (p) saveCfg(p); else { clearCache(); render(true); }
+  renderSaveBar(); toast('Saved. The whole team sees the changes now.');
+  return Promise.all(jobs.concat(cfgChain));
 }
-window.addEventListener('beforeunload', e => { if (draft) { e.preventDefault(); e.returnValue = ''; } });
+function discardDraft(){ draft = null; draftPhotos = {}; clearCache(); render(true); renderSaveBar(); toast('Changes discarded.'); }
+function renderSaveBar(){
+  const b = $('#savebar'); if (!b) return; const on = hasDraft();
+  document.documentElement.style.scrollPaddingBottom = on ? '120px' : '';
+  if (!on) { b.hidden = true; b.innerHTML = ''; document.body.classList.remove('hasbar'); return; }
+  b.hidden = false; document.body.classList.add('hasbar');
+  b.innerHTML = `<div class="sb"><span><b>Preview · not saved yet</b><small>You see the changes everywhere. The team sees them when you save.</small></span><button class="btn ghost sm" data-act="draft-discard">Discard</button><button class="btn primary" data-act="draft-save">Save changes</button></div>`;
+}
+window.addEventListener('beforeunload', e => { if (hasDraft()) { e.preventDefault(); e.returnValue = ''; } });
 // The floating bar hides while the Save card at the bottom of Settings is on screen, so there is one Save button at a time.
 let saveIO = null;
 function watchSaveCard(){
@@ -462,8 +539,77 @@ function watchSaveCard(){
   saveIO = new IntersectionObserver(es => document.body.classList.toggle('cardvis', es.some(x => x.isIntersecting))); saveIO.observe(card);
 }
 
-/* ---------- profile sheet (tap your picture) and admin sheet (tap it 5 times) ---------- */
-let taps = 0, tapT = null;
+/* ---------- push to GitHub (admin) ---------- */
+// Copies everyone's profile photo into images/<Name>.jpg and a team settings backup into backup/team-settings.json in the
+// website's GitHub repository, in one commit. Uses a GitHub token that is kept only on this device.
+const GH_DEFAULT = (() => { const m = location.hostname.match(/^([^.]+)\.github\.io$/i), seg = location.pathname.split('/').filter(Boolean)[0]; return m && seg ? m[1]+'/'+seg : 'prasant793001-stack/What-am-i-now-android'; })();
+let gh = { busy:'', msg:'', err:'', url:'' };
+const ghRepo = () => (LS.get('dutyRoster.ghRepo') || GH_DEFAULT).trim().replace(/^https?:\/\/github\.com\//i,'').replace(/\.git$/,'').replace(/\/+$/,'');
+const ghToken = () => (LS.get('dutyRoster.ghToken') || '').trim();
+function ghErr(status, j){
+  if (status === 401) return 'GitHub did not accept the token. Make a new one (README → Push to GitHub).';
+  if (status === 403) return 'The token is not allowed to change this repository. It needs "Contents: Read and write".';
+  if (status === 404) return 'Repository not found. Check the name, and that the token was made for this repository.';
+  if (status === 409 || status === 422) return 'GitHub changed while pushing. Tap Push again.';
+  return 'GitHub error '+status+((j && j.message) ? ': '+j.message : '');
+}
+async function ghApi(path, opts={}){
+  const r = await fetch('https://api.github.com/repos/'+ghRepo()+path, { ...opts, headers: { Authorization: 'Bearer '+ghToken(), Accept: 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28', ...(opts.body ? { 'Content-Type': 'application/json' } : {}) } });
+  const j = await r.json().catch(() => ({})); if (!r.ok) throw new Error(ghErr(r.status, j)); return j;
+}
+async function gitSha(bytes){ const head = new TextEncoder().encode('blob '+bytes.length+'\0'), all = new Uint8Array(head.length+bytes.length); all.set(head); all.set(bytes, head.length); return [...new Uint8Array(await crypto.subtle.digest('SHA-1', all))].map(b => b.toString(16).padStart(2,'0')).join(''); }
+const b64Bytes = b64 => { const s = atob(b64), u = new Uint8Array(s.length); for (let i = 0; i < s.length; i++) u[i] = s.charCodeAt(i); return u; };
+const bytesB64 = u => { let s = ''; for (let i = 0; i < u.length; i += 0x8000) s += String.fromCharCode.apply(null, u.subarray(i, i+0x8000)); return btoa(s); };
+function ghFiles(){
+  const files = [];
+  for (const n of [...staff(), ...observers()]) { const p = profileOf(n); if (isPhoto(p.photo) && p.photo.startsWith('data:image/jpeg')) files.push({ path: 'images/'+n+'.jpg', bytes: b64Bytes(p.photo.split(',')[1]) }); }
+  const backup = { app: APP_NAME, settings: cfg, people: Object.fromEntries([...staff(), ...observers()].map(n => [n, { about: descOf(n), theme: profileOf(n).theme || '', manager: observers().includes(n) }])) };
+  files.push({ path: 'backup/team-settings.json', bytes: new TextEncoder().encode(JSON.stringify(backup, null, 2)+'\n') });
+  return files;
+}
+function viewGh(){
+  const tok = ghToken(), busy = !!gh.busy, unsaved = hasDraft();
+  return `<section class="card" style="display:grid;gap:10px" data-gh><h3>Push to GitHub</h3>
+    <p class="muted" style="font-size:13px">Sends everyone's photo into the website's <span class="mono">images</span> folder on GitHub, plus a backup of the team settings, in one go. Photos already show for the team once you tap Save; this keeps a copy with the website too.</p>
+    <label class="field"><b>Repository</b><input data-gh="repo" value="${esc(ghRepo())}" autocomplete="off" spellcheck="false"></label>
+    <label class="field"><b>GitHub token</b><input data-gh="token" type="password" value="${esc(tok)}" placeholder="github_pat_…" autocomplete="off" spellcheck="false"></label>
+    <p class="muted" style="font-size:12px">Kept only on this device, never in the team database. Make one on github.com: Settings → Developer settings → Fine-grained tokens, for this repository only, with <b>Contents: Read and write</b> (README → Push to GitHub). Use it only on your own phone or PC.</p>
+    <div class="row"><button class="btn primary" data-act="gh-push" ${busy || !tok ? 'disabled' : ''}>${busy ? esc(gh.busy) : unsaved ? 'Save &amp; push to GitHub' : 'Push to GitHub'}</button>${tok ? '<button class="btn ghost sm" data-act="gh-forget">Forget token</button>' : ''}</div>
+    ${gh.msg ? `<p class="pill ok" style="white-space:normal;justify-self:start">${esc(gh.msg)}</p>` : ''}${gh.url ? `<a class="muted" style="font-size:13px" href="${esc(gh.url)}" target="_blank" rel="noopener">See it on GitHub →</a>` : ''}${gh.err ? `<p class="errline">${esc(gh.err)}</p>` : ''}</section>`;
+}
+function refreshGh(){ document.querySelectorAll('[data-gh]').forEach(el => { if (el.tagName === 'SECTION') el.outerHTML = viewGh(); }); }
+async function pushToGitHub(){
+  if (gh.busy || !isAdmin()) return;
+  if (!ghToken()) return toast('Paste a GitHub token first.');
+  if (!(window.crypto && crypto.subtle)) return toast('This browser cannot push. Try Chrome or Safari.');
+  gh = { busy: 'Saving…', msg:'', err:'', url:'' }; refreshGh();
+  try {
+    if (hasDraft()) await saveDraft();
+    gh.busy = 'Checking GitHub…'; refreshGh();
+    const ref = await ghApi('/git/ref/heads/main'), head = ref.object.sha, base = await ghApi('/git/commits/'+head);
+    const tree = await ghApi('/git/trees/'+base.tree.sha+'?recursive=1'), have = new Map((tree.tree || []).map(t => [t.path, t.sha]));
+    const changed = [];
+    for (const f of ghFiles()) if (have.get(f.path) !== await gitSha(f.bytes)) changed.push(f);
+    if (!changed.length) { gh = { busy:'', msg:'Everything is already on GitHub. Nothing to push.', err:'', url:'' }; return refreshGh(); }
+    const entries = [];
+    for (let i = 0; i < changed.length; i++) {
+      gh.busy = 'Uploading '+(i+1)+' of '+changed.length+'…'; refreshGh();
+      const blob = await ghApi('/git/blobs', { method:'POST', body: JSON.stringify({ content: bytesB64(changed[i].bytes), encoding:'base64' }) });
+      entries.push({ path: changed[i].path, mode:'100644', type:'blob', sha: blob.sha });
+    }
+    gh.busy = 'Saving on GitHub…'; refreshGh();
+    const t = await ghApi('/git/trees', { method:'POST', body: JSON.stringify({ base_tree: base.tree.sha, tree: entries }) });
+    const photos = changed.filter(f => f.path.startsWith('images/')).length;
+    const message = 'From the app: '+(photos ? photos+' photo'+(photos>1?'s':'')+(changed.length > photos ? ' and settings backup' : '') : 'settings backup')+' ('+(me||'admin')+')';
+    const c = await ghApi('/git/commits', { method:'POST', body: JSON.stringify({ message, tree: t.sha, parents: [head] }) });
+    await ghApi('/git/refs/heads/main', { method:'PATCH', body: JSON.stringify({ sha: c.sha }) });
+    gh = { busy:'', err:'', msg:'Pushed '+changed.length+' file'+(changed.length>1?'s':'')+' to GitHub'+(photos ? ' ('+photos+' photo'+(photos>1?'s':'')+')' : '')+'. The website updates in about a minute.', url: c.html_url || ('https://github.com/'+ghRepo()+'/commit/'+c.sha) };
+  } catch(e) { gh = { busy:'', msg:'', err: (e && e.message) || 'Push failed.', url:'' }; }
+  refreshGh();
+}
+
+/* ---------- profile panel (tap your picture) and admin panel (tap it 5 times) ---------- */
+let taps = 0, tapT = null, pickFor = null;
 function meTap(){
   taps++; clearTimeout(tapT);
   if (taps >= 5) { taps = 0; openSheet('admin'); return; }
@@ -471,7 +617,7 @@ function meTap(){
 }
 function openSheet(kind){
   if (!signedIn()) return;
-  if (kind === 'profile') { const p = profileOf(me); sheet = { kind, photo: p.photo || null, desc: p.desc || '', theme: p.theme || LS.get('dutyRoster.themeId') || 'purple', mode: p.mode != null ? p.mode : (LS.get('dutyRoster.mode') || ''), busy: false }; }
+  if (kind === 'profile') { const p = profileOf(me); sheet = { kind, photo: p.photo || null, desc: p.desc || '', theme: p.theme || LS.get('dutyRoster.theme.'+pkey(me)) || defaultTheme(), mode: p.mode != null ? p.mode : (LS.get('dutyRoster.mode') || ''), busy: false }; }
   else sheet = { kind, err: '', busy: false };
   renderSheet();
 }
@@ -489,17 +635,20 @@ function renderSheet(){
          <form class="addrow" data-form="admin"><input id="adminpw" type="password" autocomplete="current-password" placeholder="Admin password" aria-label="Admin password" autocapitalize="characters"><button class="btn primary" ${sheet.busy?'disabled':''}>Unlock</button></form>
          ${sheet.err ? `<p class="errline">${esc(sheet.err)}</p>` : ''}<div class="row"><button class="btn ghost" data-act="sheet-cancel">Cancel</button></div>`;
   } else {
-    const t = sheet, mgr = isObs(), prev = t.photo && /^data:image\//.test(t.photo) ? t.photo : '';
+    const t = sheet, mgr = isObs(), prev = isPhoto(t.photo) ? t.photo : '', st = styleOf(t.theme);
     const big = `<span class="av" style="--s:92px;background:${PAL[hash(me)%PAL.length]}" aria-hidden="true"><b>${esc(initials(me))}</b>${prev ? `<img src="${prev}" alt="">` : `<img src="images/${encodeURIComponent(me)}.jpg" alt="" onerror="this.remove()">`}</span>`;
     body = `<div class="row" style="flex-wrap:nowrap">${big}<div style="min-width:0"><h2>${esc(me)}</h2><p class="muted">${mgr ? 'Manager · view only' : 'Agent'}${isAdmin() ? ' · Admin' : ''}</p></div></div>
       <div class="opt"><b>Photo</b><div class="row"><label class="btn" for="photoin">${prev ? 'Change photo' : 'Add a photo'}</label><input id="photoin" type="file" accept="image/*" hidden>${prev ? '<button class="btn ghost danger" data-act="photo-del">Remove photo</button>' : ''}</div></div>
       <label class="opt"><b>About me</b><textarea id="descin" maxlength="120" rows="2" placeholder="A short line about you, e.g. Morning person ☀️">${esc(t.desc)}</textarea><small class="muted"><span data-desclen>${t.desc.length}</span>/120 · everyone can see it</small></label>
-      <div class="opt"><b>Theme colour</b><div class="themes">${THEMES.map(th => `<button class="th" data-act="theme" data-id="${th.id}" aria-pressed="${t.theme===th.id}" aria-label="${esc(th.name)}" title="${esc(th.name)}" style="--c:${th.l[0]};--c2:${th.d[0]}"><i></i><span>${esc(th.name)}</span></button>`).join('')}</div></div>
-      <div class="opt"><b>Light or dark</b><div class="toggles">${MODES.map(([v,l]) => `<button data-act="mode" data-v="${v}" aria-pressed="${t.mode===v}">${l}</button>`).join('')}</div></div>
+      <div class="opt"><b>Style</b><small class="muted">A complete look for the whole site, just for you.</small><div class="styles">${STYLES.map(x => `<button class="stl" data-act="theme" data-id="${x.id}" aria-pressed="${t.theme===x.id}" style="--a:${x.v.bg};--b:${x.v.primary};--c:${x.v.accent};--d:${x.v.surface}"><i></i><span><b>${esc(x.name)}</b><small>${esc(x.tag)}</small></span></button>`).join('')}</div></div>
+      <div class="opt"><b>Or a colour</b><div class="themes">${COLOURS.map(c => `<button class="th" data-act="theme" data-id="${c[0]}" aria-pressed="${t.theme===c[0]}" aria-label="${esc(c[1])}" title="${esc(c[1])}" style="--c:${c[4]};--c2:${c[5]}"><i></i><span>${esc(c[1])}</span></button>`).join('')}</div></div>
+      <div class="opt"><b>Light or dark</b>${st ? `<small class="muted">${esc(st.name)} has its own ${st.mode} look. Pick a colour above to choose light or dark.</small>` : `<div class="toggles">${MODES.map(([v,l]) => `<button data-act="mode" data-v="${v}" aria-pressed="${t.mode===v}">${l}</button>`).join('')}</div>`}</div>
       <div class="row" style="justify-content:space-between;border-top:1px solid var(--line);padding-top:14px"><button class="btn ghost" data-act="signout">Change user</button>
         <span class="row"><button class="btn ghost" data-act="sheet-cancel">Cancel</button><button class="btn primary" data-act="profile-save" ${t.busy?'disabled':''}>${t.busy?'Saving…':'Save'}</button></span></div>`;
   }
-  s.innerHTML = `<div class="sheetback" data-act="sheet-close"><div class="sheet" role="dialog" aria-modal="true" aria-label="${sheet.kind==='admin'?'Admin':'My profile'}" data-stop>${body}</div></div>`;
+  const keep = s.querySelector('.panel'), top = keep ? keep.scrollTop : 0;
+  s.innerHTML = `<div class="pback" data-act="sheet-close"><div class="panel" role="dialog" aria-modal="true" aria-label="${sheet.kind==='admin'?'Admin':'My profile'}" data-stop>${body}</div></div>`;
+  const np = s.querySelector('.panel'); if (np && top) np.scrollTop = top;
   if (sheet.kind === 'admin' && !isAdmin()) setTimeout(() => { const i = $('#adminpw'); if (i) i.focus(); }, 50);
 }
 async function readPhoto(file){
@@ -512,7 +661,7 @@ async function saveProfileSheet(){
   const t = sheet, data = { photo: t.photo || null, desc: String(t.desc || '').trim().slice(0,120), theme: t.theme, mode: t.mode, at: Date.now() };
   t.busy = true; renderSheet();
   profiles = { ...profiles, [pkey(me)]: { ...profileOf(me), ...data } };
-  LS.set('dutyRoster.themeId', t.theme);
+  LS.set('dutyRoster.theme.'+pkey(me), t.theme);
   try { await db.merge('profiles/'+pkey(me), data); sheet = null; renderSheet(); applyMyTheme(); render(true); toast('Profile saved.'); }
   catch(e) { t.busy = false; renderSheet(); toast(e && e.code === 'permission-denied' ? 'The database refused the profile. Check that firestore.rules allows profiles.' : 'Could not save. Check your connection and try again.'); }
 }
@@ -785,7 +934,7 @@ function downloadCsv(d){
 async function sharePdf(){ if (!canShareFile(dl.file)) return; try { await navigator.share({ files:[dl.file], title: APP_NAME }); } catch(e) {} }
 
 /* ---------- managers (view only) ---------- */
-const observers = () => (cfg && Array.isArray(cfg.observers) ? cfg.observers : []).filter(n => n && !staff().includes(n));
+const observers = () => (Array.isArray(C().observers) ? C().observers : []).filter(n => n && !staff().includes(n));
 const isObs = () => !!me && !staff().includes(me) && observers().includes(me);
 const OBS_TABS = [['home','Team now'],['roster','Routine'],['settings','Settings']];
 // What everyone is doing right now, for managers.
@@ -852,10 +1001,9 @@ function renderHeader(){
 function viewWho(){
   return `<section class="card" style="display:grid;gap:6px"><h2 style="font-size:26px">Who are you?</h2><p class="muted">Tap your name once. This device will remember you. You can change it any time in Settings.</p></section>
   <div class="who">${staff().map(n => `<button data-act="signin" data-name="${esc(n)}">${avatar(n,84)}<span>${esc(n)}</span>${descOf(n) ? `<small class="desc">${esc(descOf(n))}</small>` : ''}</button>`).join('')}</div>
-  <section class="card" style="display:grid;gap:10px"><h3>Managers · view only</h3>
-    <p class="muted" style="font-size:13px">See what everyone is doing right now and the full roster, and download it. Managers are not on the roster.</p>
-    ${observers().length ? `<div class="who mgrs">${observers().map(n => `<button data-act="signin" data-name="${esc(n)}">${avatar(n,56)}<span>${esc(n)}</span><small class="muted">Manager</small></button>`).join('')}</div>` : ''}
-    <form class="addrow" data-form="observer" data-signin="1"><input placeholder="Manager's name" autocomplete="off" maxlength="30" aria-label="Manager's name"><button class="btn">${observers().length ? 'Add manager' : "I'm a manager"}</button></form></section>`;
+  ${observers().length ? `<section class="card" style="display:grid;gap:10px"><h3>Managers · view only</h3>
+    <p class="muted" style="font-size:13px">See what everyone is doing right now and the full routine, and download it.</p>
+    <div class="who mgrs">${observers().map(n => `<button data-act="signin" data-name="${esc(n)}">${avatar(n,56)}<span>${esc(n)}</span><small class="muted">Manager</small></button>`).join('')}</div></section>` : ''}`;
 }
 
 /* ---------- home: current role + next role ---------- */
@@ -890,17 +1038,28 @@ function viewHome(){
   return `<section class="hello"><button class="avbtn" data-act="me-tap" aria-label="My profile">${avatar(me,56)}</button><div><h3>Hi</h3><h2 style="font-size:24px">${esc(me)}</h2>${descOf(me) ? `<p class="desc">${esc(descOf(me))}</p>` : ''}</div><div class="clock"><span data-clock>${clockText(now)}</span><div class="muted" style="font-size:13px;font-family:var(--f-body)">${fmtDay(now)}</div></div></section>
     <div class="rolecards">${curCard}${nxtCard}</div>
     <div class="row"><span class="pill" data-audio></span></div>
+    ${viewOnNow()}
     ${pushReady() ? viewPush() : ''}
-    ${viewWa()}
     ${list}`;
 }
-function waNumber(){ return String((cfg && cfg.waNumber) || WA_DEFAULT).replace(/\D/g,''); }
-function viewWa(){
-  const num = waNumber(); if (!num) return '';
-  const url = 'https://wa.me/'+num+'?text='+encodeURIComponent('START '+me);
-  return `<section class="card" style="display:grid;gap:10px"><h3>WhatsApp alerts</h3>
-    <p class="muted">Get a WhatsApp message ${+C().leadMin||3} minutes before each of your role changes, even with your phone locked. Tap the button, then press <b>Send</b> in WhatsApp.</p>
-    <div class="row"><a class="btn wa" href="${esc(url)}" target="_blank" rel="noopener">Get alerts on WhatsApp</a><span class="muted" style="font-size:13px">Send <b>NOW</b> for your role, <b>STOP</b> to turn off.</span></div></section>`;
+function waNumber(){ return String(C().waNumber || WA_DEFAULT).replace(/\D/g,''); }
+// Home: who is on the four front roles right now, until when, and who takes over next.
+const FRONT = [['greeter','Greeter'],['ga','Greeter Assistant'],['sas1','SAS 1'],['tab1','TAB 1']];
+const frontIndex = (r, k) => r.positions.findIndex(p => { const n = normName(p.name); return n === k || (k === 'ga' && n === 'greeterassistant'); });
+function viewOnNow(){
+  const now = new Date(), day = sod(now), r = dayRoster(day), t = nowMin(now), t0 = day.getTime();
+  if (r.off || !r.shifts || !r.order.length) return '';
+  const slots = allSlots(r), cur = slots.find(s => s.start <= t && t < s.end), nxt = slots.find(s => s.start > t), ref = cur || nxt;
+  if (!ref) return `<section class="card onnow"><h3>On the floor</h3><p class="muted">Finished for today.</p></section>`;
+  const later = cur ? slots.find(s => s.start >= cur.end) : null;
+  const boxes = FRONT.map(([k, label]) => {
+    const j = frontIndex(r, k);
+    if (j < 0) return `<div class="rb off"><small>${esc(label)}</small><span class="av" style="--s:40px;background:var(--line)" aria-hidden="true"><b>–</b></span><b class="who">Not today</b><span class="meta muted">Not on today's roster</span></div>`;
+    const who = ref.cells[j], nx = later ? later.cells[j] : null, mine = who === me;
+    return `<div class="rb ${mine?'mine':''}"${mine?' title="This is you"':''}><small>${esc(label)}${mine?' · you':''}</small>${avatar(who,40)}<b class="who">${esc(who)}</b><span class="meta muted">${cur ? 'until '+fmtT(cur.end) : 'from '+fmtT(nxt.start)}${nx ? ` · next <b>${esc(nx)}</b>` : ''}</span></div>`;
+  }).join('');
+  const when = cur ? `<span class="mono muted" style="font-size:13px">${fmtRange(cur.start,cur.end)} · changes in <span data-cd="${t0+cur.end*60000}"></span></span>` : `<span class="mono muted" style="font-size:13px">starts in <span data-cd="${t0+nxt.start*60000}"></span></span>`;
+  return `<section class="card onnow"><div class="row" style="justify-content:space-between"><h3>${cur ? 'On the floor now' : 'First up today'}</h3>${when}</div><div class="rbs">${boxes}</div></section>`;
 }
 
 /* ---------- full roster: fits the screen ---------- */
@@ -1107,6 +1266,8 @@ function setupScratch(){
 }
 
 /* ---------- settings ---------- */
+// Settings rows: for the admin, the picture is a button to choose that person's photo.
+function photoBtn(n){ return isAdmin() ? `<button class="avpick" data-act="photo-pick" data-name="${esc(n)}" aria-label="Choose a photo for ${esc(n)}">${avatar(n,30)}<i aria-hidden="true">📷</i></button>` : avatar(n,30); }
 function viewSettings(){
   const c = C(), adm = isAdmin(), agent = staff().includes(me), perm = window.Notification ? Notification.permission : 'unsupported';
   const you = `<section class="card" style="display:grid;gap:12px"><h3>You on this device</h3>
@@ -1118,7 +1279,8 @@ function viewSettings(){
     <div class="row"><button class="btn ${audioReady()?'':'accent'}" data-act="test-alert">${audioReady()?'Play test alert':'Turn on sound & test'}</button>
       ${!demo && pushReady() && pushEnv()==='ok' ? '' : perm==='default'?'<button class="btn" data-act="notif">Allow pop-up notifications</button>':perm==='granted'?'<span class="pill ok">Pop-ups allowed</span>':''}
       <button class="btn" data-act="wake" aria-pressed="${!!wakeLock}">${wakeLock?'Screen stays on ✓':'Keep screen on'}</button></div>
-    <p class="muted" style="font-size:13px">Keep this page open (on a till, or your phone with the screen on). It chimes ${+c.leadMin||3} minutes before each change.</p></section>
+    <p class="muted" style="font-size:13px">Keep this page open (on a till, or your phone with the screen on). It chimes ${+c.leadMin||3} minutes before each change.</p>
+    ${waNumber() ? `<div class="row"><a class="btn wa sm" href="${esc('https://wa.me/'+waNumber()+'?text='+encodeURIComponent('START '+me))}" target="_blank" rel="noopener">Get alerts on WhatsApp</a><span class="muted" style="font-size:12px">Send <b>NOW</b> for your role, <b>STOP</b> to turn off.</span></div>` : ''}</section>
   ${viewPush()}` : '';
   const adminCard = adm
     ? `<section class="card" style="display:grid;gap:10px"><h3>Admin</h3><p class="muted" style="font-size:13px">Admin is on for this device. Change the team settings below, then tap <b>Save changes</b> at the bottom.</p><button class="btn ghost danger" data-act="admin-lock" style="justify-self:start">Lock admin on this device</button></section>`
@@ -1140,14 +1302,15 @@ function viewSettings(){
   const ov = c.wheelOverride && c.wheelOverride.wk === w.next && Date.now() < c.wheelOverride.until;
   const waNum = draft && 'waNumber' in draft ? draft.waNumber : ((cfg && cfg.waNumber) || '');
   return `${readOnly?'<div class="pill bad">View only: you can\'t change settings</div>':''}
-  <section><h2>Settings</h2><p class="muted" style="margin-top:4px">Team changes wait until you tap <b>Save changes</b> at the bottom.</p></section>
+  <section><h2>Settings</h2><p class="muted" style="margin-top:4px">Every change shows straight away so you can check it. Nothing reaches the team until you tap <b>Save changes</b> at the bottom.</p></section>
   <div class="sgrid">${you}${alerts}${adminCard}
 
   <section class="card" style="display:grid;gap:10px"><h3>Team · this week's Monday order</h3><p class="muted" style="font-size:13px">Row 1 opens Monday as ${esc((pos[0]||{}).name||'Greeter')}, row 2 as ${esc((pos[1]||{}).name||'SAS1')}, and so on. Each day the order moves up by one, so yesterday's Greeter starts the day on Break.</p>
-    <div class="list">${order.map((n,i) => `<div class="li"><span class="mono muted" style="width:22px">${i+1}</span>${avatar(n,30)}<span class="grow">${esc(n)} <span class="muted" style="font-weight:500">· ${esc((pos[i]||{}).name||'')}</span></span>
+    <input id="adminphoto" type="file" accept="image/*" hidden>
+    <div class="list">${order.map((n,i) => `<div class="li"><span class="mono muted" style="width:22px">${i+1}</span>${photoBtn(n)}<span class="grow">${esc(n)} <span class="muted" style="font-weight:500">· ${esc((pos[i]||{}).name||'')}</span></span>
       <button class="icon" data-act="staff-move" data-i="${i}" data-d="-1" aria-label="Move ${esc(n)} up" ${i?'':'disabled'}>↑</button><button class="icon" data-act="staff-move" data-i="${i}" data-d="1" aria-label="Move ${esc(n)} down" ${i<order.length-1?'':'disabled'}>↓</button><button class="icon" data-act="staff-del" data-i="${i}" aria-label="Remove ${esc(n)}">✕</button></div>`).join('') || '<p class="muted">No agents yet.</p>'}</div>
     <form class="addrow" data-form="staff"><input id="newstaff" placeholder="Add agent name" autocomplete="off" maxlength="30"><button class="btn primary">Add</button></form>
-    <p class="muted" style="font-size:12px">Photos: everyone can add their own by tapping their picture at the top. A file named <span class="mono">images/Name.jpg</span> in the website folder is used otherwise.</p></section>
+    <p class="muted" style="font-size:12px">Tap a picture to set that person's photo. People can also add their own by tapping their picture at the top.</p></section>
 
   <section class="card" style="display:grid;gap:10px"><h3>Roles · in priority order</h3><p class="muted" style="font-size:13px">When someone is on leave, the last working role is dropped first so the front desk stays covered.</p>
     <div class="list">${roles.map((r,i) => `<div class="li"><span class="grow">${esc(r.name)}</span><label class="row" style="gap:4px;font-size:13px"><input type="checkbox" data-set="role-brk" data-i="${i}" ${r.brk?'checked':''}> Break</label>
@@ -1155,7 +1318,7 @@ function viewSettings(){
     <form class="addrow" data-form="role"><input id="newrole" placeholder="Add role, e.g. SAS4" autocomplete="off" maxlength="20"><button class="btn primary">Add</button></form></section>
 
   <section class="card" style="display:grid;gap:10px"><h3>Managers · view only</h3><p class="muted" style="font-size:13px">Managers see what everyone is doing right now and the full routine, and can download it. They are not on the roster and can't change it.</p>
-    <div class="list">${observers().map(n => `<div class="li">${avatar(n,30)}<span class="grow">${esc(n)}</span><button class="icon" data-act="obs-del" data-name="${esc(n)}" aria-label="Remove ${esc(n)}">✕</button></div>`).join('') || '<p class="muted">No managers yet.</p>'}</div>
+    <div class="list">${observers().map(n => `<div class="li">${photoBtn(n)}<span class="grow">${esc(n)}</span><button class="icon" data-act="obs-del" data-name="${esc(n)}" aria-label="Remove ${esc(n)}">✕</button></div>`).join('') || '<p class="muted">No managers yet.</p>'}</div>
     <form class="addrow" data-form="observer"><input placeholder="Manager's name" autocomplete="off" maxlength="30" aria-label="Manager's name"><button class="btn primary">Add</button></form></section>
 
   <section class="card" style="display:grid;gap:12px"><h3>Saturday</h3>
@@ -1179,10 +1342,11 @@ function viewSettings(){
     <label class="field"><b>Opens before the new week</b><select data-set="wheelHours">${[12,24,48].map(h => `<option value="${h}" ${+c.wheelHours===h?'selected':''}>${h} hours before Monday</option>`).join('')}</select></label>
     <p class="muted" style="font-size:13px">For the week of ${fmtDay(fromKey(w.next))}: ${w.open?'open now':'opens '+fmtDay(new Date(w.openAt))}. The button below works straight away.</p>
     <div class="row">${ov?`<button class="btn" data-act="wheel-close">Close it early</button>`:`<button class="btn" data-act="wheel-open">Open now for 24 hours</button>`}</div></section>
+  ${viewGh()}
   ${about}
   </div>
-  <section class="card savecard"><div><h3>Save changes</h3><p class="muted" style="font-size:13px">${draft ? 'You have unsaved team changes. Nobody else sees them until you save.' : 'Everything is saved.'}</p></div>
-    <div class="row">${draft ? '<button class="btn ghost" data-act="draft-discard">Discard</button>' : ''}<button class="btn primary" data-act="draft-save" ${draft?'':'disabled'}>Save changes</button></div></section>`;
+  <section class="card savecard"><div><h3>Save changes</h3><p class="muted" style="font-size:13px">${hasDraft() ? 'Your changes show everywhere on this device. Tap Save changes when everything looks right, and the whole team gets them.' : 'Everything is saved.'}</p></div>
+    <div class="row">${hasDraft() ? '<button class="btn ghost" data-act="draft-discard">Discard</button>' : ''}<button class="btn primary" data-act="draft-save" ${hasDraft()?'':'disabled'}>Save changes</button></div></section>`;
 }
 function onSettingChange(el){
   const c = C(), k = el.dataset.set, i = +el.dataset.i;
@@ -1255,15 +1419,22 @@ document.addEventListener('click', e => {
     case 'admin-go': sheet = null; renderSheet(); tab = 'settings'; LS.set('dutyRoster.tab', tab); render(true); window.scrollTo(0,0); break;
     case 'admin-lock': setAdmin(false); sheet = null; renderSheet(); render(true); toast('Admin is locked on this device.'); break;
     case 'draft-save': saveDraft(); break;
+    case 'photo-pick': { if (!isAdmin()) return; pickFor = el.dataset.name; const inp = $('#adminphoto'); if (inp) { inp.value = ''; inp.click(); } break; }
+    case 'gh-push': pushToGitHub(); break;
+    case 'gh-forget': LS.set('dutyRoster.ghToken', null); gh = { busy:'', msg:'', err:'', url:'' }; refreshGh(); toast('Token removed from this device.'); break;
     case 'draft-discard': discardDraft(); break;
   }
 });
 document.addEventListener('change', e => {
+  if (e.target.id === 'adminphoto') { const f = e.target.files && e.target.files[0], n = pickFor; if (!f || !n) return;
+    readPhoto(f).then(url => { stagePhoto(n, url); toast('Photo for '+n+' added. Tap Save changes when you are done.'); }).catch(() => toast('That file could not be read as a photo. Try a JPG or PNG.')); return; }
   if (e.target.id === 'photoin') { const f = e.target.files && e.target.files[0]; if (!f || !sheet) return;
     readPhoto(f).then(url => { if (sheet) { sheet.photo = url; renderSheet(); } }).catch(() => toast('That file could not be read as a photo. Try a JPG or PNG.')); return; }
   if (e.target.dataset && e.target.dataset.set) onSettingChange(e.target);
 });
-document.addEventListener('input', e => { if (e.target.id === 'descin' && sheet) { sheet.desc = e.target.value; const n = document.querySelector('[data-desclen]'); if (n) n.textContent = e.target.value.length; } });
+document.addEventListener('input', e => {
+  if (e.target.dataset && e.target.dataset.gh) { LS.set(e.target.dataset.gh === 'token' ? 'dutyRoster.ghToken' : 'dutyRoster.ghRepo', e.target.value.trim() || null);
+    const btn = document.querySelector('[data-act="gh-push"]'); if (btn) btn.disabled = !ghToken() || !!gh.busy; return; } if (e.target.id === 'descin' && sheet) { sheet.desc = e.target.value; const n = document.querySelector('[data-desclen]'); if (n) n.textContent = e.target.value.length; } });
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && sheet) closeSheet(); });
 document.addEventListener('submit', e => {
   e.preventDefault(); const f = e.target.dataset.form;
