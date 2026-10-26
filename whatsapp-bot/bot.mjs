@@ -58,7 +58,19 @@ if (!firebaseConfig || !firebaseConfig.apiKey || /PASTE/i.test(firebaseConfig.ap
   process.exit(1);
 }
 let cfg = null, absences = {}, wheels = {}, rosterReady = false;
-const sync = () => E.setData(cfg, absences, wheels);
+const sync = () => { E.setData(cfg, absences, wheels); followRenames(); };
+// Someone changed their name in the app: keep their WhatsApp alerts going under the new name.
+function followRenames() {
+  try {
+    if (!cfg || !cfg.renamed || typeof subs === 'undefined') return;
+    let moved = false;
+    for (const n of Object.keys(subs)) {
+      const to = E.liveName(n);
+      if (to !== n && E.staff().includes(to) && !subs[to]) { subs[to] = subs[n]; delete subs[n]; moved = true; log(`${n} is now called ${to}.`); }
+    }
+    if (moved) saveSubs();
+  } catch (e) { /* subscribers not loaded yet */ }
+}
 const rosterLoaded = new Promise(resolve => {
   const app = initializeApp(firebaseConfig), auth = getAuth(app), fsdb = getFirestore(app);
   let started = false;
@@ -233,7 +245,8 @@ async function handleIncoming(m) {
   const team = E.staff(), lead = leadMinutes(CONF.leadMinutes);
 
   if (word === 'start' || word === 'join') {
-    const name = team.find(n => n.toLowerCase() === arg.toLowerCase());
+    const oldName = Object.keys(E.renameMap()).find(o => o.toLowerCase() === arg.toLowerCase()); // someone who changed their name
+    const name = team.find(n => n.toLowerCase() === arg.toLowerCase()) || (oldName && team.includes(E.liveName(oldName)) ? E.liveName(oldName) : null);
     if (!name) {
       return send(who, `Send *START* and your name exactly as it is on the roster, for example *START ${team[0] || 'Ahmed'}*.\n\nNames: ${team.join(', ')}`);
     }
@@ -264,6 +277,7 @@ async function handleIncoming(m) {
 process.on('unhandledRejection', e => log('Error:', e?.message || e));
 log(`Starting. Time zone ${CONF.timezone}. Loading the roster from Firebase…`);
 await rosterLoaded;
+followRenames();
 log(`Roster loaded: ${E.staff().length} people on the team.`);
 await startWhatsApp();
 setInterval(tick, 15000);

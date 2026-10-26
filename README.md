@@ -1,4 +1,4 @@
-# What Am I Now? v1.5.1
+# What Am I Now? v1.6.0
 
 Shown to the team as **BC Al Ain Routine** (black and purple BC logo; "BC Routine" on phone home screens). The repository, website address and Firebase project keep their old names.
 
@@ -11,7 +11,7 @@ A simple team roster website. Open it and you see straight away:
 - **Download:** the whole week (7 days, every time slot) as a **PDF** to keep or share, or as **Excel (CSV)**. On the Routine page, under the sheet.
 - **Managers:** a view-only profile that shows what everyone is doing right now, the full roster and the download, without being on the roster
 - **Spin** or **Scratch:** pick your starting role for next week. Once picked, it's fixed.
-- **My profile:** tap your picture at the top to change your photo, write a short line about yourself, pick a style or colour for the whole site, or change user. Tap **Save**.
+- **My profile:** tap your picture at the top to change your name, your photo, write a short line about yourself, pick a style or colour for the whole site, or change user. Tap **Save**.
 - **Settings:** your device and alerts for everyone; team, roles, shifts, Saturday, managers, photos and **Push to GitHub** for the **admin** only. Every change shows straight away as a preview; one **Save changes** at the bottom sends it all to the team.
 - **WhatsApp alerts:** each person gets *their own* role on WhatsApp a few minutes before every change (join from Settings → Alerts)
 - **Phone notifications:** a notification on Android or iPhone a few minutes before every change, even with the site closed (one-time setup below)
@@ -37,21 +37,40 @@ A simple team roster website. Open it and you see straight away:
 
 - **During a shift** everyone moves one role per slot: Greeter → Break → the last TAB → TAB2 → … → SAS1 → Greeter.
 - **Next day** the order moves up by one, so it carries straight on: yesterday's Greeter starts the day on Break.
-- **Saturday** (Settings → Saturday): by default Hamada and Ahoud are off, and TAB3, SAS3 and Break are not used. Change who is off and which roles are dropped there. With 7 people and 7 roles (Greeter, SAS1, SAS2, GA, TAB1, TAB2, TAB4) everyone has a role all day. If there are more people than roles, the extra person sits out each slot and shows as Break, so add TAB4 under Roles if it isn't there.
-- **Standby is never used**, in the roster, Spin or Scratch. If there are more people than roles, the extras show as Break.
+- **Saturday** (Settings → Saturday): by default Hamada and Ahoud are off, and TAB3, SAS3 and Break are not used. Change who is off and which roles are dropped there. Settings → Saturday shows how the numbers work out.
+- **More people than roles:** the extras get working roles, never "Break 2". Roles left out that day come back first (TAB3, then SAS3), then new ones are added: TAB4, SAS4, TAB5… So on a Saturday with one person more than roles, they get TAB3; on a weekday with one person more than the 9 roles, they get TAB4.
+- **Standby is never used**, in the roster, Spin or Scratch.
+
+## Who can change what
+
+- **Everyone:** their own name, photo, About me and theme (tap your picture), Change user, and their weekly pick in **Spin** or **Scratch**. Phone notifications and alerts on their own device.
+- **Admin only:** everything else that changes the roster: **leave** (Routine → tap a name), the team and its order, roles, managers, Saturday, shifts, working days, alert time, the weekly pick window, photos for others and Push to GitHub.
+
+## Fixed days
+
+Once a working day starts, its roster is **fixed**: who works, in which order, the roles and the shift times are saved for that day (the Routine page shows 🔒 Fixed). After that, settings changes, new team members and wheel picks only change days that haven't started yet. **Leave marked by the admin is the only thing that still changes a fixed day**: the person comes off and the others move up, as before.
+
+- The first copy of the site that's open after midnight saves the day. If nobody opens it, it's saved the next time someone does (the past week too).
+- If the admin saved the wrong settings and today is already fixed: **Settings → Admin → Rebuild today from settings** (tap twice). Today then follows the current settings and stays fixed for the rest of the day.
+- The WhatsApp bot reads the same fixed days, once it is updated (see "After updating the website, update the bot too" below).
+
+## Changing your name
+
+Tap your picture → **Name** → type the new name → **Save**. Everyone sees the new name at once: roster, Home, Spin, Scratch, downloads, the WhatsApp bot and phone notifications. Leave, picks and fixed days saved under the old name stay with you, your photo and theme move with you, and your other phones and PCs switch to the new name by themselves. A name already used by someone else on the team can't be taken.
 
 ## Admin
 
-Team settings (team order, roles, managers, Saturday, shifts, alert time, WhatsApp number, weekly pick) can only be changed by the admin.
+Leave and team settings (team order, roles, managers, Saturday, shifts, alert time, WhatsApp number, weekly pick) can only be changed by the admin.
 
 - **Unlock:** tap your profile picture at the top **5 times quickly**, then enter the admin password (capitals and spaces don't matter). The password isn't written in this README because the repository is public. The device stays unlocked until you tap **Lock admin** in Settings.
+- **Leave:** Routine → pick the day → tap a name to mark leave (tap again to undo). It saves for everyone straight away; no Save needed.
 - **Change, check, then save once:** everything you add, remove or move in Settings shows straight away on your device, everywhere in the site (new managers, photos, roles, the routine), so you can check it looks right. A bar says "Preview · not saved yet". Nobody else sees the changes, and phone notifications don't use them, until you tap **Save changes** at the bottom. **Discard** throws them all away.
 - **Photos for everyone:** in Settings → Team (and Managers), tap a person's picture to choose their photo. It shows straight away and is saved with **Save changes**.
 - This is a light lock to stop casual changes. It isn't strong security: the roster database is still open to anyone with the website.
 
 ## Profiles and themes
 
-Tap your picture (top right, or on Home) once. You can add or change your **photo** (it's cropped square and saved for the team), write **About me** (up to 120 characters, shown on Home and the "Who are you?" screen), choose how the whole site looks for you, or **Change user**. The look previews straight away; **Save** keeps it, **Cancel** goes back. It follows you to any device where you choose your name, and only changes the site for you.
+Tap your picture (top right, or on Home) once. You can change your **name** (see Changing your name), add or change your **photo** (it's cropped square and saved for the team), write **About me** (up to 120 characters, shown on Home and the "Who are you?" screen), choose how the whole site looks for you, or **Change user**. The look previews straight away; **Save** keeps it, **Cancel** goes back. It follows you to any device where you choose your name, and only changes the site for you.
 
 - **Styles** (a complete look with its own background): **Boys** (navy and electric blue), **Ladies** (blush and plum), **Managers** (navy and gold; managers start with this), **Fun** (bright and playful), **Punchy** (black and neon), **Luxury** (black and gold), **Cute** (pastel pink and mint), **Lovely** (rose and peach), **Empowering** (indigo and flame).
 - **Colours** (recolour the whole site and follow **Light / Dark / Auto**): BC Purple (the default), Teal, Ocean, Lagoon, Emerald, Gold, Sunset, Crimson, Rose, Graphite.
@@ -62,14 +81,14 @@ A photo set here takes the place of `images/Name.jpg`; remove it to go back to t
 
 The admin adds or removes managers in **Settings → Managers**. Managers then pick their name on the "Who are you?" screen, under the team.
 
-Managers get three pages: **Team now** (everyone's role right now and their next one, updating by itself), **Routine** (the full sheet for any day), and **Settings** (change user). They have a profile too (photo, about, theme). They can download the week, but can't mark sick leave, spin, scratch or change team settings. They don't count as part of the roster.
+Managers get three pages: **Team now** (everyone's role right now and their next one, updating by itself), **Routine** (the full sheet for any day), and **Settings** (change user). They have a profile too (photo, about, theme). They can change their own name, photo and theme and download the week, but can't mark leave, spin, scratch or change team settings. They don't count as part of the roster.
 
 ## How the site remembers things
 
 | What | Where it's kept | Who sees it |
 |---|---|---|
 | **Who you are** | Saved on each device the first time you tap your name: browser storage, a cookie and `?me=Name` in the address. Change it in **Settings → Change user**. | Only that device |
-| **Spin / Scratch picks, sick leave, team, roles, shifts** | The shared team database (Firebase) | Everyone, instantly |
+| **Spin / Scratch picks, leave, fixed days, team, roles, shifts** | The shared team database (Firebase). Leave and the fixed day are kept together in `absences/<date>` | Everyone, instantly |
 
 Each pick is saved with a database transaction, so two people can never get the same spot, and once it's saved it can't be changed.
 

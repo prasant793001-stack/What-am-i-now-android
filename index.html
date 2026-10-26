@@ -158,6 +158,8 @@ tr.past td{opacity:.5}
 .panel h2{margin:0}.panel p{margin:0}
 .opt{display:grid;gap:8px}
 .opt textarea{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:10px;padding:8px 10px;font:inherit;resize:vertical;width:100%}
+.opt input[type=text],.opt input:not([type]){border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:10px;padding:10px 12px;font:inherit;font-weight:600;width:100%;min-height:44px}
+.opt input:not([type]):focus,.opt textarea:focus{outline:2px solid var(--primary);outline-offset:1px}
 .themes{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
 .th{border:2px solid var(--line);background:var(--surface);border-radius:12px;padding:8px 2px 6px;display:grid;justify-items:center;gap:4px;font-size:11px;font-weight:600;color:var(--muted);min-width:0}
 .th i{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--c) 0 50%,var(--c2) 50% 100%);display:block}
@@ -221,6 +223,9 @@ ol.steps{margin:0;padding-left:20px;display:grid;gap:6px}
 .scard.gone canvas{opacity:0;pointer-events:none}
 /* settings */
 .sgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:16px;align-items:start}
+.sgrid>*{min-width:0}
+.sgrid>.card{grid-template-columns:minmax(0,1fr)}.sgrid .field{min-width:0}.sgrid .field select{width:100%;min-width:0;text-overflow:ellipsis}
+.li.shiftrow{flex-wrap:wrap}.li.shiftrow input[type=text]{flex:1 1 100%;min-width:0}.li.shiftrow input[type=time]{flex:1 1 96px;min-width:0}
 .list{display:grid;gap:6px}
 .li{display:flex;align-items:center;gap:8px;padding:6px;border-radius:10px;background:var(--sunk);flex-wrap:wrap}
 .li .grow{flex:1;min-width:0;font-weight:600;overflow:hidden;text-overflow:ellipsis}
@@ -266,9 +271,9 @@ footer{padding:0 0 24px;text-align:center;font-size:12px}
 
 <script type="module">
 import { DAYN, MON, DEFAULTS, sod, addDays, dkey, fromKey, monday, wkKey, parseHM, fmtT, fmtRange, fmtDay, fmtCd, hash, rotate, pkey, C, staff, setData, cleanAssign, match, buildPositions, dayRoster, allSlots, roleOf, myItems,
-  normName, isStandby, rolesAll, rulesFrom, satRule, weekOrder, wheelForbids } from "./roster-engine.js?v=1.5.1";
+  normName, isStandby, rolesAll, rulesFrom, satRule, weekOrder, wheelForbids, liveName, renameMap, lockOf, lockData } from "./roster-engine.js?v=1.6.0";
 
-const VERSION = '1.5.1';
+const VERSION = '1.6.0';
 const APP_NAME = 'BC Al Ain Routine';
 const WA_DEFAULT = '971505353447'; // the WhatsApp bot's number (can be changed in Settings)
 const SEED_STAFF = ["Ahmed","Shahid","Ziko","Rayan","Hamada","Prashant","Mohammed","Ahoud","Mustafa"];
@@ -322,6 +327,7 @@ function localDb(){
     transact: async (p, fn) => { const out = fn(read(p) || {}); if (out.write) write(p, out.write); return out.result; },
     merge: async (p, d) => { const m = (a, b) => { for (const [k,v] of Object.entries(b)) a[k] = v && typeof v === 'object' && !Array.isArray(v) ? m(a[k] && typeof a[k] === 'object' ? a[k] : {}, v) : v; return a; }; write(p, m(read(p) || {}, d)); },
     update: async (p, patch) => { const d = read(p) || {}; for (const [k,v] of Object.entries(patch)) { const parts = k.split('.'); let o = d; for (let i = 0; i < parts.length-1; i++) o = o[parts[i]] = o[parts[i]] || {}; if (v === DEL) delete o[parts[parts.length-1]]; else o[parts[parts.length-1]] = v; } write(p, d); },
+    del: async p => { try { localStorage.removeItem(P+p); } catch(e) {} subs.forEach(f => f()); },
   };
 }
 
@@ -339,6 +345,7 @@ async function firebaseDb(fc){
     transact: (p, fn) => { const r = F.doc(fs, p); return F.runTransaction(fs, async tx => { const s = await tx.get(r); const out = fn(s.exists() ? s.data() : {}); if (out.write) tx.set(r, out.write); return out.result; }); },
     merge: (p, d) => F.setDoc(F.doc(fs, p), d, { merge: true }),
     update: (p, patch) => F.updateDoc(F.doc(fs, p), Object.fromEntries(Object.entries(patch).map(([k,v]) => [k, v === DEL ? F.deleteField() : v]))),
+    del: p => F.deleteDoc(F.doc(fs, p)),
   };
 }
 
@@ -359,11 +366,11 @@ async function startDb(){
   // Snapshots also fire when only "saved on the server" changes; those just update fresh.* without redrawing.
   let cfgJ = null, absJ = null, whJ = null;
   db.doc('config/main').onSnapshot((s, srv) => { fresh.cfg = srv !== false; const d = s.exists ? s.data() : null, j = JSON.stringify(d);
-    if (j !== cfgJ || dbState !== 'ready') { cfgJ = j; cfg = d; dbState = 'ready'; clearCache(); render(); markRulesStart(); } queuePlan(); }, err);
+    if (j !== cfgJ || dbState !== 'ready') { cfgJ = j; cfg = d; dbState = 'ready'; clearCache(); followRename(); render(); markRulesStart(); } queuePlan(); queueLock(); }, err);
   db.collection('absences').onSnapshot((s, srv) => { fresh.abs = srv !== false; const a={}; s.docs.forEach(d => a[d.id] = d.data()); const j = JSON.stringify(a);
-    if (j !== absJ) { absJ = j; absences = a; clearCache(); render(); } queuePlan(); }, err);
+    if (j !== absJ) { absJ = j; absences = a; clearCache(); render(); } queuePlan(); queueLock(); }, err);
   db.collection('wheel').onSnapshot((s, srv) => { fresh.wheel = srv !== false; const w={}; s.docs.forEach(d => w[d.id] = d.data()); const j = JSON.stringify(w);
-    if (j !== whJ) { whJ = j; wheels = w; clearCache(); render(); } queuePlan(); }, err);
+    if (j !== whJ) { whJ = j; wheels = w; clearCache(); render(); } queuePlan(); queueLock(); }, err);
   let profJ = null;
   db.collection('profiles').onSnapshot(s => { const p = {}; s.docs.forEach(d => p[d.id] = d.data()); const j = JSON.stringify(p);
     profilesLoaded = true; if (j !== profJ) { profJ = j; profiles = p; applyMyTheme(); render(); } }, () => { profilesLoaded = true; });
@@ -383,18 +390,96 @@ function writeErr(e){
 let cfgChain = Promise.resolve();
 function saveCfg(patch){
   if (!db) return toast('Still connecting to the team roster. Try again in a moment.');
-  cfg = Object.assign({}, DEFAULTS, cfg || {}, patch); clearCache(); render(true);
+  cfg = Object.assign({}, DEFAULTS, cfg || {}, patch);
+  // A name that is on the team again (someone new with an old name) is no longer treated as a renamed person.
+  if (cfg.renamed && typeof cfg.renamed === 'object') { const live = new Set([...(cfg.staff||[]), ...(cfg.observers||[])]), rn = Object.fromEntries(Object.entries(cfg.renamed).filter(([k]) => !live.has(k))); cfg.renamed = rn; }
+  clearCache(); render(true);
   const body = JSON.parse(JSON.stringify(cfg));
   cfgChain = cfgChain.then(() => db.doc('config/main').set(body)).catch(writeErr);
 }
 let absChain = Promise.resolve();
+// Leave is the one change allowed on a fixed day, and only the admin marks it.
 function toggleAbsent(name){
   if (!db) return;
-  const key = dkey(viewDate), cur = ((absences[key]||{}).names||[]).slice(), i = cur.indexOf(name);
+  if (!isAdmin()) return toast('Only the admin can mark leave.');
+  const key = dkey(viewDate), cur = [...new Set(((absences[key]||{}).names||[]).map(liveName))], i = cur.indexOf(name);
   if (i >= 0) cur.splice(i,1); else cur.push(name);
-  absences = { ...absences, [key]: { names: cur } }; clearCache(); render(true);
+  absences = { ...absences, [key]: { ...(absences[key]||{}), names: cur } }; clearCache(); render(true);
   toast(i >= 0 ? name+' is back on duty for '+fmtDay(viewDate)+'.' : name+' marked on leave for '+fmtDay(viewDate)+'. Roster adjusted.');
-  absChain = absChain.then(() => db.doc('absences/'+key).set({ names: cur })).catch(writeErr);
+  absChain = absChain.then(() => db.merge('absences/'+key, { names: cur })).catch(writeErr);
+}
+
+/* ---------- fixed days: once a working day starts, nothing changes it except leave marked by the admin ---------- */
+// The first copy of the site that is online when a day starts saves that day's roster with its leave (absences/<date>.lock):
+// who works, in which order, the roles and the shift times. Settings changes, new people and wheel picks then only change
+// days that haven't started yet. Days in the past week that were never saved are saved the same way.
+let lockT = null, lockBusy = false; const lockDone = new Set();
+function queueLock(){ clearTimeout(lockT); lockT = setTimeout(lockDays, 1200 + Math.random()*2500); }
+function lockReady(){ return !!db && dbState === 'ready' && !!cfg && staff().length > 0 && !readOnly && !hasDraft() && fresh.cfg && fresh.abs && fresh.wheel && (demo || navigator.onLine); }
+async function writeLock(key, L, force){
+  return db.transact('absences/'+key, data => (data.lock && !force) ? { result: false } : { result: true, write: { ...data, lock: { ...L, at: Date.now(), by: me || '' } } });
+}
+async function lockDays(){
+  if (lockBusy || !lockReady()) return;
+  lockBusy = true;
+  try {
+    const today = sod(new Date());
+    for (let k = 6; k >= 0; k--) {
+      const d = addDays(today, -k), key = dkey(d);
+      if (lockDone.has(key) || lockOf(d)) continue;
+      const L = lockData(d); if (!L) continue;
+      lockDone.add(key);
+      await writeLock(key, L, false);
+    }
+  } catch(e) { if (e && e.code === 'permission-denied') readOnly = true; console.warn('fix day', e); }
+  lockBusy = false;
+}
+// Admin only: today was fixed with the wrong settings. Saves today again from the settings as they are now.
+async function rebuildToday(){
+  if (!isAdmin()) return toast('Only the admin can do this.');
+  if (hasDraft()) return toast('Save or discard your team changes first.');
+  const d = sod(new Date()), L = lockData(d); if (!L) return toast('Today is not a working day in Settings.');
+  try { await writeLock(dkey(d), L, true); toast("Today's roster now follows the current settings. It stays fixed for the rest of the day."); }
+  catch(e) { writeErr(e); }
+}
+
+/* ---------- change your name (everyone, in their profile) ---------- */
+// The new name replaces the old one in the team list. Leave, wheel picks and fixed days saved under the old name keep
+// working through config.renamed, and other devices of the same person follow the new name by themselves.
+function nameProblem(to, from){
+  if (!to) return 'Type a name.';
+  if (to.length > 30) return 'Keep the name to 30 characters or fewer.';
+  if (isStandby({ name: to })) return 'Pick a different name.';
+  const others = [...staff(), ...observers()].filter(n => n !== from);
+  if (others.some(n => normName(n) === normName(to))) return to+' is already on the team. Pick a different name.';
+  const rn = renameMap(); if (to in rn && liveName(to) !== from) return to+' was used before. Pick a different name.';
+  return '';
+}
+async function renameMe(to){
+  const from = me;
+  const res = await db.transact('config/main', data => {
+    const c = { ...data }, st = Array.isArray(c.staff) ? c.staff : [], ob = Array.isArray(c.observers) ? c.observers : [];
+    if (!st.includes(from) && !ob.includes(from)) return { result: 'gone' };
+    if ([...st, ...ob].some(n => n !== from && normName(n) === normName(to))) return { result: 'taken' };
+    if (!c.satRule || typeof c.satRule !== 'object') { const sr = satRule(); c.satRule = { on: sr.on, staff: sr.staff, roles: sr.roles }; }
+    const sw = n => n === from ? to : n;
+    c.staff = st.map(sw); if (ob.length) c.observers = ob.map(sw);
+    c.satRule = { ...c.satRule, staff: (c.satRule.staff || []).map(sw) };
+    const rn = { ...((c.renamed && typeof c.renamed === 'object') ? c.renamed : {}) }; delete rn[to]; rn[from] = to; c.renamed = rn;
+    return { result: 'ok', write: c };
+  });
+  if (res !== 'ok') throw Object.assign(new Error(res === 'taken' ? to+' is already on the team. Pick a different name.' : 'Your name is no longer on the team list. Ask the admin.'), { shown: true });
+  switchMe(from, to);
+}
+// This device now knows the person by their new name.
+function switchMe(from, to){
+  const th = LS.get('dutyRoster.theme.'+pkey(from)); if (th && !LS.get('dutyRoster.theme.'+pkey(to))) LS.set('dutyRoster.theme.'+pkey(to), th);
+  me = to; rememberMe(me); setUrlMe(me); if (hl === from) hl = to;
+  photoUrls.delete(from);
+}
+function followRename(){
+  if (!me || signedIn()) return;
+  const to = liveName(me); if (to !== me && (staff().includes(to) || observers().includes(to))) { const from = me; switchMe(from, to); toast('Your name is now '+to+'.'); syncPush(); }
 }
 
 /* ---------- photos ---------- */
@@ -418,7 +503,9 @@ function avatar(name, size=32){
   const own = photoUrl(name);
   return `<span class="av" style="--s:${size}px;background:${PAL[hash(name)%PAL.length]}" aria-hidden="true"><b>${esc(initials(name))}</b>${own ? `<img src="${own}" alt="">` : `<img src="images/${encodeURIComponent(name)}.jpg" alt="" loading="lazy" onerror="this.remove()">`}</span>`;
 }
-const profileOf = n => profiles[pkey(n)] || {};
+// After a rename, the profile saved under the old name still counts until it has moved to the new one.
+const profileOf = n => profiles[pkey(n)] || oldProfile(n) || {};
+function oldProfile(n){ const rn = renameMap(); for (const o of Object.keys(rn)) if (o !== n && profiles[pkey(o)] && liveName(o) === n) return profiles[pkey(o)]; return null; }
 const descOf = n => String(profileOf(n).desc || '').trim();
 
 /* ---------- themes: everyone gets their own look for the whole site ---------- */
@@ -521,10 +608,10 @@ function saveDraft(){
   const p = draft, ph = draftPhotos, jobs = []; draft = null; draftPhotos = {};
   for (const [n, url] of Object.entries(ph)) { const photo = isPhoto(url) ? url : null; profiles = { ...profiles, [pkey(n)]: { ...profileOf(n), photo } }; jobs.push(db.merge('profiles/'+pkey(n), { photo, at: Date.now() }).catch(profileErr)); }
   if (p) saveCfg(p); else { clearCache(); render(true); }
-  renderSaveBar(); toast('Saved. The whole team sees the changes now.');
+  renderSaveBar(); toast('Saved. The whole team sees the changes now.'); queueLock();
   return Promise.all(jobs.concat(cfgChain));
 }
-function discardDraft(){ draft = null; draftPhotos = {}; clearCache(); render(true); renderSaveBar(); toast('Changes discarded.'); }
+function discardDraft(){ draft = null; draftPhotos = {}; clearCache(); render(true); renderSaveBar(); toast('Changes discarded.'); queueLock(); }
 function renderSaveBar(){
   const b = $('#savebar'); if (!b) return; const on = hasDraft();
   document.documentElement.style.scrollPaddingBottom = on ? '120px' : '';
@@ -618,8 +705,8 @@ function meTap(){
   tapT = setTimeout(() => { taps = 0; openSheet('profile'); }, 380);
 }
 function openSheet(kind){
-  if (!signedIn()) return;
-  if (kind === 'profile') { const p = profileOf(me); sheet = { kind, photo: p.photo || null, desc: p.desc || '', theme: p.theme || LS.get('dutyRoster.theme.'+pkey(me)) || defaultTheme(), mode: p.mode != null ? p.mode : (LS.get('dutyRoster.mode') || ''), busy: false }; }
+  if (kind !== 'admin' && !signedIn()) return;
+  if (kind === 'profile') { const p = profileOf(me); sheet = { kind, photo: p.photo || null, photoGone: false, name: me, nameErr: '', desc: p.desc || '', theme: p.theme || LS.get('dutyRoster.theme.'+pkey(me)) || defaultTheme(), mode: p.mode != null ? p.mode : (LS.get('dutyRoster.mode') || ''), busy: false }; }
   else sheet = { kind, err: '', busy: false };
   renderSheet();
 }
@@ -640,6 +727,7 @@ function renderSheet(){
     const t = sheet, mgr = isObs(), prev = isPhoto(t.photo) ? t.photo : '', st = styleOf(t.theme);
     const big = `<span class="av" style="--s:92px;background:${PAL[hash(me)%PAL.length]}" aria-hidden="true"><b>${esc(initials(me))}</b>${prev ? `<img src="${prev}" alt="">` : `<img src="images/${encodeURIComponent(me)}.jpg" alt="" onerror="this.remove()">`}</span>`;
     body = `<div class="row" style="flex-wrap:nowrap">${big}<div style="min-width:0"><h2>${esc(me)}</h2><p class="muted">${mgr ? 'Manager · view only' : 'Agent'}${isAdmin() ? ' · Admin' : ''}</p></div></div>
+      <label class="opt"><b>Name</b><input id="namein" maxlength="30" autocomplete="off" spellcheck="false" value="${esc(t.name)}" aria-describedby="namehelp"><small class="muted" id="namehelp">How your name shows to everyone: roster, Home, Spin and Scratch.</small>${t.nameErr ? `<p class="errline">${esc(t.nameErr)}</p>` : ''}</label>
       <div class="opt"><b>Photo</b><div class="row"><label class="btn" for="photoin">${prev ? 'Change photo' : 'Add a photo'}</label><input id="photoin" type="file" accept="image/*" hidden>${prev ? '<button class="btn ghost danger" data-act="photo-del">Remove photo</button>' : ''}</div></div>
       <label class="opt"><b>About me</b><textarea id="descin" maxlength="120" rows="2" placeholder="A short line about you, e.g. Morning person ☀️">${esc(t.desc)}</textarea><small class="muted"><span data-desclen>${t.desc.length}</span>/120 · everyone can see it</small></label>
       <div class="opt"><b>Style</b><small class="muted">A complete look for the whole site, just for you.</small><div class="styles">${STYLES.map(x => `<button class="stl" data-act="theme" data-id="${x.id}" aria-pressed="${t.theme===x.id}" style="--a:${x.v.bg};--b:${x.v.primary};--c:${x.v.accent};--d:${x.v.surface}"><i></i><span><b>${esc(x.name)}</b><small>${esc(x.tag)}</small></span></button>`).join('')}</div></div>
@@ -658,14 +746,31 @@ async function readPhoto(file){
   const m = Math.min(img.width, img.height); cv.getContext('2d').drawImage(img, (img.width-m)/2, (img.height-m)/2, m, m, 0, 0, S, S);
   return cv.toDataURL('image/jpeg', .82);
 }
+// A photo kept in the website's images folder (from Push to GitHub) under the old name moves with a rename.
+async function repoPhoto(name){ try { const r = await fetch('images/'+encodeURIComponent(name)+'.jpg', { cache: 'no-store' }); if (!r.ok) return null; const b = await r.blob(); return /^image\//.test(b.type) ? await readPhoto(b) : null; } catch(e) { return null; } }
 async function saveProfileSheet(){
   if (!sheet || sheet.kind !== 'profile' || !db) return;
-  const t = sheet, data = { photo: t.photo || null, desc: String(t.desc || '').trim().slice(0,120), theme: t.theme, mode: t.mode, at: Date.now() };
-  t.busy = true; renderSheet();
-  profiles = { ...profiles, [pkey(me)]: { ...profileOf(me), ...data } };
-  LS.set('dutyRoster.theme.'+pkey(me), t.theme);
-  try { await db.merge('profiles/'+pkey(me), data); sheet = null; renderSheet(); applyMyTheme(); render(true); toast('Profile saved.'); }
-  catch(e) { t.busy = false; renderSheet(); toast(e && e.code === 'permission-denied' ? 'The database refused the profile. Check that firestore.rules allows profiles.' : 'Could not save. Check your connection and try again.'); }
+  const t = sheet, from = me, to = String(t.name || '').replace(/\s+/g, ' ').trim(), renaming = to !== from;
+  if (renaming) {
+    const why = nameProblem(to, from) || (hasDraft() ? 'Save or discard the team changes in Settings first.' : '') || (!demo && !navigator.onLine ? 'Connect to the internet to change your name.' : '');
+    if (why) { t.nameErr = why; renderSheet(); const i = $('#namein'); if (i) i.focus(); return; }
+  }
+  t.busy = true; t.nameErr = ''; renderSheet();
+  let photo = t.photo || null;
+  if (renaming && !photo && !t.photoGone) photo = await repoPhoto(from);
+  const data = { photo, desc: String(t.desc || '').trim().slice(0,120), theme: t.theme, mode: t.mode, at: Date.now() };
+  try {
+    if (renaming) await renameMe(to);
+    profiles = { ...profiles, [pkey(me)]: { ...profileOf(me), ...data } };
+    LS.set('dutyRoster.theme.'+pkey(me), t.theme);
+    await db.merge('profiles/'+pkey(me), data);
+    if (renaming && pkey(from) !== pkey(me) && db.del) db.del('profiles/'+pkey(from)).catch(() => {});
+    sheet = null; renderSheet(); applyMyTheme(); render(true); if (renaming) syncPush();
+    toast(renaming ? 'Saved. Everyone now sees you as '+me+'.' : 'Profile saved.');
+  } catch(e) {
+    t.busy = false; if (e && e.shown) t.nameErr = e.message; renderSheet();
+    if (!(e && e.shown)) toast(e && e.code === 'permission-denied' ? 'The database refused the profile. Check that firestore.rules allows profiles.' : 'Could not save. Check your connection and try again.');
+  }
 }
 
 /* ---------- sound + role-change alerts (while the page is open) ---------- */
@@ -821,10 +926,11 @@ function refreshPushCard(){ document.querySelectorAll('[data-push]').forEach(el 
 const PLAN_DAYS = 14; let planT = null, planBusy = false;
 function queuePlan(soon){ if (!db || !pushReady()) return; clearTimeout(planT); planT = setTimeout(writePlan, soon ? 400 : 2500 + Math.random()*4000); }
 function buildPlan(){
-  const names = [...new Set(Object.values(pushDevices || {}).map(d => d && d.name).filter(n => staff().includes(n)))];
+  // Device names as saved (a phone saved before a rename still gets the right roles until it updates itself).
+  const names = [...new Set(Object.values(pushDevices || {}).map(d => d && d.name).filter(n => n && staff().includes(liveName(n))))];
   const lead = (+C().leadMin || 3) * 60000, from = sod(new Date()), groups = {};
   if (names.length) for (let k = 0; k < PLAN_DAYS; k++) { const d = addDays(from, k), r = dayRoster(d); if (!r.shifts) continue;
-    for (const n of names) { const items = myItems(r, n, -1); items.forEach((it, i) => {
+    for (const n of names) { const items = myItems(r, liveName(n), -1); items.forEach((it, i) => {
       const start = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, it.sl.start).getTime(), at = start - lead;
       const prev = i > 0 && items[i-1].sl.end === it.sl.start ? items[i-1].role.name : null;
       const title = it.role.brk ? 'Break at ' + fmtT(it.sl.start) : 'At ' + fmtT(it.sl.start) + ' you are ' + it.role.name;
@@ -960,6 +1066,7 @@ function viewTeam(){
   return hello + body + `<div class="row"><button class="btn" data-act="tab" data-tab="roster">See full routine →</button></div>` + viewDl(day);
 }
 function addObserver(v){
+  if (!isAdmin()) return toast('Only the admin can add managers.');
   v = String(v || '').trim(); if (!v) return;
   if (staff().includes(v)) return toast(v+' is on the team already. Managers are people who are not on the roster.');
   if (!observers().includes(v)) saveCfg({ observers: [...observers(), v] });
@@ -980,7 +1087,9 @@ function render(force){
   if (dbState === 'loading') { v.innerHTML = `<div class="empty"><h2>Loading the team…</h2></div>`; return; }
   if (dbState === 'none') { v.innerHTML = `<div class="empty"><h2>Can't reach the team roster</h2><p class="muted">${esc(dbError)}</p></div>`; return; }
   if (tab === 'settings') v.innerHTML = viewSettings();
-  else if (!staff().length) v.innerHTML = `<div class="empty"><h2>No team set up yet</h2><p class="muted">Start with the 9 agents from the current roster sheet, or add your own in Settings.</p><div class="row" style="justify-content:center"><button class="btn primary" data-act="seed">Set up with current team</button><button class="btn" data-act="tab" data-tab="settings">Open settings</button></div></div>`;
+  else if (!staff().length) v.innerHTML = isAdmin()
+    ? `<div class="empty"><h2>No team set up yet</h2><p class="muted">Start with the 9 agents from the current roster sheet, or add your own in Settings.</p><div class="row" style="justify-content:center"><button class="btn primary" data-act="seed">Set up with current team</button><button class="btn" data-act="tab" data-tab="settings">Open settings</button></div></div>`
+    : `<div class="empty"><h2>No team set up yet</h2><p class="muted">The admin sets up the team.</p><div class="row" style="justify-content:center"><button class="btn" data-act="admin-open">Admin access</button></div></div>`;
   else if (!signedIn()) v.innerHTML = viewWho();
   else if (isObs() && (tab === 'spin' || tab === 'scratch')) { tab = 'home'; v.innerHTML = viewTeam(); }
   else if (tab === 'roster') v.innerHTML = viewRoster();
@@ -1070,8 +1179,10 @@ function viewRoster(){
   const mon = monday(viewDate), wd = C().workDays || [];
   const strip = `<div class="weekbar"><button class="arrow" data-act="wk" data-dir="-1" aria-label="Previous week">‹</button><div class="days">${[...Array(7)].map((_,i) => { const d = addDays(mon,i); return `<button data-act="day" data-key="${dkey(d)}" aria-pressed="${dkey(d)===dkey(viewDate)}" class="${dkey(d)===dkey(now)?'istoday':''} ${wd.includes(d.getDay())?'':'off'}"><span>${DAYN[d.getDay()]}</span><b>${d.getDate()}</b></button>`; }).join('')}</div><button class="arrow" data-act="wk" data-dir="1" aria-label="Next week">›</button></div>`;
   if (r.off) return strip + `<div class="empty"><h2>${fmtDay(viewDate)} is a day off</h2><p class="muted">Change working days in Settings.</p></div>` + viewDl(viewDate);
-  const att = `<section class="card" style="display:grid;gap:10px"><div class="row" style="justify-content:space-between"><h3>On duty · ${fmtDay(viewDate)} · ${r.order.length} of ${r.full.length}</h3><span class="muted" style="font-size:13px">${isObs()?'View only':'Tap a name to mark sick leave'}</span></div>
-    <div class="chips">${r.full.map(n => { const out = r.absent.includes(n), inner = `${avatar(n,26)}<span class="nm">${esc(n)}</span>${out?'<span>· Leave</span>':''}`; return isObs() ? `<span class="chip ${out?'out':''}">${inner}</span>` : `<button class="chip ${out?'out':''}" data-act="absent" data-name="${esc(n)}" aria-pressed="${out}">${inner}</button>`; }).join('')}</div>
+  const canLeave = isAdmin() && !readOnly;
+  const fixed = r.locked ? `<span class="pill" title="Settings changes don't change this day. Only leave marked by the admin does.">🔒 Fixed</span>` : '';
+  const att = `<section class="card" style="display:grid;gap:10px"><div class="row" style="justify-content:space-between"><h3>On duty · ${fmtDay(viewDate)} · ${r.order.length} of ${r.full.length}</h3><span class="row" style="gap:8px">${fixed}<span class="muted" style="font-size:13px">${canLeave?'Admin: tap a name to mark leave':'Leave is marked by the admin'}</span></span></div>
+    <div class="chips">${r.full.map(n => { const out = r.absent.includes(n), inner = `${avatar(n,26)}<span class="nm">${esc(n)}</span>${out?'<span>· Leave</span>':''}`; return canLeave ? `<button class="chip ${out?'out':''}" data-act="absent" data-name="${esc(n)}" aria-pressed="${out}">${inner}</button>` : `<span class="chip ${out?'out':''}">${inner}</span>`; }).join('')}</div>
     ${r.dayOff && r.dayOff.length ? `<p class="muted" style="font-size:13px">Off on Saturdays: ${r.dayOff.map(esc).join(', ')}</p>` : ''}</section>`;
   const pastN = isToday ? r.shifts.reduce((n, sh) => n + sh.slots.filter(sl => sl.end <= tnow).length, 0) : 0;
   const pastBar = pastN ? `<div class="row"><span class="muted" style="font-size:13px">${showPast?'Showing':'Hiding'} ${pastN} finished time slot${pastN>1?'s':''}</span><button class="btn sm" data-act="past">${showPast?'Hide finished':'Show finished'}</button></div>` : '';
@@ -1079,7 +1190,7 @@ function viewRoster(){
     const len = sh.slots.length ? sh.slots[0].end - sh.slots[0].start : 0;
     const rows = isToday && !showPast ? sh.slots.filter(sl => sl.end > tnow) : sh.slots;
     if (!rows.length) return `<section class="donebar"><b>${esc(sh.name)}</b><span class="mono muted">${fmtRange(parseHM(sh.start),parseHM(sh.end))}</span><span class="pill">Finished</span></section>`;
-    return `<section><div class="shifthead"><h2>${esc(sh.name)}</h2><span class="mono muted">${fmtRange(parseHM(sh.start),parseHM(sh.end))}</span><span class="pill">${C().slotMode==='auto'?'~':''}${len} min per role</span></div>
+    return `<section><div class="shifthead"><h2>${esc(sh.name)}</h2><span class="mono muted">${fmtRange(parseHM(sh.start),parseHM(sh.end))}</span><span class="pill">${r.slotMode==='auto'?'~':''}${len} min per role</span></div>
     <div class="sheetwrap"><table class="sheet"><colgroup><col class="tcol">${r.positions.map(() => '<col>').join('')}</colgroup>
     <thead><tr><th>Time</th>${r.positions.map(p => `<th class="${p.brk?'brkh':''}">${esc(p.name)}</th>`).join('')}</tr></thead><tbody>
     ${rows.map(sl => { const cur = isToday && sl.start <= tnow && tnow < sl.end, past = isToday && sl.end <= tnow;
@@ -1284,9 +1395,12 @@ function viewSettings(){
     <p class="muted" style="font-size:13px">Keep this page open (on a till, or your phone with the screen on). It chimes ${+c.leadMin||3} minutes before each change.</p>
     ${waNumber() ? `<div class="row"><a class="btn wa sm" href="${esc('https://wa.me/'+waNumber()+'?text='+encodeURIComponent('START '+me))}" target="_blank" rel="noopener">Get alerts on WhatsApp</a><span class="muted" style="font-size:12px">Send <b>NOW</b> for your role, <b>STOP</b> to turn off.</span></div>` : ''}</section>
   ${viewPush()}` : '';
+  const todayFixed = !!lockOf(sod(new Date()));
   const adminCard = adm
-    ? `<section class="card" style="display:grid;gap:10px"><h3>Admin</h3><p class="muted" style="font-size:13px">Admin is on for this device. Change the team settings below, then tap <b>Save changes</b> at the bottom.</p><button class="btn ghost danger" data-act="admin-lock" style="justify-self:start">Lock admin on this device</button></section>`
-    : `<section class="card" style="display:grid;gap:8px"><h3>Team settings</h3><p class="muted" style="font-size:13px">The team, roles, shifts and Saturday settings are managed by the admin.</p></section>`;
+    ? `<section class="card" style="display:grid;gap:10px"><h3>Admin</h3><p class="muted" style="font-size:13px">Admin is on for this device. Change the team settings below, then tap <b>Save changes</b> at the bottom.</p>
+      <p class="muted" style="font-size:13px">${todayFixed ? `<b>Today is fixed.</b> Changes here apply from tomorrow. Only leave (Routine → tap a name) changes a day that has started.` : 'A day is fixed as soon as it starts. Until then it follows these settings.'}</p>
+      <div class="row">${todayFixed ? `<button class="btn ghost" data-act="rebuild-today">Rebuild today from settings</button>` : ''}<button class="btn ghost danger" data-act="admin-lock">Lock admin on this device</button></div></section>`
+    : `<section class="card" style="display:grid;gap:8px"><h3>Team settings</h3><p class="muted" style="font-size:13px">Only the admin changes the roster: the team, leave, roles, shifts and Saturdays. Once a day starts its roster is fixed; only leave marked by the admin changes it.</p><p class="muted" style="font-size:13px">You can change your name, photo and theme (tap your picture), and make your weekly pick in Spin or Scratch.</p></section>`;
   const about = `<section class="card" style="display:grid;gap:8px"><h3>About</h3><p><b>${APP_NAME}</b> v${VERSION}</p>
     <p class="muted" style="font-size:13px">${demo?'Demo mode: everything is saved on this device only. Fill in firebase-config.js to share the roster with the team.':'Shared roster: saved changes reach everyone instantly.'}</p></section>`;
   if (!adm) return `${readOnly?'<div class="pill bad">View only: you can\'t change settings</div>':''}
@@ -1299,7 +1413,7 @@ function viewSettings(){
   let satMsg;
   if (!sr.on) satMsg = 'Saturday uses the normal team and roles.';
   else if (satN === satRoles.length) satMsg = `Saturday: ${satN} people for ${satRoles.length} roles. Everyone has a role, no Break.`;
-  else if (satN > satRoles.length) satMsg = `Saturday: ${satN} people but only ${satRoles.length} roles, so ${satN-satRoles.length} ${satN-satRoles.length>1?'people sit':'person sits'} out each slot (shown as Break). Add a role such as TAB4, or take one more person off.`;
+  else if (satN > satRoles.length) { const extra = buildPositions(satN, satRoles).map(p => p.name).filter(n => !satRoles.some(r => r.name === n)); satMsg = `Saturday: ${satN} people for ${satRoles.length} roles, so the extra ${satN-satRoles.length > 1 ? 'people get' : 'person gets'} ${extra.map(esc).join(', ')}. Nobody is put on a second Break.`; }
   else { const used = buildPositions(satN, satRoles).map(p => p.name), left = satRoles.map(r => r.name).filter(n => !used.includes(n)); satMsg = `Saturday: ${satN} people for ${satRoles.length} roles, so ${left.map(esc).join(', ')} won't be filled.`; }
   const ov = c.wheelOverride && c.wheelOverride.wk === w.next && Date.now() < c.wheelOverride.until;
   const waNum = draft && 'waNumber' in draft ? draft.waNumber : ((cfg && cfg.waNumber) || '');
@@ -1314,7 +1428,7 @@ function viewSettings(){
     <form class="addrow" data-form="staff"><input id="newstaff" placeholder="Add agent name" autocomplete="off" maxlength="30"><button class="btn primary">Add</button></form>
     <p class="muted" style="font-size:12px">Tap a picture to set that person's photo. People can also add their own by tapping their picture at the top.</p></section>
 
-  <section class="card" style="display:grid;gap:10px"><h3>Roles · in priority order</h3><p class="muted" style="font-size:13px">When someone is on leave, the last working role is dropped first so the front desk stays covered.</p>
+  <section class="card" style="display:grid;gap:10px"><h3>Roles · in priority order</h3><p class="muted" style="font-size:13px">When someone is on leave, the last working role is dropped first so the front desk stays covered. With more people than roles, the extras get TAB3, SAS3, then TAB4 and so on, never a second Break.</p>
     <div class="list">${roles.map((r,i) => `<div class="li"><span class="grow">${esc(r.name)}</span><label class="row" style="gap:4px;font-size:13px"><input type="checkbox" data-set="role-brk" data-i="${i}" ${r.brk?'checked':''}> Break</label>
       <button class="icon" data-act="role-move" data-i="${i}" data-d="-1" aria-label="Move up" ${i?'':'disabled'}>↑</button><button class="icon" data-act="role-move" data-i="${i}" data-d="1" aria-label="Move down" ${i<roles.length-1?'':'disabled'}>↓</button><button class="icon" data-act="role-del" data-i="${i}" aria-label="Remove ${esc(r.name)}">✕</button></div>`).join('')}</div>
     <form class="addrow" data-form="role"><input id="newrole" placeholder="Add role, e.g. SAS4" autocomplete="off" maxlength="20"><button class="btn primary">Add</button></form></section>
@@ -1330,7 +1444,7 @@ function viewSettings(){
     <p class="muted" style="font-size:13px">${satMsg}</p></section>
 
   <section class="card" style="display:grid;gap:12px"><h3>Shifts and timing</h3>
-    <div class="list">${c.shifts.map((s,i) => `<div class="li"><input type="text" data-set="shift-name" data-i="${i}" value="${esc(s.name)}" style="width:100px"><input type="time" data-set="shift-start" data-i="${i}" value="${esc(s.start)}"><span>to</span><input type="time" data-set="shift-end" data-i="${i}" value="${esc(s.end)}"><button class="icon" data-act="shift-del" data-i="${i}" aria-label="Remove shift">✕</button></div>`).join('')}</div>
+    <div class="list">${c.shifts.map((s,i) => `<div class="li shiftrow"><input type="text" data-set="shift-name" data-i="${i}" value="${esc(s.name)}" aria-label="Shift name"><input type="time" data-set="shift-start" data-i="${i}" value="${esc(s.start)}"><span>to</span><input type="time" data-set="shift-end" data-i="${i}" value="${esc(s.end)}"><button class="icon" data-act="shift-del" data-i="${i}" aria-label="Remove shift">✕</button></div>`).join('')}</div>
     <button class="btn sm" data-act="shift-add" style="justify-self:start">Add shift</button>
     <label class="field"><b>Time per role</b><select data-set="slotMode">${[['auto','Auto: everyone does every role once per shift'],['30','30 minutes'],['45','45 minutes'],['60','1 hour']].map(([v,l]) => `<option value="${v}" ${String(c.slotMode)===v?'selected':''}>${l}</option>`).join('')}</select></label>
     <div class="field"><b>Working days</b><div class="toggles">${[1,2,3,4,5,6,0].map(d => `<button data-act="wday" data-d="${d}" aria-pressed="${c.workDays.includes(d)}">${DAYN[d]}</button>`).join('')}</div></div>
@@ -1379,7 +1493,7 @@ document.addEventListener('click', e => {
       if (pushReady() && pushEnv() === 'ok' && Notification.permission !== 'denied') enablePush();
       else try { if (window.Notification && Notification.permission === 'default') Notification.requestPermission(); } catch(err) {} break;
     case 'signout': forgetDevice(); sheet = null; renderSheet(); me = null; rememberMe(null); setUrlMe(null); hl = null; tab = 'home'; applyMyTheme(); render(true); break;
-    case 'seed': saveCfg({ staff: SEED_STAFF.slice(), anchorWeek: wkKey(new Date()), rulesFrom: '2000-01-01' }); toast('Team added. Everyone can now choose their name.'); break;
+    case 'seed': if (!isAdmin()) return toast('Only the admin can set up the team.'); saveCfg({ staff: SEED_STAFF.slice(), anchorWeek: wkKey(new Date()), rulesFrom: '2000-01-01' }); toast('Team added. Everyone can now choose their name.'); break;
     case 'test-alert': unlockAudio(); setTimeout(() => { const s = Math.ceil((new Date().getHours()*60+new Date().getMinutes()+3)/5)*5; fireAlert({ role:'Greeter', brk:false, at:s, end:s+30, from:'SAS1', hideAt:Date.now()+20000 }); }, 120); break;
     case 'notif': try { Notification.requestPermission().then(() => render(true)).catch(() => {}); } catch(err) {} break;
     case 'wake': if (wakeLock) { wantWake = false; wakeLock.release(); wakeLock = null; render(true); } else { wantWake = true; getWake(); } break;
@@ -1387,7 +1501,9 @@ document.addEventListener('click', e => {
     case 'banner-close': bannerData = null; clearInterval(alarmT); renderBanner(); break;
     case 'day': viewDate = fromKey(el.dataset.key); render(true); break;
     case 'wk': viewDate = addDays(viewDate, 7 * +el.dataset.dir); render(true); break;
-    case 'absent': if (readOnly || isObs()) return toast('View only.'); toggleAbsent(el.dataset.name); break;
+    case 'absent': if (readOnly || !isAdmin()) return toast('Only the admin can mark leave.'); toggleAbsent(el.dataset.name); break;
+    case 'rebuild-today': if (el.dataset.confirm !== '1') { el.dataset.confirm = '1'; el.textContent = 'Tap again to rebuild today'; return; } rebuildToday(); break;
+    case 'admin-open': openSheet('admin'); break;
     case 'hl': hl = el.dataset.name && el.dataset.name !== hl ? el.dataset.name : null; render(true); break;
     case 'spin': doSpin(); break;
     case 'past': showPast = !showPast; render(true); break;
@@ -1416,7 +1532,7 @@ document.addEventListener('click', e => {
     case 'sheet-cancel': closeSheet(); break;
     case 'theme': if (sheet) { sheet.theme = el.dataset.id; applyTheme(sheet.theme, sheet.mode); renderSheet(); } break;
     case 'mode': if (sheet) { sheet.mode = el.dataset.v; applyTheme(sheet.theme, sheet.mode); renderSheet(); } break;
-    case 'photo-del': if (sheet) { sheet.photo = null; renderSheet(); } break;
+    case 'photo-del': if (sheet) { sheet.photo = null; sheet.photoGone = true; renderSheet(); } break;
     case 'profile-save': saveProfileSheet(); break;
     case 'admin-go': sheet = null; renderSheet(); tab = 'settings'; LS.set('dutyRoster.tab', tab); render(true); window.scrollTo(0,0); break;
     case 'admin-lock': setAdmin(false); sheet = null; renderSheet(); render(true); toast('Admin is locked on this device.'); break;
@@ -1437,7 +1553,8 @@ document.addEventListener('change', e => {
 });
 document.addEventListener('input', e => {
   if (e.target.dataset && e.target.dataset.gh) { LS.set(e.target.dataset.gh === 'token' ? 'dutyRoster.ghToken' : 'dutyRoster.ghRepo', e.target.value.trim() || null);
-    const btn = document.querySelector('[data-act="gh-push"]'); if (btn) btn.disabled = !ghToken() || !!gh.busy; return; } if (e.target.id === 'descin' && sheet) { sheet.desc = e.target.value; const n = document.querySelector('[data-desclen]'); if (n) n.textContent = e.target.value.length; } });
+    const btn = document.querySelector('[data-act="gh-push"]'); if (btn) btn.disabled = !ghToken() || !!gh.busy; return; } if (e.target.id === 'descin' && sheet) { sheet.desc = e.target.value; const n = document.querySelector('[data-desclen]'); if (n) n.textContent = e.target.value.length; }
+  if (e.target.id === 'namein' && sheet) { sheet.name = e.target.value; if (sheet.nameErr) { sheet.nameErr = ''; const er = e.target.parentNode.querySelector('.errline'); if (er) er.remove(); } } });
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && sheet) closeSheet(); });
 document.addEventListener('submit', e => {
   e.preventDefault(); const f = e.target.dataset.form;
@@ -1495,10 +1612,11 @@ function tickNow(){
   const t = nowMin(now); let sig = dkey(now)+'|';
   if (cfg && staff().length) { const sl = allSlots(dayRoster(sod(now))); sig += sl.filter(s => s.start <= t).length+'|'+sl.filter(s => s.end <= t).length; }
   if (cfg) sig += '|'+pickWindow().open;
-  if (sig !== lastSig) { const first = !lastSig; if (lastSig && lastSig.slice(0,10) !== sig.slice(0,10)) showPast = false; lastSig = sig; if (!first && tab !== 'settings' && !spin.anim && !scratch.lock) render(); }
+  if (sig !== lastSig) { const first = !lastSig; if (lastSig && lastSig.slice(0,10) !== sig.slice(0,10)) { showPast = false; queueLock(); } lastSig = sig; if (!first && tab !== 'settings' && !spin.anim && !scratch.lock) render(); }
   updateLive();
 }
 setInterval(tickNow, 1000);
+setInterval(queueLock, 5*60000); // safety net: a day that couldn't be fixed yet (offline, unsaved admin changes) is tried again
 setInterval(renderHeader, 15000);
 window.addEventListener('online', () => { renderHeader(); updateLive(); });
 window.addEventListener('offline', () => { renderHeader(); if (!demo) toast('You are offline. Changes will save when the connection is back.'); });
