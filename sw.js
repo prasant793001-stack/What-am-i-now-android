@@ -8,7 +8,7 @@ self.addEventListener('activate', e => e.waitUntil(self.clients.claim()));
 self.addEventListener('push', e => {
   let d = {};
   try { d = e.data ? e.data.json() : {}; } catch (err) { d = { body: e.data ? e.data.text() : '' }; }
-  const title = d.title || 'BC Al Ain Routine';
+  const title = d.title || 'Al Ain BC';
   const opts = {
     body: d.body || 'Your role is about to change.',
     tag: d.tag || 'role-change',

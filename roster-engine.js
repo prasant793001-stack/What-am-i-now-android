@@ -34,7 +34,8 @@ function liveName(n){const rn=renameMap();if(!(n in rn))return n;const live=live
 const uniq=a=>[...new Set(a)];
 function fixAbsences(a){const out={};for(const [k,d] of Object.entries(a||{})){if(!d||typeof d!=='object'){out[k]=d;continue}const x={...d};if(Array.isArray(d.names))x.names=uniq(d.names.map(liveName));
   if(d.lock&&typeof d.lock==='object'){x.lock={...d.lock};if(Array.isArray(d.lock.full))x.lock.full=uniq(d.lock.full.map(liveName));if(Array.isArray(d.lock.dayOff))x.lock.dayOff=uniq(d.lock.dayOff.map(liveName))}out[k]=x}return out}
-function fixWheels(w){const out={};for(const [k,d] of Object.entries(w||{})){if(!d||typeof d!=='object'||!d.assign){out[k]=d;continue}const a={};for(const [p,v] of Object.entries(d.assign)){const q=liveName(p);if(!(q in a))a[q]=v}out[k]={...d,assign:a}}return out}
+function fixWheels(w){const out={};const mv=m=>{const a={};for(const [p,v] of Object.entries(m||{})){const q=liveName(p);if(!(q in a))a[q]=v}return a};
+  for(const [k,d] of Object.entries(w||{})){if(!d||typeof d!=='object'||!d.assign){out[k]=d;continue}out[k]={...d,assign:mv(d.assign)};if(d.game)out[k].game=mv(d.game)}return out}
 /** Give the engine the latest data from Firestore. Call after every change. */
 function setData(cfg,absences,wheels){S.cfg=cfg||null;cache=new Map();const rn=Object.keys(renameMap()).length;S.absences=rn?fixAbsences(absences):(absences||{});S.wheels=rn?fixWheels(wheels):(wheels||{})}
 /* ---------- roster engine ---------- */
@@ -46,6 +47,10 @@ function setData(cfg,absences,wheels){S.cfg=cfg||null;cache=new Map();const rn=O
 //    Saturday changes start from config.rulesFrom, so a day that is already running never changes mid-shift.
 //  * More people than roles: the extras get working roles, never "Break 2". Roles left out that day come back first
 //    (TAB3, then SAS3), then new ones are added: TAB4, SAS4, TAB5…
+//  * Half days (Settings → Half days): one shift only on those weekdays. Default: Friday 8:00–12:00.
+//  * Role sequence: each time slot everyone moves one role along the sequence (seqOf): Greeter → the next role → …
+//    and the last one goes back to the first. The roles list in Settings is kept in "positions" order: the first role,
+//    then the sequence backwards (listFromSeq/seqOf convert between the two).
 //  * Fixed days: when a working day starts, the site saves it (absences/<date>.lock: who works, in which order, the roles
 //    and shift times). After that, settings changes, new people and wheel picks never change that day; only leave does.
 const normName=s=>String(s||'').toLowerCase().replace(/[^a-z0-9]/g,'');
@@ -68,6 +73,15 @@ function liveRoles(d){const rs=rolesAll();if(!satApplies(d))return rs;const off=
 function dayOffStaff(d){const L=lockOf(d);return L?(L.dayOff||[]).slice():satOff(d)}
 function dayRoles(d){const L=lockOf(d);return L?L.roles.map(r=>({name:String(r.name),brk:!!r.brk})):liveRoles(d)}
 function isWorkDay(d){return (C().workDays||[]).includes(d.getDay())}
+// Half days: on these weekdays there is one shift only. Without a setting, Friday is 8:00–12:00 (from 26 Oct 2026).
+const SHORT_DEFAULT=[{day:5,start:'08:00',end:'12:00',from:'2026-10-26'}];
+function shortDays(){const s=C().shortDays;if(!Array.isArray(s))return SHORT_DEFAULT.map(x=>({...x}));return s.filter(x=>x&&x.start&&x.end&&Number.isInteger(+x.day)).map(x=>({day:+x.day,start:String(x.start),end:String(x.end),from:x.from?String(x.from):''}))}
+function shortOf(d){const k=dkey(d);return shortDays().find(x=>x.day===d.getDay()&&(!x.from||k>=x.from))||null}
+function dayShifts(d){const h=shortOf(d);if(h)return[{name:'Half day',start:h.start,end:h.end}];return (C().shifts||[]).map(x=>({name:String(x.name||''),start:String(x.start||''),end:String(x.end||'')}))}
+// Role sequence <-> positions order (see the notes at the top).
+function moveIdx(n){return n?[0,...Array.from({length:n-1},(_,k)=>n-1-k)]:[]}
+function seqOf(list){return moveIdx((list||[]).length).map(i=>list[i])}
+function listFromSeq(seq){return (seq||[]).length?[seq[0],...seq.slice(1).reverse()]:[]}
 function prevWorkDay(d){for(let k=1;k<=7;k++){const x=addDays(d,-k);if(isWorkDay(x))return x}return null}
 function weekDays(wk){const m=fromKey(wk);return [...Array(7)].map((_,i)=>addDays(m,i)).filter(isWorkDay)}
 function scheduled(d){const off=dayOffStaff(d);return staff().filter(n=>!off.includes(n))}
@@ -128,8 +142,7 @@ function dayFull(d){const L=lockOf(d);return L?L.full.slice():liveFull(d)}
 /** What gets saved when a day becomes fixed: the day exactly as the current settings make it (ignores any saved lock). */
 function lockData(d){
   if(!staff().length||!isWorkDay(d))return null;const c=C();
-  return{v:1,full:liveFull(d).slice(),dayOff:satOff(d).slice(),roles:liveRoles(d),ref:rolesAll(),
-    shifts:(c.shifts||[]).map(s=>({name:String(s.name||''),start:String(s.start||''),end:String(s.end||'')})),slotMode:c.slotMode==null?'auto':c.slotMode};
+  return{v:1,full:liveFull(d).slice(),dayOff:satOff(d).slice(),roles:liveRoles(d),ref:rolesAll(),shifts:dayShifts(d),slotMode:c.slotMode==null?'auto':c.slotMode};
 }
 // The week's Monday order including people who are off that day (Settings list).
 function weekOrder(wk){const days=weekDays(wk),Q=weekQueue(wk);if(!days.length)return Q;const f=liveFull(days[0]);const i=f.length?Q.indexOf(f[0]):0;return rotate(Q,Math.max(0,i))}
@@ -147,7 +160,7 @@ function dayRoster(date){
     const full=L?L.full.slice():liveFull(date),dayOff=L?(L.dayOff||[]).slice():satOff(date);
     const absent=((S.absences[key]||{}).names||[]).filter(x=>full.includes(x));
     const order=full.filter(x=>!absent.includes(x)),positions=L?buildPositions(order.length,L.roles,Array.isArray(L.ref)?L.ref:L.roles):buildPositions(order.length,liveRoles(date));
-    const sh0=L?L.shifts:(c.shifts||[]),mode=L?(L.slotMode==null?'auto':L.slotMode):c.slotMode;
+    const sh0=L?L.shifts:dayShifts(date),mode=L?(L.slotMode==null?'auto':L.slotMode):c.slotMode;
     const shifts=sh0.map(sh=>({...sh,slots:buildSlots(parseHM(sh.start),parseHM(sh.end),order.length,mode).map((sl,i)=>({...sl,cells:positions.map((_,j)=>order[(i+j)%order.length])}))}));
     res={key,full,order,absent,dayOff,positions,shifts,locked:!!L,slotMode:mode};
   }
@@ -163,4 +176,4 @@ function myItems(r,who,t){const items=[];if(!r.shifts||(r.absent||[]).includes(w
 
 export { DAYN, MON, DEFAULTS, sod, addDays, dkey, fromKey, monday, wkKey, parseHM, fmtT, fmtRange, fmtDay, fmtCd, hash, rng, shuffle, rotate, pkey, C, staff, setData, normalize, baseOrder, cleanAssign, forbidsFor, match, wheelOrder, buildPositions, buildSlots, dayRoster, allSlots, roleOf, myItems,
   normName, isStandby, rolesAll, rulesFrom, isNew, satRule, satApplies, dayOffStaff, dayRoles, isWorkDay, prevWorkDay, weekDays, scheduled, hasWheel, weekQueue, wheelForbids, lastWorking, dayFull, weekOrder,
-  liveName, renameMap, lockOf, isLocked, lockData };
+  liveName, renameMap, lockOf, isLocked, lockData, shortDays, shortOf, dayShifts, moveIdx, seqOf, listFromSeq };

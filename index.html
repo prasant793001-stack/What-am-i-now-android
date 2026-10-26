@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BC Al Ain Routine</title>
+<title>Al Ain BC</title>
 <meta name="theme-color" content="#0B0B10">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="BC Routine">
+<meta name="apple-mobile-web-app-title" content="Al Ain BC">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap">
@@ -48,11 +48,16 @@ header.top{position:sticky;top:0;z-index:5;background:var(--surface);border-bott
 .brand small{display:block;color:var(--muted);font-size:12px}
 .logo{width:36px;height:36px;flex:none;display:block;border-radius:10px;box-shadow:0 2px 8px rgba(124,58,237,.35)}
 .tabs{display:flex;gap:3px;background:var(--sunk);border:1px solid var(--line);border-radius:12px;padding:3px}
-.tabs button{border:0;background:none;padding:7px 12px;border-radius:9px;font-weight:600;color:var(--muted);white-space:nowrap}
+.tabs button{border:0;background:none;padding:7px 12px;border-radius:9px;font-weight:600;color:var(--muted);white-space:nowrap;line-height:1.15}
 .tabs button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
-@media (max-width:640px){.tabs{order:3;width:100%}.tabs button{flex:1;padding:7px 2px;font-size:13px}}
+@media (max-width:640px){.tabs{order:3;width:100%}.tabs button{flex:1;padding:7px 2px;font-size:13px;white-space:normal}}
 .mechip{display:flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--sunk);border-radius:999px;padding:3px 12px 3px 3px;font-weight:600}
-main{padding-block:16px 60px;display:grid;gap:16px}
+#mebox{display:flex;align-items:center;gap:8px}
+.wdot{width:11px;height:11px;border-radius:50%;flex:none;display:inline-block;box-shadow:0 0 0 2px var(--surface)}
+.wdot.ok{background:#16A34A;box-shadow:0 0 0 2px var(--surface),0 0 8px rgba(22,163,74,.8)}
+.wdot.bad{background:#DC2626;box-shadow:0 0 0 2px var(--surface),0 0 8px rgba(220,38,38,.7)}
+.adminchip{border:1px solid #7C3AED;background:#7C3AED1A;color:#7C3AED;border-radius:999px;padding:5px 10px;font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+main{padding-block:16px 96px;display:grid;gap:16px}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px}
 h2{font-family:var(--f-display);font-weight:800;font-size:20px;margin:0;letter-spacing:-.01em;text-wrap:balance}
 h3{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:0;font-weight:700}
@@ -221,6 +226,41 @@ ol.steps{margin:0;padding-left:20px;display:grid;gap:6px}
 .scard .under b{font-family:var(--f-display);font-weight:800;font-size:40px;line-height:1}
 .scard canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:grab;transition:opacity .6s}
 .scard.gone canvas{opacity:0;pointer-events:none}
+/* tools button and panels */
+#toolsbtn{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:14;width:58px;height:58px;border-radius:50%;border:0;background:#0B0B10;color:#D8B4FE;display:grid;place-items:center;box-shadow:inset 0 0 0 2px #A855F7,0 10px 28px rgba(76,29,149,.45)}
+#toolsbtn:hover{color:#fff}
+body.hasbar:not(.cardvis) #toolsbtn{bottom:calc(92px + env(safe-area-inset-bottom,0px))}
+.tools{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
+.tool{border:1px solid var(--line);background:var(--sunk);color:var(--ink);border-radius:16px;padding:14px 12px;display:grid;gap:6px;justify-items:start;text-align:left;text-decoration:none;min-width:0}
+.tool:hover{border-color:var(--primary)}
+.tool .ti{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:#0B0B10;color:#D8B4FE;box-shadow:inset 0 0 0 1.5px #A855F7}
+.tool b{font-size:15px;line-height:1.2}.tool small{color:var(--muted);font-size:12px;line-height:1.3}
+.qrbox{width:min(320px,100%);aspect-ratio:1;margin:0 auto;border-radius:18px;background:#fff;display:grid;place-items:center;overflow:hidden;border:1px solid var(--line)}
+.qrbox img{width:100%;height:100%;object-fit:contain;image-rendering:pixelated;display:block}
+.qrbox.empty{border:2px dashed var(--line);background:var(--sunk);color:var(--muted);text-align:center;padding:24px;gap:8px;place-content:center}
+.state{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:14px;font-weight:700}
+.state.ok{background:#DCFCE7;color:#14532D}.state.bad{background:#FEE2E2;color:#7F1D1D}
+.checks{display:grid;gap:8px}
+.chk{display:flex;align-items:center;gap:12px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:12px;padding:12px;text-align:left;font-weight:600}
+.chk i{width:24px;height:24px;border-radius:7px;border:2px solid var(--line);display:grid;place-items:center;font-style:normal;flex:none;font-weight:800}
+.chk[aria-pressed="true"]{border-color:#16A34A;background:#F0FDF4;color:#14532D}.chk[aria-pressed="true"] i{background:#16A34A;border-color:#16A34A;color:#fff}
+.backrow{display:flex;align-items:center;gap:8px}
+.handle{cursor:grab;touch-action:none;padding:4px 6px;font-size:18px;line-height:1;color:var(--muted);user-select:none;-webkit-user-select:none}
+.li.dragging{position:relative;z-index:2;box-shadow:var(--shadow);background:var(--surface);transition:none}
+.list[data-drag] .li{transition:transform .15s}
+.chain{font-size:13px;line-height:1.6}.chain b{white-space:nowrap}
+.cktable{display:grid;gap:6px}.cktable div{display:flex;align-items:center;gap:10px;padding:6px 8px;border-radius:10px;background:var(--sunk)}.cktable .r{margin-left:auto;display:flex;align-items:center;gap:12px;font-size:13px;font-weight:600}
+/* next week luck */
+.games{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%}
+.game{border:2px solid var(--line);background:var(--surface);color:var(--ink);border-radius:18px;padding:18px 10px;display:grid;justify-items:center;gap:6px;text-align:center;transition:transform .15s,border-color .15s}
+.game:hover{transform:translateY(-2px);border-color:var(--primary)}
+.game b{font-family:var(--f-display);font-weight:800;font-size:18px;line-height:1.1}.game small{color:var(--muted);font-size:12px}
+.gi{font-size:40px;line-height:1;display:block}.gi.big{font-size:56px}.gi svg{display:block}
+.lcards{display:grid;grid-template-columns:repeat(auto-fill,minmax(72px,1fr));gap:10px;width:100%}
+.lcard{aspect-ratio:3/4;border:0;border-radius:14px;background:linear-gradient(135deg,#0B0B10 0 55%,#3B0764);color:#C084FC;display:grid;place-content:center;justify-items:center;gap:2px;box-shadow:inset 0 0 0 2px #A855F7,var(--shadow);transition:transform .15s}
+.lcard:hover{transform:translateY(-3px) rotate(-1deg)}
+.lcard span{font-family:var(--f-display);font-weight:800;font-size:22px}.lcard small{font-family:var(--f-mono);font-size:12px;opacity:.8}
+@media (prefers-reduced-motion:reduce){.game,.lcard{transition:none}}
 /* settings */
 .sgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:16px;align-items:start}
 .sgrid>*{min-width:0}
@@ -246,7 +286,7 @@ ol.steps{margin:0;padding-left:20px;display:grid;gap:6px}
 @keyframes drop{from{transform:translateY(-30px);opacity:0}to{transform:none;opacity:1}}
 @media (prefers-reduced-motion:reduce){#banner .b{animation:none}.who button{transition:none}.scard canvas{transition:none}}
 #updbtn{position:fixed;left:50%;top:calc(10px + env(safe-area-inset-top,0px));transform:translateX(-50%);z-index:35;border:0;border-radius:999px;padding:9px 16px;background:var(--primary);color:var(--primary-ink);font-weight:700;box-shadow:0 8px 24px rgba(0,0,0,.25);white-space:nowrap}
-#toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:40;background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-weight:600;max-width:calc(100% - 32px);box-shadow:var(--shadow)}
+#toast{pointer-events:none;position:fixed;left:50%;bottom:calc(86px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:40;background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-weight:600;max-width:calc(100% - 32px);box-shadow:var(--shadow)}
 .btn.wa{background:#1F8F4E;border-color:#1F8F4E;color:#fff}
 .syncdot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--primary);margin-right:4px}
 .syncdot.off{background:var(--danger)}
@@ -257,7 +297,7 @@ footer{padding:0 0 24px;text-align:center;font-size:12px}
 <body>
 
 <header class="top"><div class="wrap">
-  <div class="brand"><svg class="logo" viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="bcg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#D8B4FE"/><stop offset=".55" stop-color="#A855F7"/><stop offset="1" stop-color="#7C3AED"/></linearGradient></defs><rect width="64" height="64" rx="16" fill="#0B0B10"/><rect x="3" y="3" width="58" height="58" rx="13.5" fill="none" stroke="url(#bcg)" stroke-width="2.5"/><text x="32" y="42.5" text-anchor="middle" font-family="Bricolage Grotesque, system-ui, sans-serif" font-weight="800" font-size="28" letter-spacing="-1" fill="url(#bcg)">BC</text></svg><div><b>BC Al Ain Routine</b><small id="hdrdate"></small></div></div>
+  <div class="brand"><svg class="logo" viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="bcg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#D8B4FE"/><stop offset=".55" stop-color="#A855F7"/><stop offset="1" stop-color="#7C3AED"/></linearGradient></defs><rect width="64" height="64" rx="16" fill="#0B0B10"/><rect x="3" y="3" width="58" height="58" rx="13.5" fill="none" stroke="url(#bcg)" stroke-width="2.5"/><text x="32" y="42.5" text-anchor="middle" font-family="Bricolage Grotesque, system-ui, sans-serif" font-weight="800" font-size="28" letter-spacing="-1" fill="url(#bcg)">BC</text></svg><div><b>Al Ain BC</b><small id="hdrdate"></small></div></div>
   <nav class="tabs" id="tabs" aria-label="Sections"></nav>
   <div id="mebox"></div>
 </div></header>
@@ -266,15 +306,16 @@ footer{padding:0 0 24px;text-align:center;font-size:12px}
 <div id="banner" hidden></div>
 <div id="sheet" hidden></div>
 <div id="savebar" hidden></div>
+<button id="toolsbtn" data-act="tools" aria-label="Tools: QR code, links, weekly check, Zero Club" title="Tools" hidden><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></button>
 <button id="updbtn" data-act="update-now" hidden></button>
 <div id="toast" role="status" hidden></div>
 
 <script type="module">
 import { DAYN, MON, DEFAULTS, sod, addDays, dkey, fromKey, monday, wkKey, parseHM, fmtT, fmtRange, fmtDay, fmtCd, hash, rotate, pkey, C, staff, setData, cleanAssign, match, buildPositions, dayRoster, allSlots, roleOf, myItems,
-  normName, isStandby, rolesAll, rulesFrom, satRule, weekOrder, wheelForbids, liveName, renameMap, lockOf, lockData } from "./roster-engine.js?v=1.6.0";
+  normName, isStandby, rolesAll, rulesFrom, satRule, weekOrder, wheelForbids, liveName, renameMap, lockOf, lockData, shortDays, moveIdx, seqOf, listFromSeq } from "./roster-engine.js?v=1.7.0";
 
-const VERSION = '1.6.0';
-const APP_NAME = 'BC Al Ain Routine';
+const VERSION = '1.7.0';
+const APP_NAME = 'Al Ain BC';
 const WA_DEFAULT = '971505353447'; // the WhatsApp bot's number (can be changed in Settings)
 const SEED_STAFF = ["Ahmed","Shahid","Ziko","Rayan","Hamada","Prashant","Mohammed","Ahoud","Mustafa"];
 
@@ -295,7 +336,8 @@ if (me) { rememberMe(me); setUrlMe(me); }
 try { navigator.storage && navigator.storage.persist && navigator.storage.persist(); } catch(e) {}
 
 let tab = LS.get('dutyRoster.tab') || 'home';
-if (!['home','roster','spin','scratch','settings'].includes(tab)) tab = 'home';
+if (tab === 'spin' || tab === 'scratch') tab = 'luck';
+if (!['home','roster','luck','settings'].includes(tab)) tab = 'home';
 let viewDate = sod(new Date()), hl = null;
 
 /* ---------- shared data (Firebase), or this device only (demo mode) ---------- */
@@ -371,9 +413,10 @@ async function startDb(){
     if (j !== absJ) { absJ = j; absences = a; clearCache(); render(); } queuePlan(); queueLock(); }, err);
   db.collection('wheel').onSnapshot((s, srv) => { fresh.wheel = srv !== false; const w={}; s.docs.forEach(d => w[d.id] = d.data()); const j = JSON.stringify(w);
     if (j !== whJ) { whJ = j; wheels = w; clearCache(); render(); } queuePlan(); queueLock(); }, err);
+  db.doc('config/qr-index').onSnapshot(s => { qrIndex = (s.exists && s.data() && s.data().has) || {}; if (sheet && sheet.kind === 'tools') renderSheet(); if (tab === 'settings' && isAdmin()) render(); }, () => {});
   let profJ = null;
   db.collection('profiles').onSnapshot(s => { const p = {}; s.docs.forEach(d => p[d.id] = d.data()); const j = JSON.stringify(p);
-    profilesLoaded = true; if (j !== profJ) { profJ = j; profiles = p; applyMyTheme(); render(); } }, () => { profilesLoaded = true; });
+    profilesLoaded = true; if (j !== profJ) { profJ = j; profiles = p; applyMyTheme(); render(); if (sheet && /^(tools|weekly|zero)$/.test(sheet.kind)) renderSheet(); } }, () => { profilesLoaded = true; });
   // Phone notifications. Problems here never stop the roster from working.
   if (!demo) {
     db.doc('config/push').onSnapshot(s => { const was = pushReady(); pushCfg = s.exists ? s.data() : null; syncPush(); if (was !== pushReady()) render(); else refreshPushCard(); queuePlan(); }, () => {});
@@ -394,8 +437,10 @@ function saveCfg(patch){
   // A name that is on the team again (someone new with an old name) is no longer treated as a renamed person.
   if (cfg.renamed && typeof cfg.renamed === 'object') { const live = new Set([...(cfg.staff||[]), ...(cfg.observers||[])]), rn = Object.fromEntries(Object.entries(cfg.renamed).filter(([k]) => !live.has(k))); cfg.renamed = rn; }
   clearCache(); render(true);
-  const body = JSON.parse(JSON.stringify(cfg));
-  cfgChain = cfgChain.then(() => db.doc('config/main').set(body)).catch(writeErr);
+  // Only the settings that changed are written, so a phone with an old copy of the settings can't undo anyone else's.
+  const body = JSON.parse(JSON.stringify(cfg)), keys = [...new Set([...Object.keys(patch), ...(cfg.renamed ? ['renamed'] : [])])];
+  const part = Object.fromEntries(keys.map(k => [k, k in body ? body[k] : DEL]));
+  cfgChain = cfgChain.then(() => db.update('config/main', part).catch(e => { if (e && e.code === 'not-found') return db.doc('config/main').set(body); throw e; })).catch(writeErr);
 }
 let absChain = Promise.resolve();
 // Leave is the one change allowed on a fixed day, and only the admin marks it.
@@ -716,10 +761,14 @@ function renderSheet(){
   if (!sheet) { s.hidden = true; s.innerHTML = ''; return; }
   s.hidden = false;
   let body;
-  if (sheet.kind === 'admin') {
+  if (TOOL_VIEW[sheet.kind]) body = TOOL_VIEW[sheet.kind]();
+  else if (sheet.kind === 'play') {
+    const w = pickWindow();
+    body = `<h2>How do you want to play?</h2><p class="muted">Next Week Luck · week of ${fmtDay(fromKey(w.next))}. Choose one game. Your role is fixed once it's revealed.</p>${playChoice()}<div class="row"><button class="btn ghost" data-act="sheet-cancel">Not now</button></div>`;
+  } else if (sheet.kind === 'admin') {
     body = isAdmin()
-      ? `<h2>Admin</h2><p class="muted">Admin is on for this device. Team settings are in Settings.</p>
-         <div class="row"><button class="btn primary" data-act="admin-go">Open team settings</button><button class="btn ghost danger" data-act="admin-lock">Lock admin</button><button class="btn ghost" data-act="sheet-cancel">Close</button></div>`
+      ? `<h2>Admin</h2><p class="muted">You are signed in as admin on this device. Team settings are in Settings.</p>
+         <div class="row"><button class="btn primary" data-act="admin-go">Open team settings</button><button class="btn danger" data-act="admin-lock">Sign out of admin</button><button class="btn ghost" data-act="sheet-cancel">Close</button></div>`
       : `<h2>Admin access</h2><p class="muted">Enter the admin password to manage team settings on this device.</p>
          <form class="addrow" data-form="admin"><input id="adminpw" type="password" autocomplete="current-password" placeholder="Admin password" aria-label="Admin password" autocapitalize="characters"><button class="btn primary" ${sheet.busy?'disabled':''}>Unlock</button></form>
          ${sheet.err ? `<p class="errline">${esc(sheet.err)}</p>` : ''}<div class="row"><button class="btn ghost" data-act="sheet-cancel">Cancel</button></div>`;
@@ -727,7 +776,8 @@ function renderSheet(){
     const t = sheet, mgr = isObs(), prev = isPhoto(t.photo) ? t.photo : '', st = styleOf(t.theme);
     const big = `<span class="av" style="--s:92px;background:${PAL[hash(me)%PAL.length]}" aria-hidden="true"><b>${esc(initials(me))}</b>${prev ? `<img src="${prev}" alt="">` : `<img src="images/${encodeURIComponent(me)}.jpg" alt="" onerror="this.remove()">`}</span>`;
     body = `<div class="row" style="flex-wrap:nowrap">${big}<div style="min-width:0"><h2>${esc(me)}</h2><p class="muted">${mgr ? 'Manager · view only' : 'Agent'}${isAdmin() ? ' · Admin' : ''}</p></div></div>
-      <label class="opt"><b>Name</b><input id="namein" maxlength="30" autocomplete="off" spellcheck="false" value="${esc(t.name)}" aria-describedby="namehelp"><small class="muted" id="namehelp">How your name shows to everyone: roster, Home, Spin and Scratch.</small>${t.nameErr ? `<p class="errline">${esc(t.nameErr)}</p>` : ''}</label>
+      <label class="opt"><b>Name</b><input id="namein" maxlength="30" autocomplete="off" spellcheck="false" value="${esc(t.name)}" aria-describedby="namehelp"><small class="muted" id="namehelp">How your name shows to everyone: roster, Home and Next Week Luck.</small>${t.nameErr ? `<p class="errline">${esc(t.nameErr)}</p>` : ''}</label>
+      <div class="opt"><b>My QR code</b><div class="row"><button class="btn" data-act="tool" data-tool="qr">${hasQr(me) ? 'Show my QR code' : 'My QR code'}</button>${hasQr(me) ? '' : '<small class="muted">Not added yet. The admin adds it.</small>'}</div></div>
       <div class="opt"><b>Photo</b><div class="row"><label class="btn" for="photoin">${prev ? 'Change photo' : 'Add a photo'}</label><input id="photoin" type="file" accept="image/*" hidden>${prev ? '<button class="btn ghost danger" data-act="photo-del">Remove photo</button>' : ''}</div></div>
       <label class="opt"><b>About me</b><textarea id="descin" maxlength="120" rows="2" placeholder="A short line about you, e.g. Morning person ☀️">${esc(t.desc)}</textarea><small class="muted"><span data-desclen>${t.desc.length}</span>/120 · everyone can see it</small></label>
       <div class="opt"><b>Style</b><small class="muted">A complete look for the whole site, just for you.</small><div class="styles">${STYLES.map(x => `<button class="stl" data-act="theme" data-id="${x.id}" aria-pressed="${t.theme===x.id}" style="--a:${x.v.bg};--b:${x.v.primary};--c:${x.v.accent};--d:${x.v.surface}"><i></i><span><b>${esc(x.name)}</b><small>${esc(x.tag)}</small></span></button>`).join('')}</div></div>
@@ -737,7 +787,8 @@ function renderSheet(){
         <span class="row"><button class="btn ghost" data-act="sheet-cancel">Cancel</button><button class="btn primary" data-act="profile-save" ${t.busy?'disabled':''}>${t.busy?'Saving…':'Save'}</button></span></div>`;
   }
   const keep = s.querySelector('.panel'), top = keep ? keep.scrollTop : 0;
-  s.innerHTML = `<div class="pback" data-act="sheet-close"><div class="panel" role="dialog" aria-modal="true" aria-label="${sheet.kind==='admin'?'Admin':'My profile'}" data-stop>${body}</div></div>`;
+  const label = { admin:'Admin', play:'How do you want to play?', profile:'My profile' }[sheet.kind] || (TOOL_LABEL[sheet.kind] ? TOOL_LABEL[sheet.kind]() : 'Panel');
+  s.innerHTML = `<div class="pback" data-act="sheet-close"><div class="panel" role="dialog" aria-modal="true" aria-label="${esc(label)}" data-stop>${body}</div></div>`;
   const np = s.querySelector('.panel'); if (np && top) np.scrollTop = top;
   if (sheet.kind === 'admin' && !isAdmin()) setTimeout(() => { const i = $('#adminpw'); if (i) i.focus(); }, 50);
 }
@@ -761,9 +812,10 @@ async function saveProfileSheet(){
   const data = { photo, desc: String(t.desc || '').trim().slice(0,120), theme: t.theme, mode: t.mode, at: Date.now() };
   try {
     if (renaming) await renameMe(to);
-    profiles = { ...profiles, [pkey(me)]: { ...profileOf(me), ...data } };
+    const full = renaming ? { ...profileOf(from), ...data } : data; // a rename moves everything: weekly check, Zero Club ticks too
+    profiles = { ...profiles, [pkey(me)]: { ...profileOf(me), ...full } };
     LS.set('dutyRoster.theme.'+pkey(me), t.theme);
-    await db.merge('profiles/'+pkey(me), data);
+    await db.merge('profiles/'+pkey(me), full);
     if (renaming && pkey(from) !== pkey(me) && db.del) db.del('profiles/'+pkey(from)).catch(() => {});
     sheet = null; renderSheet(); applyMyTheme(); render(true); if (renaming) syncPush();
     toast(renaming ? 'Saved. Everyone now sees you as '+me+'.' : 'Profile saved.');
@@ -772,6 +824,117 @@ async function saveProfileSheet(){
     if (!(e && e.shown)) toast(e && e.code === 'permission-denied' ? 'The database refused the profile. Check that firestore.rules allows profiles.' : 'Could not save. Check your connection and try again.');
   }
 }
+
+/* ---------- tools: the button at the bottom right ---------- */
+// QR code (each person sees only their own; the admin adds them in Settings), RQMS and Translator links (set by the admin),
+// a weekly check everyone marks done (the dot next to your name: red until done, green when done, red again on Monday),
+// and Zero Club, a checklist the admin writes and everyone ticks.
+const TOOL_DEF = { rqms:'RQMS', translator:'Translator', weekly:'Weekly Assessment', zero:'Zero Club' };
+const toolCfg = k => { const t = C().tools && C().tools[k]; return t && typeof t === 'object' ? t : {}; };
+const toolName = k => String(toolCfg(k).name || '').trim() || TOOL_DEF[k];
+const toolUrl = k => String(toolCfg(k).url || '').trim();
+function normUrl(v){ v = String(v || '').trim(); if (!v) return ''; if (!/^[a-z][a-z0-9+.-]*:/i.test(v)) v = 'https://'+v; try { const u = new URL(v); return /^https?:$/.test(u.protocol) ? u.href : null; } catch(e) { return null; } }
+const zeroItems = () => { const it = toolCfg('zero').items; return (Array.isArray(it) ? it : []).filter(x => x && x.id && String(x.text||'').trim()); };
+const zeroPeriod = () => ['week','month','never'].includes(toolCfg('zero').period) ? toolCfg('zero').period : 'week';
+const periodKey = (p, d = new Date()) => p === 'month' ? d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0') : p === 'never' ? 'all' : wkKey(d);
+function weeklyDone(n){ const w = profileOf(n).weekly; return !!(w && +w[wkKey(new Date())]); }
+function zeroDone(n){ const z = profileOf(n).zero; return z && z.p === periodKey(zeroPeriod()) && z.done && typeof z.done === 'object' ? z.done : {}; }
+const zeroCount = n => { const d = zeroDone(n); return zeroItems().filter(x => +d[x.id]).length; };
+// One field of your own profile, saved straight away.
+async function profileField(name, field, value){
+  profiles = { ...profiles, [pkey(name)]: { ...profileOf(name), [field]: value } }; renderHeader();
+  try { await db.update('profiles/'+pkey(name), { [field]: value }); }
+  catch(e) { if (e && e.code === 'not-found') await db.merge('profiles/'+pkey(name), { [field]: value }); else throw e; }
+}
+function setWeekly(done){
+  if (!db || !staff().includes(me)) return;
+  const cur = { ...(profileOf(me).weekly || {}) }; cur[wkKey(new Date())] = done ? Date.now() : 0;
+  const v = Object.fromEntries(Object.keys(cur).sort().slice(-12).map(k => [k, cur[k]]));
+  profileField(me, 'weekly', v).catch(writeErr); renderSheet(); render();
+  toast(done ? 'Marked done for this week. Your light is green.' : 'Marked as not done yet.');
+}
+function toggleZero(id){
+  if (!db || !staff().includes(me)) return;
+  const d = { ...zeroDone(me) }; if (+d[id]) delete d[id]; else d[id] = Date.now();
+  profileField(me, 'zero', { p: periodKey(zeroPeriod()), done: d }).catch(writeErr); renderSheet();
+}
+// QR codes: one image per person in config/qr-<name>, loaded only when needed; config/qr-index says who has one.
+let qrIndex = {}; const qrCache = {};
+const isImg = s => typeof s === 'string' && /^data:image\/(png|jpeg|webp);base64,/.test(s);
+function qrKeyOf(n){ const k = pkey(n); if (+qrIndex[k]) return k; for (const o of Object.keys(renameMap())) if (+qrIndex[pkey(o)] && liveName(o) === n) return pkey(o); return k; }
+const hasQr = n => !!+qrIndex[qrKeyOf(n)];
+async function loadQr(n){
+  const k = qrKeyOf(n), at = +qrIndex[k] || 0; if (!at) return null;
+  if (qrCache[k] && qrCache[k].at === at) return qrCache[k].img;
+  const s = await db.doc('config/qr-'+k).get(), d = s.exists ? s.data() : null, img = d && isImg(d.img) ? d.img : null;
+  qrCache[k] = { at, img }; return img;
+}
+async function readQr(file){
+  const img = await createImageBitmap(file), M = 640, f = Math.min(1, M/Math.max(img.width, img.height)), cv = document.createElement('canvas');
+  cv.width = Math.round(img.width*f); cv.height = Math.round(img.height*f);
+  const x = cv.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0,0,cv.width,cv.height); x.imageSmoothingEnabled = f < 1; x.drawImage(img, 0, 0, cv.width, cv.height);
+  let u = cv.toDataURL('image/png'); if (u.length > 450000) u = cv.toDataURL('image/jpeg', .92); return u;
+}
+async function saveQr(n, img){
+  if (!isAdmin() || !db) return;
+  const old = qrKeyOf(n), k = pkey(n), at = Date.now();
+  if (img) await db.doc('config/qr-'+k).set({ img, at, name: n });
+  else if (db.del) await db.del('config/qr-'+old).catch(() => {});
+  const has = { [k]: img ? at : 0 }; if (old !== k) has[old] = 0;
+  await db.merge('config/qr-index', { has });
+  qrIndex = { ...qrIndex, ...has }; qrCache[k] = { at: img ? at : 0, img: img || null };
+}
+const ICON = {
+  qr: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM20 14v.01M14 20h.01M17 17h3v3"/></svg>',
+  rqms: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13"/><circle cx="3.5" cy="6" r="1"/><circle cx="3.5" cy="12" r="1"/><circle cx="3.5" cy="18" r="1"/></svg>',
+  translator: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h8M8 3v2M6 5c0 4 3 7 6 8M10 5c0 4-3 8-6 9"/><path d="M13 21l4-9 4 9M14.5 18h5"/></svg>',
+  weekly: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M8 2v4M16 2v4M3 9h18M8.5 15l2.5 2.5 4.5-5"/></svg>',
+  zero: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0z"/><path d="M17 5h3a3 3 0 0 1-3 4M7 5H4a3 3 0 0 0 3 4"/></svg>',
+};
+function openTool(kind, extra){ const prev = sheet && sheet.kind !== kind ? sheet : null; sheet = { kind, prev, ...(extra || {}) }; renderSheet();
+  if (kind === 'qr') { const who = sheet.who || me, t = sheet; t.loading = true; renderSheet(); loadQr(who).then(img => { t.img = img; t.loading = false; if (sheet === t) renderSheet(); }).catch(() => { t.loading = false; t.err = 'Could not load the QR code. Check the internet connection.'; if (sheet === t) renderSheet(); }); } }
+const backBtn = () => sheet && sheet.prev ? `<button class="btn ghost sm" data-act="sheet-back">← ${sheet.prev.kind === 'profile' ? 'Profile' : 'Tools'}</button>` : '';
+const TOOL_LABEL = { tools: () => 'Tools', qr: () => 'QR code', link: () => toolName(sheet.tool), weekly: () => toolName('weekly'), zero: () => toolName('zero') };
+const TOOL_VIEW = {
+  tools(){
+    const agent = staff().includes(me), wd = agent && weeklyDone(me), zi = zeroItems();
+    const link = k => { const u = toolUrl(k); return u ? `<a class="tool" href="${esc(u)}" target="_blank" rel="noopener"><span class="ti">${ICON[k]}</span><b>${esc(toolName(k))}</b><small>Opens the link ↗</small></a>`
+      : `<button class="tool" data-act="tool" data-tool="link" data-k="${k}"><span class="ti">${ICON[k]}</span><b>${esc(toolName(k))}</b><small>Link not added yet</small></button>`; };
+    return `<h2>Tools</h2><div class="tools">
+      <button class="tool" data-act="tool" data-tool="qr"><span class="ti">${ICON.qr}</span><b>My QR code</b><small>${hasQr(me) ? 'Show it' : 'Not added yet'}</small></button>
+      ${link('rqms')}${link('translator')}
+      ${agent ? `<button class="tool" data-act="tool" data-tool="weekly"><span class="ti">${ICON.weekly}</span><b>${esc(toolName('weekly'))}</b><small><i class="wdot ${wd?'ok':'bad'}"></i> ${wd ? 'Done this week' : 'Not done yet'}</small></button>
+      <button class="tool" data-act="tool" data-tool="zero"><span class="ti">${ICON.zero}</span><b>${esc(toolName('zero'))}</b><small>${zi.length ? zeroCount(me)+' of '+zi.length+' done' : 'No list yet'}</small></button>` : ''}
+      </div><div class="row"><button class="btn ghost" data-act="sheet-cancel">Close</button></div>`;
+  },
+  qr(){
+    const t = sheet, who = t.who || me, own = who === me;
+    const box = t.loading ? `<div class="qrbox empty"><b>Loading…</b></div>` : t.img ? `<div class="qrbox"><img src="${t.img}" alt="QR code for ${esc(who)}"></div>`
+      : `<div class="qrbox empty">${ICON.qr.replace('width="22" height="22"','width="56" height="56"')}<b>${own ? 'Your QR code will show here' : 'No QR code for '+esc(who)+' yet'}</b><small>${isAdmin() ? 'Add it in Settings → QR codes.' : 'The admin adds it.'}</small></div>`;
+    return `<div class="backrow">${backBtn()}</div><h2>${own ? 'My QR code' : 'QR code · '+esc(who)}</h2>${box}${t.err ? `<p class="errline">${esc(t.err)}</p>` : ''}
+      ${t.img ? `<div class="row" style="justify-content:center"><a class="btn" href="${t.img}" download="QR-${esc(pkey(who))}.${t.img.startsWith('data:image/png') ? 'png' : 'jpg'}">Save image</a></div>` : ''}
+      <p class="muted" style="font-size:13px">${own ? 'Only you see your QR code here. ' : ''}${isAdmin() ? 'Add or change QR codes in Settings → QR codes.' : 'The admin adds and changes QR codes.'}</p>
+      <div class="row"><button class="btn ghost" data-act="sheet-cancel">Close</button></div>`;
+  },
+  link(){ const k = sheet.tool; return `<div class="backrow">${backBtn()}</div><h2>${esc(toolName(k))}</h2><p class="muted">The admin hasn't added the ${esc(toolName(k))} link yet.${isAdmin() ? ' Add it in Settings → Tools.' : ''}</p><div class="row"><button class="btn ghost" data-act="sheet-cancel">Close</button></div>`; },
+  weekly(){
+    const done = weeklyDone(me), u = toolUrl('weekly'), nm = toolName('weekly');
+    return `<div class="backrow">${backBtn()}</div><h2>${esc(nm)}</h2>
+      <div class="state ${done?'ok':'bad'}"><i class="wdot ${done?'ok':'bad'}"></i>${done ? 'Done for this week' : 'Not done yet this week'}</div>
+      <p class="muted" style="font-size:13px">Week of ${fmtDay(monday(new Date()))}. Mark it done once you've finished: the light next to your name turns green. It goes back to red every Monday.</p>
+      ${u ? `<a class="btn" href="${esc(u)}" target="_blank" rel="noopener" style="justify-self:start">Open ${esc(nm)} ↗</a>` : ''}
+      <div class="row">${done ? '<button class="btn ghost" data-act="weekly-undo">Mark as not done</button>' : '<button class="btn primary" data-act="weekly-done">Mark as done</button>'}<button class="btn ghost" data-act="sheet-cancel">Close</button></div>`;
+  },
+  zero(){
+    const it = zeroItems(), d = zeroDone(me), n = it.filter(x => +d[x.id]).length, per = zeroPeriod();
+    return `<div class="backrow">${backBtn()}</div><h2>${esc(toolName('zero'))}</h2>
+      ${it.length ? `<p class="muted" style="font-size:13px">Tap each one you've done. ${per === 'week' ? 'The list starts fresh every Monday.' : per === 'month' ? 'The list starts fresh every month.' : ''}</p>
+      <div class="checks">${it.map(x => { const on = !!+d[x.id]; return `<button class="chk" data-act="zero-tick" data-id="${esc(x.id)}" aria-pressed="${on}"><i>${on ? '✓' : ''}</i><span>${esc(x.text)}</span></button>`; }).join('')}</div>
+      <div class="state ${n === it.length ? 'ok' : 'bad'}">${n} of ${it.length} done${n === it.length ? ' 🎉' : ''}</div>`
+      : `<p class="muted">The admin hasn't added the list yet.${isAdmin() ? ' Add items in Settings → Tools.' : ''}</p>`}
+      <div class="row"><button class="btn ghost" data-act="sheet-cancel">Close</button></div>`;
+  },
+};
 
 /* ---------- sound + role-change alerts (while the page is open) ---------- */
 let actx = null;
@@ -861,7 +1024,7 @@ async function enablePush(){
   if (!pushReady()) return toast('Phone notifications are not switched on for the team yet. See README → Phone notifications.');
   let perm = Notification.permission;
   if (perm === 'default') { try { perm = await Notification.requestPermission(); } catch(e) { perm = Notification.permission; } }
-  if (perm !== 'granted') { refreshPushCard(); return toast(IOS ? 'Notifications are off. Open iPhone Settings → Notifications, find BC Routine and allow them.' : 'Notifications are blocked. In Chrome tap ⋮ → Settings → Site settings → Notifications and allow this site.'); }
+  if (perm !== 'granted') { refreshPushCard(); return toast(IOS ? 'Notifications are off. Open iPhone Settings → Notifications, find Al Ain BC and allow them.' : 'Notifications are blocked. In Chrome tap ⋮ → Settings → Site settings → Notifications and allow this site.'); }
   push.busy = true; push.err = ''; refreshPushCard();
   try {
     const reg = await swReady(); let sub = await reg.pushManager.getSubscription();
@@ -912,9 +1075,9 @@ function viewPush(){
   if (!pushReady()) b = `<p class="muted">Get a notification ${lead} minutes before every role change, even when this site is closed. This needs a one-time setup first: README → <b>Phone notifications</b>.</p>`;
   else if (env === 'ios-old') b = `<p>Notifications on iPhone need iOS 16.4 or newer. Update in Settings → General → Software Update, then come back.</p>`;
   else if (env === 'ios-browser') b = `<p class="muted">On iPhone, notifications only work from the Home Screen app, not from a Safari tab.</p>
-    <ol class="steps"><li>Tap the <b>Share</b> button ${SHARE_ICON} in Safari.</li><li>Tap <b>Add to Home Screen</b>, then <b>Add</b>.</li><li>Open <b>BC Routine</b> from your Home Screen and tap <b>Turn on notifications</b> there.</li></ol>`;
+    <ol class="steps"><li>Tap the <b>Share</b> button ${SHARE_ICON} in Safari.</li><li>Tap <b>Add to Home Screen</b>, then <b>Add</b>.</li><li>Open <b>Al Ain BC</b> from your Home Screen and tap <b>Turn on notifications</b> there.</li></ol>`;
   else if (env === 'unsupported') b = `<p class="muted">This browser can't get notifications. ${IOS ? 'Use Safari and add the site to your Home Screen.' : 'Open the site in Chrome.'}</p>`;
-  else if (perm === 'denied') b = `<span class="pill bad" style="justify-self:start">Blocked on this phone</span><p class="muted">${IOS ? 'Open iPhone Settings → Notifications, find BC Routine and turn on Allow Notifications.' : 'In Chrome tap ⋮ → Settings → Site settings → Notifications, find this site and choose Allow.'} Then come back and tap below.</p><button class="btn" data-act="push-on" style="justify-self:start">Try again</button>`;
+  else if (perm === 'denied') b = `<span class="pill bad" style="justify-self:start">Blocked on this phone</span><p class="muted">${IOS ? 'Open iPhone Settings → Notifications, find Al Ain BC and turn on Allow Notifications.' : 'In Chrome tap ⋮ → Settings → Site settings → Notifications, find this site and choose Allow.'} Then come back and tap below.</p><button class="btn" data-act="push-on" style="justify-self:start">Try again</button>`;
   else if (dev) b = `<span class="pill ok" style="justify-self:start">On · ${lead} min before each change</span>${serverNote()}<div class="row"><button class="btn sm" data-act="push-test" ${push.testAt?'disabled':''}>${push.testAt?'Waiting for the test…':'Send a test'}</button><button class="btn ghost sm danger" data-act="push-off" ${push.busy?'disabled':''}>Turn off</button></div>`;
   else b = `<p class="muted">Get a notification ${lead} minutes before every role change, even when this site is closed and the phone is locked.</p><button class="btn primary" data-act="push-on" style="justify-self:start" ${push.busy?'disabled':''}>${push.busy?'Turning on…':'Turn on notifications'}</button>`;
   return `<section class="card" style="display:grid;gap:10px" data-push><h3>Phone notifications</h3>${b}${push.err ? `<p class="errline">${esc(push.err)}</p>` : ''}</section>`;
@@ -1003,12 +1166,12 @@ async function downloadPdf(d){
           doc.setTextColor(20,32,29); doc.setFont('helvetica','bold'); doc.setFontSize(11);
           doc.text(pdfText(sh.name+'   '+fmtRange(parseHM(sh.start), parseHM(sh.end))), 10, y+4); y += 6;
           doc.autoTable({ startY:y, margin:{ left:10, right:10 }, theme:'grid',
-            head:[['Time'].concat(r.positions.map(p => p.name))],
-            body: sh.slots.map(sl => [pdfText(fmtRange(sl.start, sl.end))].concat(sl.cells)),
+            head:[['Time'].concat(colRoles(r).map(p => p.name))],
+            body: sh.slots.map(sl => [pdfText(fmtRange(sl.start, sl.end))].concat(rowCells(r, sl))),
             styles:{ font:'helvetica', fontSize:8.5, cellPadding:1.6, halign:'center', valign:'middle', lineColor:[217,225,223], lineWidth:.2, textColor:[20,32,29] },
             headStyles:{ fillColor:[91,33,182], textColor:255, fontStyle:'bold' },
             columnStyles:{ 0:{ halign:'left', cellWidth:30, fontStyle:'bold' } },
-            didParseCell: c => { if (c.column.index > 0 && r.positions[c.column.index-1] && r.positions[c.column.index-1].brk) c.cell.styles.fillColor = c.section === 'head' ? [138,120,82] : [242,238,228]; } });
+            didParseCell: c => { const cr = colRoles(r); if (c.column.index > 0 && cr[c.column.index-1] && cr[c.column.index-1].brk) c.cell.styles.fillColor = c.section === 'head' ? [138,120,82] : [242,238,228]; } });
           y = doc.lastAutoTable.finalY + 7;
         }
       }
@@ -1016,7 +1179,7 @@ async function downloadPdf(d){
       doc.text(pdfText('Made '+fmtDay(made)+' '+made.getFullYear()+', '+fmtT(made.getHours()*60+made.getMinutes())+(me ? ' by '+me : '')), 10, H-6);
       doc.text('Page '+(k+1)+' of 7', W-10, H-6, { align:'right' });
     });
-    const name = 'BC-Al-Ain-Routine-week-'+wkKey(d)+'.pdf', blob = doc.output('blob');
+    const name = 'Al-Ain-BC-week-'+wkKey(d)+'.pdf', blob = doc.output('blob');
     dl.file = new File([blob], name, { type:'application/pdf' }); dl.wk = wkKey(d);
     saveBlob(blob, name);
     toast('Downloaded '+name+(canShareFile(dl.file) ? '. Tap Share PDF to send it.' : '.'));
@@ -1030,12 +1193,12 @@ function downloadCsv(d){
     if (r.off || r.empty) rows.push(['Day off']);
     else {
       rows.push(['On duty: '+r.order.length+' of '+r.full.length].concat(dayNotes(r)));
-      for (const sh of r.shifts) { rows.push([sh.name, 'Time'].concat(r.positions.map(p => p.name))); for (const sl of sh.slots) rows.push(['', fmtRange(sl.start, sl.end)].concat(sl.cells)); }
+      for (const sh of r.shifts) { rows.push([sh.name, 'Time'].concat(colRoles(r).map(p => p.name))); for (const sl of sh.slots) rows.push(['', fmtRange(sl.start, sl.end)].concat(rowCells(r, sl))); }
     }
     rows.push([]);
   }
   const cell = c => { c = String(c ?? ''); return /[",\r\n]/.test(c) ? '"'+c.replace(/"/g,'""')+'"' : c; };
-  const name = 'BC-Al-Ain-Routine-week-'+wkKey(d)+'.csv';
+  const name = 'Al-Ain-BC-week-'+wkKey(d)+'.csv';
   saveBlob(new Blob(['﻿'+rows.map(r => r.map(cell).join(',')).join('\r\n')], { type:'text/csv;charset=utf-8' }), name);
   toast('Downloaded '+name+'. It opens in Excel or Google Sheets.');
 }
@@ -1058,7 +1221,7 @@ function viewTeam(){
       const later = cur ? slots.find(s => s.start >= cur.end) : null;
       const head = cur ? `Right now · ${fmtRange(cur.start, cur.end)} · next change in <span class="mono" data-cd="${t0+cur.end*60000}"></span>` : `Starts at ${fmtT(nxt.start)} · in <span class="mono" data-cd="${t0+nxt.start*60000}"></span>`;
       body = `<section class="card" style="display:grid;gap:10px"><h3>${head}</h3>
-        <div class="team">${r.positions.map((p, j) => { const who = ref.cells[j], nx = later ? roleOf(r, later, who) : null;
+        <div class="team">${colIdx(r).map(j => { const p = r.positions[j], who = ref.cells[j], nx = later ? roleOf(r, later, who) : null;
           return `<div class="tm ${p.brk?'brk':''}">${avatar(who,36)}<div><b>${esc(who)}</b><span class="muted">${nx ? 'next: '+esc(nx.name)+' at '+fmtT(later.start) : ''}</span></div><span class="role">${esc(p.name)}</span></div>`; }).join('')}</div>
         ${notes.length ? `<p class="muted" style="font-size:13px">${esc(notes.join(' · '))}</p>` : ''}</section>`;
     }
@@ -1074,13 +1237,13 @@ function addObserver(v){
 }
 
 /* ---------- render ---------- */
-const TABS = [['home','Home'],['roster','Routine'],['spin','Spin'],['scratch','Scratch'],['settings','Settings']];
+const TABS = [['home','Home'],['roster','Routine'],['luck','Next Week Luck'],['settings','Settings']];
 function signedIn(){ return !!me && (staff().includes(me) || observers().includes(me)); }
 let showPast = false; // today's finished time slots are hidden until someone taps "Show finished"
 function render(force){
   renderHeader();
   if (scratch.lock) return; // don't rebuild the page while someone is scratching
-  if (spin.anim && tab === 'spin') return; // or while the wheel is turning
+  if (spin.anim && tab === 'luck') return; // or while the wheel is turning
   const active = document.activeElement;
   if (!force && active && active.closest && active.closest('#view') && /INPUT|SELECT/.test(active.tagName)) return;
   const v = $('#view');
@@ -1091,12 +1254,13 @@ function render(force){
     ? `<div class="empty"><h2>No team set up yet</h2><p class="muted">Start with the 9 agents from the current roster sheet, or add your own in Settings.</p><div class="row" style="justify-content:center"><button class="btn primary" data-act="seed">Set up with current team</button><button class="btn" data-act="tab" data-tab="settings">Open settings</button></div></div>`
     : `<div class="empty"><h2>No team set up yet</h2><p class="muted">The admin sets up the team.</p><div class="row" style="justify-content:center"><button class="btn" data-act="admin-open">Admin access</button></div></div>`;
   else if (!signedIn()) v.innerHTML = viewWho();
-  else if (isObs() && (tab === 'spin' || tab === 'scratch')) { tab = 'home'; v.innerHTML = viewTeam(); }
+  else if (isObs() && tab === 'luck') { tab = 'home'; v.innerHTML = viewTeam(); }
   else if (tab === 'roster') v.innerHTML = viewRoster();
-  else if (tab === 'spin') { v.innerHTML = viewSpin(); drawWheel(); }
-  else if (tab === 'scratch') { v.innerHTML = viewScratch(); setupScratch(); }
+  else if (tab === 'luck') { v.innerHTML = viewLuck(); drawWheel(); setupScratch(); }
   else v.innerHTML = viewHome();
   $('#foot').innerHTML = `${APP_NAME} v${VERSION}${demo ? ' · Demo mode: saved on this device only' : ''}`;
+  if (tab === 'luck') setTimeout(askGame, 0);
+  if (tab === 'settings') setupDrag();
   queuePlan();
   watchSaveCard();
   updateLive();
@@ -1105,7 +1269,11 @@ function renderHeader(){
   const ok = navigator.onLine && dbState === 'ready';
   $('#hdrdate').innerHTML = demo ? `${fmtDay(new Date())} · <span class="pill warn" style="padding:0 8px">Demo</span>` : `<span class="syncdot ${ok?'':'off'}"></span>${fmtDay(new Date())} · ${ok?'All changes saved':'Offline, will sync'}`;
   $('#tabs').innerHTML = (isObs() ? OBS_TABS : TABS).map(([k,l]) => `<button data-act="tab" data-tab="${k}" aria-pressed="${tab===k}">${l}</button>`).join('');
-  $('#mebox').innerHTML = signedIn() ? `<button class="mechip" data-act="me-tap" aria-label="You are ${esc(me)}. Tap for your profile">${avatar(me,30)}<span>${esc(me)}</span>${isObs()?'<small class="mgr">Manager</small>':''}</button>` : '';
+  const wd = staff().includes(me) ? weeklyDone(me) : null, tw = toolName('weekly');
+  const dot = wd == null ? '' : `<i class="wdot ${wd?'ok':'bad'}" title="${esc(tw)}: ${wd?'done this week':'not done yet'}" aria-label="${esc(tw)}: ${wd?'done this week':'not done yet'}"></i>`;
+  $('#mebox').innerHTML = (signedIn() ? `<button class="mechip" data-act="me-tap" aria-label="You are ${esc(me)}. Tap for your profile">${avatar(me,30)}<span>${esc(me)}</span>${isObs()?'<small class="mgr">Manager</small>':''}${dot}</button>` : '')
+    + (isAdmin() ? `<button class="adminchip" data-act="admin-open" title="Admin is on. Tap to sign out of admin.">Admin</button>` : '');
+  const tb = $('#toolsbtn'); if (tb) tb.hidden = !signedIn();
 }
 
 /* ---------- who are you (asked once per device) ---------- */
@@ -1173,6 +1341,11 @@ function viewOnNow(){
   return `<section class="card onnow"><div class="row" style="justify-content:space-between"><h3>${cur ? 'On the floor now' : 'First up today'}</h3>${when}</div><div class="rbs">${boxes}</div></section>`;
 }
 
+/* ---------- columns follow the role sequence: each time slot everyone moves one column to the right ---------- */
+const colIdx = r => moveIdx(r.positions.length);
+const colRoles = r => colIdx(r).map(j => r.positions[j]);
+const rowCells = (r, sl) => colIdx(r).map(j => sl.cells[j]);
+
 /* ---------- full roster: fits the screen ---------- */
 function viewRoster(){
   const now = new Date(), r = dayRoster(viewDate), isToday = dkey(viewDate) === dkey(now), tnow = nowMin(now);
@@ -1192,9 +1365,9 @@ function viewRoster(){
     if (!rows.length) return `<section class="donebar"><b>${esc(sh.name)}</b><span class="mono muted">${fmtRange(parseHM(sh.start),parseHM(sh.end))}</span><span class="pill">Finished</span></section>`;
     return `<section><div class="shifthead"><h2>${esc(sh.name)}</h2><span class="mono muted">${fmtRange(parseHM(sh.start),parseHM(sh.end))}</span><span class="pill">${r.slotMode==='auto'?'~':''}${len} min per role</span></div>
     <div class="sheetwrap"><table class="sheet"><colgroup><col class="tcol">${r.positions.map(() => '<col>').join('')}</colgroup>
-    <thead><tr><th>Time</th>${r.positions.map(p => `<th class="${p.brk?'brkh':''}">${esc(p.name)}</th>`).join('')}</tr></thead><tbody>
+    <thead><tr><th>Time</th>${colRoles(r).map(p => `<th class="${p.brk?'brkh':''}">${esc(p.name)}</th>`).join('')}</tr></thead><tbody>
     ${rows.map(sl => { const cur = isToday && sl.start <= tnow && tnow < sl.end, past = isToday && sl.end <= tnow;
-      return `<tr class="${cur?'cur':''} ${past?'past':''}"><td class="time">${fmtT(sl.start,false)}<span class="end">${fmtT(sl.end,false)}</span></td>${sl.cells.map((n,j) => `<td class="${r.positions[j].brk?'brk':''}"><button class="cell ${n===me?'me':''} ${n===hl&&n!==me?'hl':''}" data-act="hl" data-name="${esc(n)}">${avatar(n,24)}<span>${esc(n)}</span></button></td>`).join('')}</tr>`; }).join('')}
+      return `<tr class="${cur?'cur':''} ${past?'past':''}"><td class="time">${fmtT(sl.start,false)}<span class="end">${fmtT(sl.end,false)}</span></td>${rowCells(r, sl).map((n,j) => `<td class="${colRoles(r)[j].brk?'brk':''}"><button class="cell ${n===me?'me':''} ${n===hl&&n!==me?'hl':''}" data-act="hl" data-name="${esc(n)}">${avatar(n,24)}<span>${esc(n)}</span></button></td>`).join('')}</tr>`; }).join('')}
     </tbody></table></div></section>`; }).join('') : `<div class="empty"><h2>Everyone is on leave</h2></div>`;
   const tip = hl && hl !== me ? `<div class="row"><span class="pill warn">Highlighting ${esc(hl)}</span><button class="btn sm" data-act="hl" data-name="">Clear</button></div>` : `<p class="muted" style="font-size:13px">${isObs()?'Tap any name to highlight that person.':'Your name is green. Tap any name to highlight that person.'}</p>`;
   return strip + att + tip + pastBar + tables + viewDl(viewDate);
@@ -1213,7 +1386,7 @@ const spotName = i => (spotLabels()[i] || '').split(' · ')[1] || '';
 const respun = new Set();
 // One pick per person per week. Done in a database transaction so two people can never get the same spot,
 // and once it's saved it's fixed for everyone.
-async function claimSpot(){
+async function claimSpot(game){
   const w = pickWindow(), n = staff().length, wf = wheelForbids(w.next), forb = wf.all, mine = forb[me] || new Set(), sameMine = wf.same[me] || new Set(), allowSame = !respun.has(w.next);
   const res = await db.transact('wheel/'+w.next, data => {
     const assign = cleanAssign(data); if (me in assign) return { result: { already: true, land: assign[me] } };
@@ -1222,15 +1395,15 @@ async function claimSpot(){
     if (allowSame) cands = cands.concat(free.filter(i => sameMine.has(i)));
     if (!cands.length) cands = free.filter(i => !mine.has(i)); if (!cands.length) cands = free;
     const land = cands[Math.floor(Math.random()*cands.length)], forbidden = allowSame && sameMine.has(land);
-    return { result: { land, forbidden, wk: w.next }, write: forbidden ? null : { assign: { ...assign, [me]: land }, spunAt: { ...(data.spunAt||{}), [me]: new Date().toISOString() } } };
+    return { result: { land, forbidden, wk: w.next }, write: forbidden ? null : { ...data, assign: { ...assign, [me]: land }, spunAt: { ...(data.spunAt||{}), [me]: new Date().toISOString() }, game: { ...(data.game||{}), [me]: game || 'spin' } } };
   });
   if (res.forbidden) respun.add(w.next);
   return res;
 }
-function pickHeader(title, how){
+function pickHeader(){
   const w = pickWindow();
   const status = w.open ? `<span class="pill ok">Open · closes in <span data-cd="${w.closeAt}"></span></span>` : `<span class="pill">Opens ${fmtDay(new Date(w.openAt))}, ${fmtT(new Date(w.openAt).getHours()*60)} · in <span data-cd="${w.openAt}"></span></span>`;
-  return `<section class="row" style="justify-content:space-between"><div><h2>${title} · week of ${fmtDay(fromKey(w.next))}</h2><p class="muted" style="margin-top:4px">${how} Your pick is fixed once it's done. Spin and Scratch are two ways to make the same one pick.</p></div>${status}</section>`;
+  return `<section class="row" style="justify-content:space-between"><div><h2>Next Week Luck · week of ${fmtDay(fromKey(w.next))}</h2><p class="muted" style="margin-top:4px">Pick your starting role for next week, once: spin the wheel or scratch a card. Both are the same fair draw, and your pick is fixed once it's done. The order then rotates daily.</p></div>${status}</section>`;
 }
 function drawsCard(hideMine){
   const w = pickWindow(), n = staff().length, assign = cleanAssign(wheels[w.next]), wf = wheelForbids(w.next), prev = [wf.mon0, wf.mon1], done = Object.keys(assign).length;
@@ -1245,16 +1418,46 @@ function drawsCard(hideMine){
 // The wheel picture is drawn once and spinning just rotates it, so it stays smooth on phones. It starts turning on the
 // first tap while the database picks the spot, and extra taps are ignored, so one tap is always enough.
 let spin = { anim:false, rot:0, land:null, forbidden:false, wk:null, done:false };
-function viewSpin(){
+/* ---------- Next Week Luck: the weekly pick, played as Spin the wheel or Scratch a card ---------- */
+// Opening the page asks how you want to play (a pop-up). After playing, the page shows the game you played, your role,
+// and everyone's picks.
+let luck = { mode: null, asked: false }; // mode: the game picked on this device ('spin' or 'scratch'); asked: pop-up shown
+// Small pictures for the two games: a prize wheel and a BC scratch card.
+function wheelIcon(px){ const C2 = ['#7C3AED','#F0B429','#0E6B5C','#B5473A','#2F5DA8','#A855F7','#C08A1E','#2E6F8E'], n = C2.length, R = 20;
+  let p = ''; for (let i = 0; i < n; i++) { const a0 = (i/n)*2*Math.PI - Math.PI/2, a1 = ((i+1)/n)*2*Math.PI - Math.PI/2; p += `<path d="M0 0L${(R*Math.cos(a0)).toFixed(2)} ${(R*Math.sin(a0)).toFixed(2)}A${R} ${R} 0 0 1 ${(R*Math.cos(a1)).toFixed(2)} ${(R*Math.sin(a1)).toFixed(2)}Z" fill="${C2[i]}"/>`; }
+  return `<svg viewBox="0 0 48 48" width="${px}" height="${px}" aria-hidden="true"><g transform="translate(24 26)">${p}<circle r="20" fill="none" stroke="#0B0B10" stroke-width="2"/><circle r="5" fill="#fff" stroke="#0B0B10" stroke-width="2"/></g><path d="M18 1h12l-6 9z" fill="#0B0B10"/></svg>`; }
+function cardIcon(px){ return `<svg viewBox="0 0 48 48" width="${px}" height="${px}" aria-hidden="true"><defs><linearGradient id="sc${px}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#E3E8E6"/><stop offset=".5" stop-color="#B9C2C0"/><stop offset="1" stop-color="#E3E8E6"/></linearGradient></defs><rect x="4" y="9" width="40" height="30" rx="6" fill="#0B0B10" stroke="#A855F7" stroke-width="2"/><text x="8" y="28.5" font-family="Bricolage Grotesque, system-ui, sans-serif" font-weight="800" font-size="11" fill="#C084FC">BC</text><rect x="27" y="15" width="12" height="18" rx="3" fill="url(#sc${px})"/><path d="M29 29l8-10" stroke="#F0B429" stroke-width="3" stroke-linecap="round"/></svg>`; }
+const GAMES = { spin: [() => wheelIcon(56), 'Spin the wheel'], scratch: [() => cardIcon(56), 'Scratch a card'] };
+function gameOf(name, wk){ const g = (wheels[wk] && wheels[wk].game) || {}; if (g[name]) return g[name]; for (const [k,v] of Object.entries(g)) if (liveName(k) === name) return v; return null; }
+function freeSpots(){ const w = pickWindow(), used = Object.values(cleanAssign(wheels[w.next])); return [...Array(staff().length).keys()].filter(i => !used.includes(i)); }
+function canPlay(){ const w = pickWindow(); return w.open && staff().includes(me) && !(me in cleanAssign(wheels[w.next])) && !readOnly; }
+function askGame(){ if (tab === 'luck' && !luck.asked && dbState === 'ready' && canPlay() && !luck.mode && !spin.anim && !scratch.lock && !sheet) { luck.asked = true; sheet = { kind: 'play' }; renderSheet(); } }
+function playChoice(){
+  const n = freeSpots().length;
+  return `<div class="games"><button class="game" data-act="play" data-game="spin"><span class="gi" aria-hidden="true">${wheelIcon(52)}</span><b>Spin the wheel</b><small>One spin lands your role</small></button>
+    <button class="game" data-act="play" data-game="scratch"><span class="gi" aria-hidden="true">${cardIcon(52)}</span><b>Scratch a card</b><small>${n} card${n===1?'':'s'} left, one per open role</small></button></div>`;
+}
+function viewLuck(){
+  const w = pickWindow(), assign = cleanAssign(wheels[w.next]), mine = me in assign;
+  let stage, hide = false;
+  if (luck.mode === 'spin' && (spin.anim || spin.done || !mine)) { stage = spinStage(); hide = spin.anim; }
+  else if (luck.mode === 'scratch' && (scratch.lock || scratch.revealed || !mine)) { stage = scratchStage(); hide = scratch.lock; }
+  else if (mine) { const g = GAMES[gameOf(me, w.next)];
+    stage = `<section class="card stage"><span class="gi big" aria-hidden="true">${g ? g[0]() : '🍀'}</span><h3>${g ? 'You played '+esc(g[1]) : 'You have picked'}</h3>
+      <div class="result good">You start the week of ${fmtDay(fromKey(w.next))} as<b>${esc(spotName(assign[me]))}</b>Spot ${assign[me]+1} in Monday's first slot · fixed</div></section>`; }
+  else if (!w.open) stage = `<section class="card stage"><span class="gi big" aria-hidden="true">🍀</span><h2 style="text-align:center">Opens ${fmtDay(new Date(w.openAt))}, ${fmtT(new Date(w.openAt).getHours()*60)}</h2><p class="muted" style="text-align:center">Then choose how to play: spin the wheel or scratch a card.</p></section>`;
+  else stage = `<section class="card stage"><h2>How do you want to play?</h2>${playChoice()}</section>`;
+  return pickHeader() + `<div class="pickgrid">${stage}${drawsCard(hide)}</div>`;
+}
+function spinStage(){
   const w = pickWindow(), assign = cleanAssign(wheels[w.next]), mineDone = me in assign && !(spin.anim && spin.wk === w.next);
   let result = '';
   if (spin.done && spin.wk === w.next && !spin.anim) result = spin.forbidden ? `<div class="result again">Spot ${spin.land+1} · ${esc(spotName(spin.land))}<b>Same as last week. Spin again!</b></div>` : `<div class="result good">You start the week of ${fmtDay(fromKey(w.next))} as<b>${esc(spotName(spin.land))}</b>Spot ${spin.land+1} in Monday's first slot</div>`;
   else if (mineDone) result = `<div class="result good">Your spot for next week<b>${esc(spotName(assign[me]))}</b>Spot ${assign[me]+1} in Monday's first slot</div>`;
   const canSpin = w.open && !mineDone && !spin.anim && !readOnly;
-  return pickHeader('Spin wheel', 'Each agent spins once to pick their starting spot. The order then rotates daily.') + `
-  <div class="pickgrid"><section class="card stage"><div class="wheelwrap" ${canSpin?'data-act="spin" role="button" aria-label="Spin the wheel"':''}><canvas id="wheel" width="680" height="680" aria-label="Spinning wheel"></canvas><div class="hub" aria-hidden="true">SPIN</div><div class="pointer" aria-hidden="true"></div></div>
-    <button class="btn accent" id="spinbtn" data-act="spin" ${canSpin?'':'disabled'} style="font-size:17px;padding:12px 28px">${spin.anim?'Spinning…':mineDone?'You have picked':w.open?(spin.forbidden&&spin.wk===w.next?'Spin again':'Spin for '+esc(me)):'Closed'}</button>${result}</section>
-  ${drawsCard(spin.anim)}</div>`;
+  return `<section class="card stage"><div class="wheelwrap" ${canSpin?'data-act="spin" role="button" aria-label="Spin the wheel"':''}><canvas id="wheel" width="680" height="680" aria-label="Spinning wheel"></canvas><div class="hub" aria-hidden="true">SPIN</div><div class="pointer" aria-hidden="true"></div></div>
+    <button class="btn accent" id="spinbtn" data-act="spin" ${canSpin?'':'disabled'} style="font-size:17px;padding:12px 28px">${spin.anim?'Spinning…':mineDone?'You have picked':w.open?(spin.forbidden&&spin.wk===w.next?'Spin again':'Spin for '+esc(me)):'Closed'}</button>${result}
+    ${canSpin && !spin.forbidden ? '<button class="btn ghost sm" data-act="luck-switch">Scratch a card instead</button>' : ''}</section>`;
 }
 const SEGC = ['#0E6B5C','#2F5DA8','#B5473A','#6B4FA0','#C08A1E','#2E6F8E','#7A4E6E','#4C7A2E','#A55B2A','#3E4E56'];
 function drawWheel(){
@@ -1286,7 +1489,7 @@ async function doSpin(){
   spin = { anim:true, rot:spin.rot, land:null, forbidden:false, wk:w.next, done:false };
   const btn = $('#spinbtn'); if (btn) { btn.disabled = true; btn.textContent = 'Spinning…'; }
   let res = null, failed = null;
-  claimSpot().then(r => { res = r; }, e => { failed = e; });
+  claimSpot('spin').then(r => { res = r; }, e => { failed = e; });
   setTimeout(() => { if (!res && !failed) failed = { slow: true }; }, 15000);
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches, VMAX = TAU*1.6/1000; // 1.6 turns a second
   let last = performance.now(), v = 0, started = last, lastSeg = Math.floor(spin.rot/seg), stop = null;
@@ -1321,21 +1524,25 @@ async function doSpin(){
 }
 
 /* ---------- scratch card ---------- */
-let scratch = { lock:false, res:null, busy:false, revealed:false };
-function viewScratch(){
-  const w = pickWindow(), assign = cleanAssign(wheels[w.next]), mineDone = me in assign;
-  let card;
+const SCRATCH0 = () => ({ lock:false, res:null, busy:false, revealed:false, pick:null });
+let scratch = SCRATCH0();
+function scratchStage(){
+  const w = pickWindow(), assign = cleanAssign(wheels[w.next]), mineDone = me in assign && !scratch.lock, free = freeSpots();
+  let card, note = '';
   const r = scratch.revealed && scratch.res;
   if (r) card = `<div class="scard gone"><div class="under">${r.forbidden ? `<small>Spot ${r.land+1}</small><b>${esc(spotName(r.land))}</b><span>Same as last week. Not allowed</span>` : `<small>Your spot for next week</small><b>${esc(spotName(r.land))}</b><span>Spot ${r.land+1} · fixed</span>`}</div></div>`;
   else if (mineDone) card = `<div class="scard gone"><div class="under"><small>Your spot for next week</small><b>${esc(spotName(assign[me]))}</b><span>Spot ${assign[me]+1} · fixed</span></div></div>`;
   else if (!w.open) card = `<div class="scard"><div class="under"><small>Scratch card</small><b>Closed</b><span>Opens ${fmtDay(new Date(w.openAt))}</span></div></div>`;
-  else card = `<div class="scard" id="scard"><div class="under" id="under"><small>Revealing…</small><b>?</b></div><canvas id="scratchcv" aria-label="Scratch card: rub to reveal your role"></canvas></div>`;
-  let note = '';
-  if (scratch.revealed && scratch.res && scratch.res.forbidden) note = `<div class="result again"><b>Same as last week!</b>That spot isn't allowed for you. Get a new card.</div><button class="btn accent" data-act="scratch-new">New card</button>`;
+  else if (scratch.pick == null) {
+    card = `<p style="font-weight:600;text-align:center">${free.length} card${free.length===1?'':'s'} left, one for each role still open. Pick one.</p>
+      <div class="lcards">${free.map((_,k) => `<button class="lcard" data-act="scratch-pick" data-i="${k}" aria-label="Card ${k+1}"><span>BC</span><small>${k+1}</small></button>`).join('')}</div>`;
+    note = '<button class="btn ghost sm" data-act="luck-switch">Spin the wheel instead</button>';
+  }
+  else card = `<p class="muted" style="font-weight:600">Card ${scratch.pick+1}</p><div class="scard" id="scard"><div class="under" id="under"><small>Revealing…</small><b>?</b></div><canvas id="scratchcv" aria-label="Scratch card: rub to reveal your role"></canvas></div>`;
+  if (scratch.revealed && scratch.res && scratch.res.forbidden) note = `<div class="result again"><b>Same as last week!</b>That spot isn't allowed for you. Pick another card.</div><button class="btn accent" data-act="scratch-new">Pick another card</button>`;
   else if (scratch.revealed && scratch.res) note = `<div class="result good">You start the week of ${fmtDay(fromKey(w.next))} as<b>${esc(spotName(scratch.res.land))}</b>Spot ${scratch.res.land+1} in Monday's first slot · fixed</div>`;
-  else if (!mineDone && w.open) note = `<p class="muted">Rub the silver area with your finger or mouse.</p>`;
-  return pickHeader('Scratch card', 'Each agent scratches one card to reveal their starting spot.') +
-    `<div class="pickgrid"><section class="card stage">${card}${note}</section>${drawsCard(scratch.lock)}</div>`;
+  else if (!mineDone && w.open && scratch.pick != null) note = `<p class="muted">Rub the silver area with your finger or mouse.</p>`;
+  return `<section class="card stage">${card}${note}</section>`;
 }
 function setupScratch(){
   const cv = $('#scratchcv'); if (!cv) return;
@@ -1357,9 +1564,9 @@ function setupScratch(){
     if (!scratch.res && !scratch.busy) {
       if (!demo && !navigator.onLine) { down = false; return toast('Connect to the internet to scratch, so two people can\'t get the same spot.'); }
       scratch.busy = true; scratch.lock = true; unlockAudio();
-      try { scratch.res = await claimSpot(); } catch(err) { scratch.busy = false; scratch.lock = false; writeErr(err); return render(true); }
+      try { scratch.res = await claimSpot('scratch'); } catch(err) { scratch.busy = false; scratch.lock = false; writeErr(err); return render(true); }
       scratch.busy = false;
-      if (scratch.res.already) { scratch = { lock:false, res:null, busy:false, revealed:false }; toast('You have already picked for next week.'); return render(true); }
+      if (scratch.res.already) { scratch = SCRATCH0(); toast('You have already picked for next week.'); return render(true); }
       const u = $('#under'), res = scratch.res;
       if (u) u.innerHTML = res.forbidden ? `<small>Spot ${res.land+1}</small><b>${esc(spotName(res.land))}</b><span>Same as last week. Not allowed</span>` : `<small>Your spot for next week</small><b>${esc(spotName(res.land))}</b><span>Spot ${res.land+1}</span>`;
     }
@@ -1399,14 +1606,17 @@ function viewSettings(){
   const adminCard = adm
     ? `<section class="card" style="display:grid;gap:10px"><h3>Admin</h3><p class="muted" style="font-size:13px">Admin is on for this device. Change the team settings below, then tap <b>Save changes</b> at the bottom.</p>
       <p class="muted" style="font-size:13px">${todayFixed ? `<b>Today is fixed.</b> Changes here apply from tomorrow. Only leave (Routine → tap a name) changes a day that has started.` : 'A day is fixed as soon as it starts. Until then it follows these settings.'}</p>
-      <div class="row">${todayFixed ? `<button class="btn ghost" data-act="rebuild-today">Rebuild today from settings</button>` : ''}<button class="btn ghost danger" data-act="admin-lock">Lock admin on this device</button></div></section>`
-    : `<section class="card" style="display:grid;gap:8px"><h3>Team settings</h3><p class="muted" style="font-size:13px">Only the admin changes the roster: the team, leave, roles, shifts and Saturdays. Once a day starts its roster is fixed; only leave marked by the admin changes it.</p><p class="muted" style="font-size:13px">You can change your name, photo and theme (tap your picture), and make your weekly pick in Spin or Scratch.</p></section>`;
+      <div class="row">${todayFixed ? `<button class="btn ghost" data-act="rebuild-today">Rebuild today from settings</button>` : ''}<button class="btn danger" data-act="admin-lock">Sign out of admin</button></div></section>`
+    : `<section class="card" style="display:grid;gap:8px"><h3>Team settings</h3><p class="muted" style="font-size:13px">Only the admin changes the roster: the team, leave, roles, shifts and Saturdays. Once a day starts its roster is fixed; only leave marked by the admin changes it.</p><p class="muted" style="font-size:13px">You can change your name, photo and theme (tap your picture), and make your weekly pick in Next Week Luck. The tools button at the bottom right has your QR code, links, the weekly check and Zero Club.</p></section>`;
   const about = `<section class="card" style="display:grid;gap:8px"><h3>About</h3><p><b>${APP_NAME}</b> v${VERSION}</p>
     <p class="muted" style="font-size:13px">${demo?'Demo mode: everything is saved on this device only. Fill in firebase-config.js to share the roster with the team.':'Shared roster: saved changes reach everyone instantly.'}</p></section>`;
   if (!adm) return `${readOnly?'<div class="pill bad">View only: you can\'t change settings</div>':''}
     <section><h2>Settings</h2></section><div class="sgrid">${you}${alerts}${adminCard}${about}</div>`;
 
-  const thisWk = wkKey(new Date()), order = staff().length ? weekOrder(thisWk) : [], pos = buildPositions(order.length), w = pickWindow(), roles = rolesAll();
+  const thisWk = wkKey(new Date()), order = staff().length ? weekOrder(thisWk) : [], pos = buildPositions(order.length), w = pickWindow(), roles = rolesAll(), seq = seqOf(roles);
+  const dropped = []; { let prev = roles.map(r => r.name); for (let m = roles.length-1; m >= 1 && dropped.length < 4; m--) { const cur = buildPositions(m).map(p => p.name); dropped.push(...prev.filter(x => !cur.includes(x))); prev = cur; } }
+  const extras = buildPositions(roles.length+2).map(p => p.name).filter(x => !roles.some(r => r.name === x));
+  const dropTxt = (dropped.length ? 'With fewer people, roles are left empty in this order: <b>'+dropped.slice(0,4).map(esc).join('</b>, <b>')+'</b>… Break is kept. ' : '') + (extras.length ? 'With more people, extra roles are added: <b>'+extras.map(esc).join('</b>, <b>')+'</b>.' : '');
   const rf = rulesFrom();
   let satStart = fromKey(rf); while (satStart.getDay() !== 6) satStart = addDays(satStart, 1); const satTxt = dkey(satStart) > dkey(new Date()) ? ' (starts '+fmtDay(satStart)+')' : '';
   const sr = satRule(), offRoles = new Set(sr.roles.map(normName)), satRoles = roles.filter(r => !offRoles.has(normName(r.name))), satN = staff().length - sr.staff.length;
@@ -1421,16 +1631,19 @@ function viewSettings(){
   <section><h2>Settings</h2><p class="muted" style="margin-top:4px">Every change shows straight away so you can check it. Nothing reaches the team until you tap <b>Save changes</b> at the bottom.</p></section>
   <div class="sgrid">${you}${alerts}${adminCard}
 
-  <section class="card" style="display:grid;gap:10px"><h3>Team · this week's Monday order</h3><p class="muted" style="font-size:13px">Row 1 opens Monday as ${esc((pos[0]||{}).name||'Greeter')}, row 2 as ${esc((pos[1]||{}).name||'SAS1')}, and so on. Each day the order moves up by one, so yesterday's Greeter starts the day on Break.</p>
+  <section class="card" style="display:grid;gap:10px"><h3>Team · this week's Monday order</h3><p class="muted" style="font-size:13px">Row 1 opens Monday as ${esc((pos[0]||{}).name||'Greeter')}, row 2 as ${esc((pos[1]||{}).name||'SAS1')}, and so on. Each day the order moves up by one, so yesterday's Greeter starts the day on the next role in the sequence (${esc((seq[1]||{}).name||'Break')}).</p>
     <input id="adminphoto" type="file" accept="image/*" hidden>
     <div class="list">${order.map((n,i) => `<div class="li"><span class="mono muted" style="width:22px">${i+1}</span>${photoBtn(n)}<span class="grow">${esc(n)} <span class="muted" style="font-weight:500">· ${esc((pos[i]||{}).name||'')}</span></span>
       <button class="icon" data-act="staff-move" data-i="${i}" data-d="-1" aria-label="Move ${esc(n)} up" ${i?'':'disabled'}>↑</button><button class="icon" data-act="staff-move" data-i="${i}" data-d="1" aria-label="Move ${esc(n)} down" ${i<order.length-1?'':'disabled'}>↓</button><button class="icon" data-act="staff-del" data-i="${i}" aria-label="Remove ${esc(n)}">✕</button></div>`).join('') || '<p class="muted">No agents yet.</p>'}</div>
     <form class="addrow" data-form="staff"><input id="newstaff" placeholder="Add agent name" autocomplete="off" maxlength="30"><button class="btn primary">Add</button></form>
     <p class="muted" style="font-size:12px">Tap a picture to set that person's photo. People can also add their own by tapping their picture at the top.</p></section>
 
-  <section class="card" style="display:grid;gap:10px"><h3>Roles · in priority order</h3><p class="muted" style="font-size:13px">When someone is on leave, the last working role is dropped first so the front desk stays covered. With more people than roles, the extras get TAB3, SAS3, then TAB4 and so on, never a second Break.</p>
-    <div class="list">${roles.map((r,i) => `<div class="li"><span class="grow">${esc(r.name)}</span><label class="row" style="gap:4px;font-size:13px"><input type="checkbox" data-set="role-brk" data-i="${i}" ${r.brk?'checked':''}> Break</label>
-      <button class="icon" data-act="role-move" data-i="${i}" data-d="-1" aria-label="Move up" ${i?'':'disabled'}>↑</button><button class="icon" data-act="role-move" data-i="${i}" data-d="1" aria-label="Move down" ${i<roles.length-1?'':'disabled'}>↓</button><button class="icon" data-act="role-del" data-i="${i}" aria-label="Remove ${esc(r.name)}">✕</button></div>`).join('')}</div>
+  <section class="card" style="display:grid;gap:10px"><h3>Role sequence</h3>
+    <p class="muted" style="font-size:13px">Each time slot everyone moves one step down this list, and the last role goes back to the top. The Routine shows the roles left to right in this order. Drag <b>☰</b> or use ↑ ↓ to change it.</p>
+    <div class="list" data-drag="roles">${seq.map((r,i) => `<div class="li" data-i="${i}"><span class="handle" aria-hidden="true" title="Drag to move">☰</span><span class="mono muted" style="width:20px">${i+1}</span><span class="grow">${esc(r.name)}</span><label class="row" style="gap:4px;font-size:13px"><input type="checkbox" data-set="role-brk" data-i="${i}" ${r.brk?'checked':''}> Break</label>
+      <button class="icon" data-act="role-move" data-i="${i}" data-d="-1" aria-label="Move ${esc(r.name)} up" ${i?'':'disabled'}>↑</button><button class="icon" data-act="role-move" data-i="${i}" data-d="1" aria-label="Move ${esc(r.name)} down" ${i<seq.length-1?'':'disabled'}>↓</button><button class="icon" data-act="role-del" data-i="${i}" aria-label="Remove ${esc(r.name)}">✕</button></div>`).join('')}</div>
+    <p class="chain"><span class="muted">How people move:</span> ${seq.concat(seq.length ? [seq[0]] : []).map(r => `<b>${esc(r.name)}</b>`).join(' → ')}</p>
+    <p class="muted" style="font-size:13px">${dropTxt}</p>
     <form class="addrow" data-form="role"><input id="newrole" placeholder="Add role, e.g. SAS4" autocomplete="off" maxlength="20"><button class="btn primary">Add</button></form></section>
 
   <section class="card" style="display:grid;gap:10px"><h3>Managers · view only</h3><p class="muted" style="font-size:13px">Managers see what everyone is doing right now and the full routine, and can download it. They are not on the roster and can't change it.</p>
@@ -1450,14 +1663,37 @@ function viewSettings(){
     <div class="field"><b>Working days</b><div class="toggles">${[1,2,3,4,5,6,0].map(d => `<button data-act="wday" data-d="${d}" aria-pressed="${c.workDays.includes(d)}">${DAYN[d]}</button>`).join('')}</div></div>
     <label class="field"><b>Alert and notification before each role change</b><select data-set="leadMin">${[1,2,3,4,5,10].map(m => `<option value="${m}" ${+c.leadMin===m?'selected':''}>${m} minute${m>1?'s':''}</option>`).join('')}</select></label></section>
 
+  <section class="card" style="display:grid;gap:12px"><h3>Half days</h3>
+    <p class="muted" style="font-size:13px">On these days there is one shift only, at these times.</p>
+    <div class="list">${shortDays().map((h,i) => `<div class="li shiftrow"><select data-set="half-day" data-i="${i}" aria-label="Day" style="border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:5px 8px;flex:1 1 100%">${[1,2,3,4,5,6,0].map(d => `<option value="${d}" ${h.day===d?'selected':''}>${DAYS_LONG[d]}</option>`).join('')}</select><input type="time" data-set="half-start" data-i="${i}" value="${esc(h.start)}" aria-label="Starts"><span>to</span><input type="time" data-set="half-end" data-i="${i}" value="${esc(h.end)}" aria-label="Ends"><button class="icon" data-act="half-del" data-i="${i}" aria-label="Remove this half day">✕</button></div>`).join('') || '<p class="muted">No half days. Every working day has the normal shifts.</p>'}</div>
+    <button class="btn sm" data-act="half-add" style="justify-self:start">Add a half day</button></section>
+
   <section class="card" style="display:grid;gap:12px"><h3>WhatsApp alerts</h3>
     <label class="field"><b>Bot's WhatsApp number</b><input type="tel" inputmode="numeric" data-set="waNumber" placeholder="${WA_DEFAULT}" value="${esc(waNum)}"></label>
     <p class="muted" style="font-size:13px">Country code first, no + or spaces. Empty = ${WA_DEFAULT}. This is the number the WhatsApp bot is linked to.</p></section>
 
-  <section class="card" style="display:grid;gap:12px"><h3>Weekly pick (Spin + Scratch)</h3>
+  <section class="card" style="display:grid;gap:12px"><h3>Next Week Luck (weekly pick)</h3>
     <label class="field"><b>Opens before the new week</b><select data-set="wheelHours">${[12,24,48].map(h => `<option value="${h}" ${+c.wheelHours===h?'selected':''}>${h} hours before Monday</option>`).join('')}</select></label>
     <p class="muted" style="font-size:13px">For the week of ${fmtDay(fromKey(w.next))}: ${w.open?'open now':'opens '+fmtDay(new Date(w.openAt))}. The button below works straight away.</p>
     <div class="row">${ov?`<button class="btn" data-act="wheel-close">Close it early</button>`:`<button class="btn" data-act="wheel-open">Open now for 24 hours</button>`}</div></section>
+  <section class="card" style="display:grid;gap:12px"><h3>Tools · links and lists</h3>
+    <p class="muted" style="font-size:13px">Everyone opens these from the tools button at the bottom right.</p>
+    <label class="field"><b>RQMS link</b><input type="url" inputmode="url" data-set="tool-url" data-tool="rqms" placeholder="https://…" value="${esc(toolUrl('rqms'))}" autocomplete="off" spellcheck="false"></label>
+    <label class="field"><b>Translator link</b><input type="url" inputmode="url" data-set="tool-url" data-tool="translator" placeholder="https://…" value="${esc(toolUrl('translator'))}" autocomplete="off" spellcheck="false"></label>
+    <label class="field"><b>Weekly check · name</b><input data-set="tool-name" data-tool="weekly" placeholder="${TOOL_DEF.weekly}" value="${esc(toolCfg('weekly').name||'')}" maxlength="40" autocomplete="off"></label>
+    <label class="field"><b>Weekly check · link (optional)</b><input type="url" inputmode="url" data-set="tool-url" data-tool="weekly" placeholder="https://…" value="${esc(toolUrl('weekly'))}" autocomplete="off" spellcheck="false"></label>
+    <div class="field"><b>${esc(toolName('zero'))} · list</b><div class="list">${zeroItems().map(x => `<div class="li"><span class="grow" style="white-space:normal">${esc(x.text)}</span><button class="icon" data-act="zero-del" data-id="${esc(x.id)}" aria-label="Remove ${esc(x.text)}">✕</button></div>`).join('') || '<p class="muted">No items yet.</p>'}</div>
+      <form class="addrow" data-form="zero-item"><input placeholder="Add an item" maxlength="80" autocomplete="off" aria-label="New ${esc(toolName('zero'))} item"><button class="btn primary">Add</button></form></div>
+    <label class="field"><b>${esc(toolName('zero'))} · starts fresh</b><select data-set="zero-period">${[['week','Every Monday'],['month','Every month'],['never','Never (ticks stay)']].map(([v,l]) => `<option value="${v}" ${zeroPeriod()===v?'selected':''}>${l}</option>`).join('')}</select></label></section>
+
+  <section class="card" style="display:grid;gap:10px"><h3>This week · ${esc(toolName('weekly'))} and ${esc(toolName('zero'))}</h3>
+    <div class="cktable">${staff().map(n => { const wd = weeklyDone(n); return `<div>${avatar(n,26)}<b>${esc(n)}</b><span class="r"><span><i class="wdot ${wd?'ok':'bad'}"></i> ${wd?'Done':'Not yet'}</span><span class="mono">${zeroItems().length ? zeroCount(n)+'/'+zeroItems().length : '–'}</span></span></div>`; }).join('')}</div>
+    <p class="muted" style="font-size:12px">Each person marks these from their own tools button.</p></section>
+
+  <section class="card" style="display:grid;gap:10px"><h3>QR codes</h3>
+    <p class="muted" style="font-size:13px">Add each person's QR code (a photo or screenshot of it is fine). Each person sees only their own, in their profile and in Tools. Saved straight away.</p>
+    <input id="qrfile" type="file" accept="image/*" hidden>
+    <div class="list">${[...staff(), ...observers()].map(n => { const q = hasQr(n); return `<div class="li">${avatar(n,30)}<span class="grow">${esc(n)}</span>${q ? '<span class="pill ok">QR added</span>' : '<span class="pill">No QR</span>'}<button class="btn sm" data-act="qr-pick" data-name="${esc(n)}">${q ? 'Change' : 'Add'}</button>${q ? `<button class="btn sm ghost" data-act="qr-view" data-name="${esc(n)}">View</button><button class="btn sm ghost danger" data-act="qr-del" data-name="${esc(n)}">Remove</button>` : ''}</div>`; }).join('')}</div></section>
   ${viewGh()}
   ${about}
   </div>
@@ -1466,7 +1702,11 @@ function viewSettings(){
 }
 function onSettingChange(el){
   const c = C(), k = el.dataset.set, i = +el.dataset.i;
-  if (k === 'role-brk') { const roles = rolesAll(); roles[i].brk = el.checked; stageCfg({ roles }); }
+  if (k === 'role-brk') { const seq = seqOf(rolesAll()); seq[i].brk = el.checked; stageCfg({ roles: listFromSeq(seq) }); }
+  else if (k === 'tool-url') { const v = normUrl(el.value); if (v === null) { toast("That doesn't look like a web address. Paste the full link, starting with https://"); return render(true); } stageTool(el.dataset.tool, { url: v }); }
+  else if (k === 'tool-name') stageTool(el.dataset.tool, { name: el.value.trim().slice(0,40) });
+  else if (k === 'zero-period') stageTool('zero', { period: el.value });
+  else if (k.startsWith('half-')) { const h = shortDays(), f = { 'half-day':'day', 'half-start':'start', 'half-end':'end' }[k], v = f === 'day' ? +el.value : el.value; if (!h[i] || v === '') return render(true); h[i][f] = v; stageCfg({ shortDays: h }); }
   else if (k === 'sat-on') { const sr = satRule(); stageCfg({ satRule: { ...sr, on: el.checked } }); }
   else if (k.startsWith('shift-')) { const shifts = c.shifts.map(s => ({...s})), f = {'shift-name':'name','shift-start':'start','shift-end':'end'}[k], v = el.value.trim(); if (!v) return render(true); shifts[i][f] = v; stageCfg({ shifts }); }
   else if (k === 'slotMode') stageCfg({ slotMode: el.value === 'auto' ? 'auto' : +el.value });
@@ -1475,6 +1715,26 @@ function onSettingChange(el){
   else if (k === 'waNumber') stageCfg({ waNumber: el.value.replace(/\D/g,'') });
 }
 const setOrder = order => stageCfg({ staff: order, anchorWeek: wkKey(new Date()) });
+const stageTool = (k, patch) => { const t = { ...(C().tools || {}) }; t[k] = { ...(t[k] || {}), ...patch }; stageCfg({ tools: t }); };
+// Role sequence: drag the ☰ handle up or down (works with a finger or a mouse).
+function setupDrag(){
+  const list = document.querySelector('[data-drag="roles"]'); if (!list || list.dataset.ready) return; list.dataset.ready = '1';
+  list.addEventListener('pointerdown', e => {
+    const h = e.target.closest('.handle'), item = h && h.closest('.li'); if (!item || !isAdmin()) return;
+    e.preventDefault();
+    const items = [...list.children], from = items.indexOf(item), rects = items.map(x => x.getBoundingClientRect()), y0 = e.clientY, gap = 6;
+    let to = from; item.classList.add('dragging'); try { h.setPointerCapture(e.pointerId); } catch(err) {}
+    const move = ev => {
+      const dy = ev.clientY - y0, cy = rects[from].top + rects[from].height/2 + dy; item.style.transform = `translateY(${dy}px)`;
+      to = items.filter((x,i) => i !== from && rects[i].top + rects[i].height/2 < cy).length;
+      items.forEach((x,i) => { if (i === from) return; const sh = from < to && i > from && i <= to ? -(rects[from].height+gap) : from > to && i >= to && i < from ? rects[from].height+gap : 0; x.style.transform = sh ? `translateY(${sh}px)` : ''; });
+    };
+    const up = () => { h.removeEventListener('pointermove', move); h.removeEventListener('pointerup', up); h.removeEventListener('pointercancel', up);
+      items.forEach(x => { x.style.transform = ''; x.classList.remove('dragging'); });
+      if (to !== from) { const seq = seqOf(rolesAll()), [m] = seq.splice(from, 1); seq.splice(to, 0, m); stageCfg({ roles: listFromSeq(seq) }); } };
+    h.addEventListener('pointermove', move); h.addEventListener('pointerup', up); h.addEventListener('pointercancel', up);
+  });
+}
 function fmt24(m){ m = Math.min(m, 23*60+59); return String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0'); }
 
 let wakeLock = null, wantWake = false;
@@ -1487,7 +1747,10 @@ document.addEventListener('click', e => {
   const el = e.target.closest('[data-act]'); if (!el) return;
   const a = el.dataset.act, c = C();
   switch (a) {
-    case 'tab': tab = el.dataset.tab; LS.set('dutyRoster.tab', tab); if (tab === 'roster') viewDate = sod(new Date()); scratch = { lock:false, res:null, busy:false, revealed:false }; render(true); window.scrollTo(0,0); break;
+    case 'tab': if (spin.anim || scratch.lock) return; tab = el.dataset.tab; LS.set('dutyRoster.tab', tab); if (tab === 'roster') viewDate = sod(new Date()); scratch = SCRATCH0(); luck.mode = null; luck.asked = false; spin.done = false; render(true); window.scrollTo(0,0); break;
+    case 'play': luck.mode = el.dataset.game === 'scratch' ? 'scratch' : 'spin'; scratch = SCRATCH0(); spin.done = false; if (sheet && sheet.kind === 'play') { sheet = null; renderSheet(); } tab = 'luck'; render(true); break;
+    case 'luck-switch': if (spin.anim || scratch.lock) return; luck.mode = luck.mode === 'spin' ? 'scratch' : 'spin'; scratch = SCRATCH0(); render(true); break;
+    case 'scratch-pick': if (!canPlay()) return; scratch = { ...SCRATCH0(), pick: +el.dataset.i }; render(true); break;
     case 'signin': me = el.dataset.name; rememberMe(me); setUrlMe(me); hl = null; unlockAudio(); applyMyTheme(); tab = 'home'; LS.set('dutyRoster.tab', tab); render(true); toast('Hi '+me+'! This device will remember you.');
       if (!staff().includes(me)) break;
       if (pushReady() && pushEnv() === 'ok' && Notification.permission !== 'denied') enablePush();
@@ -1514,11 +1777,11 @@ document.addEventListener('click', e => {
     case 'push-on': enablePush(); break;
     case 'push-off': disablePush(); break;
     case 'push-test': testPush(); break;
-    case 'scratch-new': scratch = { lock:false, res:null, busy:false, revealed:false }; render(true); break;
+    case 'scratch-new': scratch = SCRATCH0(); render(true); break;
     case 'staff-move': { const o = weekOrder(wkKey(new Date())).slice(), i = +el.dataset.i, j = i + +el.dataset.d; [o[i],o[j]] = [o[j],o[i]]; setOrder(o); break; }
     case 'staff-del': { const o = weekOrder(wkKey(new Date())).slice(), i = +el.dataset.i; if (el.dataset.confirm !== '1') { el.dataset.confirm = '1'; el.textContent = '?'; el.setAttribute('aria-label','Tap again to remove'); toast('Tap ✕ again to remove '+o[i]+'.'); return; } o.splice(i,1); setOrder(o); break; }
-    case 'role-move': { const r = rolesAll(), i = +el.dataset.i, j = i + +el.dataset.d; [r[i],r[j]] = [r[j],r[i]]; stageCfg({ roles: r }); break; }
-    case 'role-del': { const r = rolesAll(); if (r.length <= 1) return; r.splice(+el.dataset.i,1); stageCfg({ roles: r }); break; }
+    case 'role-move': { const q = seqOf(rolesAll()), i = +el.dataset.i, j = i + +el.dataset.d; if (j < 0 || j >= q.length) return; [q[i],q[j]] = [q[j],q[i]]; stageCfg({ roles: listFromSeq(q) }); break; }
+    case 'role-del': { const q = seqOf(rolesAll()); if (q.length <= 1) return; if (el.dataset.confirm !== '1') { el.dataset.confirm = '1'; el.textContent = '?'; toast('Tap ✕ again to remove '+q[+el.dataset.i].name+'.'); return; } q.splice(+el.dataset.i,1); stageCfg({ roles: listFromSeq(q) }); break; }
     case 'sat-staff': { const sr = satRule(), n = el.dataset.name, s = sr.staff.includes(n) ? sr.staff.filter(x => x !== n) : [...sr.staff, n]; stageCfg({ satRule: { ...sr, staff: s } }); break; }
     case 'sat-role': { const sr = satRule(), n = el.dataset.name, has = sr.roles.some(x => normName(x) === normName(n)), r = has ? sr.roles.filter(x => normName(x) !== normName(n)) : [...sr.roles, n]; stageCfg({ satRule: { ...sr, roles: r } }); break; }
     case 'shift-add': { const s = c.shifts.slice(), last = s[s.length-1]; s.push({ name:'Shift '+(s.length+1), start: last ? last.end : '08:00', end: last ? fmt24(parseHM(last.end)+270) : '12:30' }); stageCfg({ shifts: s }); break; }
@@ -1527,6 +1790,18 @@ document.addEventListener('click', e => {
     case 'wheel-open': { if (!isAdmin()) return toast('Only the admin can do this.'); const w = pickWindow(); saveCfg({ wheelOverride: { wk: w.next, until: Date.now()+24*3600000 } }); toast('Spin and Scratch are open for 24 hours.'); break; }
     case 'wheel-close': if (!isAdmin()) return toast('Only the admin can do this.'); saveCfg({ wheelOverride: null }); break;
     case 'me-tap': meTap(); break;
+    case 'tools': if (!signedIn()) return; sheet = { kind: 'tools' }; renderSheet(); break;
+    case 'tool': { const k = el.dataset.tool; if (k === 'link') openTool('link', { tool: el.dataset.k }); else openTool(k); break; }
+    case 'sheet-back': if (sheet && sheet.prev) { sheet = sheet.prev; renderSheet(); } break;
+    case 'weekly-done': setWeekly(true); break;
+    case 'weekly-undo': setWeekly(false); break;
+    case 'zero-tick': toggleZero(el.dataset.id); break;
+    case 'qr-pick': { if (!isAdmin()) return; pickFor = el.dataset.name; const inp = $('#qrfile'); if (inp) { inp.value = ''; inp.click(); } break; }
+    case 'qr-view': if (!isAdmin()) return; openTool('qr', { who: el.dataset.name }); break;
+    case 'qr-del': { if (!isAdmin()) return; const n = el.dataset.name; if (el.dataset.confirm !== '1') { el.dataset.confirm = '1'; el.textContent = 'Tap again'; return; } saveQr(n, null).then(() => { toast('QR code for '+n+' removed.'); render(true); }).catch(writeErr); break; }
+    case 'zero-del': { const items = zeroItems().filter(x => x.id !== el.dataset.id); stageTool('zero', { items }); break; }
+    case 'half-add': { const h = shortDays(); h.push({ day: 5, start: '08:00', end: '12:00' }); stageCfg({ shortDays: h }); break; }
+    case 'half-del': { const h = shortDays(); h.splice(+el.dataset.i, 1); stageCfg({ shortDays: h }); break; }
     case 'profile-open': openSheet('profile'); break;
     case 'sheet-close': if (e.target.closest('[data-stop]')) return; closeSheet(); break;
     case 'sheet-cancel': closeSheet(); break;
@@ -1535,7 +1810,7 @@ document.addEventListener('click', e => {
     case 'photo-del': if (sheet) { sheet.photo = null; sheet.photoGone = true; renderSheet(); } break;
     case 'profile-save': saveProfileSheet(); break;
     case 'admin-go': sheet = null; renderSheet(); tab = 'settings'; LS.set('dutyRoster.tab', tab); render(true); window.scrollTo(0,0); break;
-    case 'admin-lock': setAdmin(false); sheet = null; renderSheet(); render(true); toast('Admin is locked on this device.'); break;
+    case 'admin-lock': setAdmin(false); sheet = null; renderSheet(); render(true); toast('Signed out of admin on this device.'); break;
     case 'draft-save': saveDraft(); break;
     case 'update-now': if (hasDraft()) return toast('Save or discard your team changes first, then update.'); location.reload(); break;
     case 'photo-pick': { if (!isAdmin()) return; pickFor = el.dataset.name; const inp = $('#adminphoto'); if (inp) { inp.value = ''; inp.click(); } break; }
@@ -1547,6 +1822,8 @@ document.addEventListener('click', e => {
 document.addEventListener('change', e => {
   if (e.target.id === 'adminphoto') { const f = e.target.files && e.target.files[0], n = pickFor; if (!f || !n) return;
     readPhoto(f).then(url => { stagePhoto(n, url); toast('Photo for '+n+' added. Tap Save changes when you are done.'); }).catch(() => toast('That file could not be read as a photo. Try a JPG or PNG.')); return; }
+  if (e.target.id === 'qrfile') { const f = e.target.files && e.target.files[0], n = pickFor; if (!f || !n || !isAdmin()) return;
+    readQr(f).then(img => saveQr(n, img)).then(() => { toast('QR code for '+n+' saved. Only '+n+' sees it in their profile.'); render(true); }).catch(err => err && err.code ? writeErr(err) : toast('That file could not be read as an image. Try a PNG or JPG.')); return; }
   if (e.target.id === 'photoin') { const f = e.target.files && e.target.files[0]; if (!f || !sheet) return;
     readPhoto(f).then(url => { if (sheet) { sheet.photo = url; renderSheet(); } }).catch(() => toast('That file could not be read as a photo. Try a JPG or PNG.')); return; }
   if (e.target.dataset && e.target.dataset.set) onSettingChange(e.target);
@@ -1568,6 +1845,7 @@ document.addEventListener('submit', e => {
     if (!observers().includes(v)) stageCfg({ observers: [...observers(), v] }); return; }
   if (f === 'observer') { const inp = e.target.querySelector('input'), n = addObserver(inp && inp.value); if (!n) return;
     if (e.target.dataset.signin) { me = n; rememberMe(me); setUrlMe(me); hl = null; tab = 'home'; LS.set('dutyRoster.tab', tab); render(true); toast('Hi '+me+'! You can see the team roster here.'); } else toast(n+' added as a manager.'); }
+  if (f === 'zero-item') { const inp = e.target.querySelector('input'), v = String((inp && inp.value) || '').trim().slice(0,80); if (!v) return; stageTool('zero', { items: [...zeroItems(), { id: 'z'+Date.now().toString(36)+Math.random().toString(36).slice(2,6), text: v }] }); return; }
   if (f === 'role') { const v = $('#newrole').value.trim(); if (!v) return; if (isStandby({ name: v })) return toast('Standby is not used. Add a working role instead.'); const r = rolesAll(), bi = r.findIndex(x => x.brk); r.splice(bi < 0 ? r.length : bi, 0, { name: v }); stageCfg({ roles: r }); }
 });
 
