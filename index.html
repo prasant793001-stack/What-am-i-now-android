@@ -12,7 +12,13 @@
 <meta name="apple-mobile-web-app-title" content="Al Ain BC">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" media="print" onload="this.media='all'">
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
+<link rel="modulepreload" href="roster-engine.js?v=1.7.1">
+<link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js" crossorigin>
+<link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js" crossorigin>
+<link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js" crossorigin>
 <style>
 :root{
   --bg:#EEF2F1; --surface:#FFFFFF; --sunk:#F5F8F7; --ink:#14201D; --muted:#5B6A66; --line:#D9E1DF;
@@ -306,15 +312,17 @@ footer{padding:0 0 24px;text-align:center;font-size:12px}
 <div id="banner" hidden></div>
 <div id="sheet" hidden></div>
 <div id="savebar" hidden></div>
-<button id="toolsbtn" data-act="tools" aria-label="Tools: QR code, links, weekly check, Zero Club" title="Tools" hidden><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></button>
+<button id="toolsbtn" data-act="tools" aria-label="Tools: QR code, links, weekly check, Zero Club" title="Tools" hidden><svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><g fill="currentColor"><rect x="3" y="3" width="5" height="5" rx="1.6"/><rect x="9.5" y="3" width="5" height="5" rx="1.6"/><rect x="16" y="3" width="5" height="5" rx="2.5"/><rect x="3" y="9.5" width="5" height="5" rx="1.6"/><rect x="9.5" y="9.5" width="5" height="5" rx="2.5"/><rect x="16" y="9.5" width="5" height="5" rx="1.6"/><rect x="3" y="16" width="5" height="5" rx="2.5"/><rect x="9.5" y="16" width="5" height="5" rx="1.6"/><rect x="16" y="16" width="5" height="5" rx="1.6"/></g></svg></button>
 <button id="updbtn" data-act="update-now" hidden></button>
 <div id="toast" role="status" hidden></div>
 
 <script type="module">
 import { DAYN, MON, DEFAULTS, sod, addDays, dkey, fromKey, monday, wkKey, parseHM, fmtT, fmtRange, fmtDay, fmtCd, hash, rotate, pkey, C, staff, setData, cleanAssign, match, buildPositions, dayRoster, allSlots, roleOf, myItems,
-  normName, isStandby, rolesAll, rulesFrom, satRule, weekOrder, wheelForbids, liveName, renameMap, lockOf, lockData, shortDays, moveIdx, seqOf, listFromSeq } from "./roster-engine.js?v=1.7.0";
+  normName, isStandby, rolesAll, rulesFrom, satRule, weekOrder, wheelForbids, liveName, renameMap, lockOf, lockData, shortDays, moveIdx, seqOf, listFromSeq, rolePrio } from "./roster-engine.js?v=1.7.1";
 
-const VERSION = '1.7.0';
+const VERSION = '1.7.1';   // update number: open copies compare it with version.json
+const BUILD = '1.7.0';     // the build name shown in the app
+const CREDIT = 'Powered by Aakriti Marketing Agency';
 const APP_NAME = 'Al Ain BC';
 const WA_DEFAULT = '971505353447'; // the WhatsApp bot's number (can be changed in Settings)
 const SEED_STAFF = ["Ahmed","Shahid","Ziko","Rayan","Hamada","Prashant","Mohammed","Ahoud","Mustafa"];
@@ -408,21 +416,43 @@ async function startDb(){
   // Snapshots also fire when only "saved on the server" changes; those just update fresh.* without redrawing.
   let cfgJ = null, absJ = null, whJ = null;
   db.doc('config/main').onSnapshot((s, srv) => { fresh.cfg = srv !== false; const d = s.exists ? s.data() : null, j = JSON.stringify(d);
-    if (j !== cfgJ || dbState !== 'ready') { cfgJ = j; cfg = d; dbState = 'ready'; clearCache(); followRename(); render(); markRulesStart(); } queuePlan(); queueLock(); }, err);
+    if (j !== cfgJ || dbState !== 'ready' || !cfgJ) { cfgJ = j; cfg = d; dbState = 'ready'; clearCache(); followRename(); render(); markRulesStart(); saveSnap(); } queuePlan(); queueLock(); }, err);
   db.collection('absences').onSnapshot((s, srv) => { fresh.abs = srv !== false; const a={}; s.docs.forEach(d => a[d.id] = d.data()); const j = JSON.stringify(a);
-    if (j !== absJ) { absJ = j; absences = a; clearCache(); render(); } queuePlan(); queueLock(); }, err);
+    if (j !== absJ) { absJ = j; absences = a; clearCache(); render(); saveSnap(); } queuePlan(); queueLock(); }, err);
   db.collection('wheel').onSnapshot((s, srv) => { fresh.wheel = srv !== false; const w={}; s.docs.forEach(d => w[d.id] = d.data()); const j = JSON.stringify(w);
-    if (j !== whJ) { whJ = j; wheels = w; clearCache(); render(); } queuePlan(); queueLock(); }, err);
-  db.doc('config/qr-index').onSnapshot(s => { qrIndex = (s.exists && s.data() && s.data().has) || {}; if (sheet && sheet.kind === 'tools') renderSheet(); if (tab === 'settings' && isAdmin()) render(); }, () => {});
+    if (j !== whJ) { whJ = j; wheels = w; clearCache(); render(); saveSnap(); } queuePlan(); queueLock(); }, err);
+  db.doc('config/qr-index').onSnapshot(s => { qrIndex = (s.exists && s.data() && s.data().has) || {}; saveSnap(); if (sheet && sheet.kind === 'tools') renderSheet(); if (tab === 'settings' && isAdmin()) render(); }, () => {});
   let profJ = null;
   db.collection('profiles').onSnapshot(s => { const p = {}; s.docs.forEach(d => p[d.id] = d.data()); const j = JSON.stringify(p);
-    profilesLoaded = true; if (j !== profJ) { profJ = j; profiles = p; applyMyTheme(); render(); if (sheet && /^(tools|weekly|zero)$/.test(sheet.kind)) renderSheet(); } }, () => { profilesLoaded = true; });
+    profilesLoaded = true; if (j !== profJ) { profJ = j; profiles = p; applyMyTheme(); render(); saveSnap(); if (sheet && /^(tools|weekly|zero)$/.test(sheet.kind)) renderSheet(); } }, () => { profilesLoaded = true; });
   // Phone notifications. Problems here never stop the roster from working.
   if (!demo) {
     db.doc('config/push').onSnapshot(s => { const was = pushReady(); pushCfg = s.exists ? s.data() : null; syncPush(); if (was !== pushReady()) render(); else refreshPushCard(); queuePlan(); }, () => {});
     db.doc('config/push-devices').onSnapshot(s => { pushDevices = (s.exists && s.data().devices) || {}; pushLoaded.dev = true; checkTestDone(); syncPush(); refreshPushCard(); queuePlan(); }, () => {});
     db.doc('config/push-meta').onSnapshot(s => { pushMeta = s.exists ? s.data() : {}; pushLoaded.meta = true; queuePlan(); }, () => {});
   }
+}
+
+/* ---------- instant start: the last roster this device saw shows at once while the database connects ---------- */
+const SNAP_KEY = 'dutyRoster.snap';
+let snapT = null;
+function saveSnap(){
+  clearTimeout(snapT);
+  snapT = setTimeout(() => { if (demo || !cfg) return; try {
+    const d0 = dkey(addDays(sod(new Date()), -8)), w0 = dkey(addDays(monday(new Date()), -7));
+    const snap = { v: 1, at: Date.now(), cfg, absences: Object.fromEntries(Object.entries(absences).filter(([k]) => k >= d0)), wheels: Object.fromEntries(Object.entries(wheels).filter(([k]) => k >= w0)), profiles, qr: qrIndex };
+    let j = JSON.stringify(snap);
+    if (j.length > 2500000) { snap.profiles = Object.fromEntries(Object.entries(profiles).map(([k,v]) => [k, { ...v, photo: null }])); j = JSON.stringify(snap); }
+    localStorage.setItem(SNAP_KEY, j);
+  } catch(e) {} }, 1500);
+}
+function loadSnap(){
+  try {
+    const sn = JSON.parse(localStorage.getItem(SNAP_KEY) || 'null');
+    if (!sn || !sn.cfg || Date.now() - sn.at > 30*86400000) return;
+    cfg = sn.cfg; absences = sn.absences || {}; wheels = sn.wheels || {}; profiles = sn.profiles || {}; qrIndex = sn.qr || {};
+    profilesLoaded = true; dbState = 'ready'; clearCache();
+  } catch(e) {}
 }
 
 function writeErr(e){
@@ -756,7 +786,26 @@ function openSheet(kind){
   renderSheet();
 }
 function closeSheet(){ sheet = null; renderSheet(); applyMyTheme(); }
+// The phone's back button or back swipe closes the open panel (or goes back one panel) instead of leaving the app.
+let histDepth = 0, popIgnore = 0;
+const sheetDepth = sh => { let d = 0; for (let x = sh; x && d < 10; x = x.prev) d++; return d; };
+function syncHistory(){
+  const want = sheetDepth(sheet);
+  try {
+    if (want > histDepth) { for (let i = histDepth; i < want; i++) history.pushState({ panel: i+1 }, ''); histDepth = want; }
+    else if (want < histDepth) { const back = want - histDepth; histDepth = want; popIgnore++; history.go(back); }
+  } catch(e) {}
+}
+window.addEventListener('popstate', () => {
+  if (me) setUrlMe(me); // the earlier history entry may still carry an old ?me=
+  if (popIgnore) { popIgnore--; return; }
+  if (!histDepth) return;
+  histDepth--;
+  if (!sheet) return;
+  if (sheet.prev) { sheet = sheet.prev; renderSheet(); } else closeSheet();
+});
 function renderSheet(){
+  syncHistory();
   const s = $('#sheet'); if (!s) return;
   if (!sheet) { s.hidden = true; s.innerHTML = ''; return; }
   s.hidden = false;
@@ -829,7 +878,7 @@ async function saveProfileSheet(){
 // QR code (each person sees only their own; the admin adds them in Settings), RQMS and Translator links (set by the admin),
 // a weekly check everyone marks done (the dot next to your name: red until done, green when done, red again on Monday),
 // and Zero Club, a checklist the admin writes and everyone ticks.
-const TOOL_DEF = { rqms:'RQMS', translator:'Translator', weekly:'Weekly Assessment', zero:'Zero Club' };
+const TOOL_DEF = { rqms:'RQMS', translator:'Translator', weekly:'Weekly Assessment', zero:'Zero Club', studio:'Studio' };
 const toolCfg = k => { const t = C().tools && C().tools[k]; return t && typeof t === 'object' ? t : {}; };
 const toolName = k => String(toolCfg(k).name || '').trim() || TOOL_DEF[k];
 const toolUrl = k => String(toolCfg(k).url || '').trim();
@@ -890,6 +939,7 @@ const ICON = {
   translator: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h8M8 3v2M6 5c0 4 3 7 6 8M10 5c0 4-3 8-6 9"/><path d="M13 21l4-9 4 9M14.5 18h5"/></svg>',
   weekly: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M8 2v4M16 2v4M3 9h18M8.5 15l2.5 2.5 4.5-5"/></svg>',
   zero: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0z"/><path d="M17 5h3a3 3 0 0 1-3 4M7 5H4a3 3 0 0 0 3 4"/></svg>',
+  studio: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18c1.1 0 1.6-.8 1.6-1.6 0-.5-.2-.8-.5-1.2-.3-.3-.5-.7-.5-1.2 0-.9.7-1.6 1.6-1.6H16a5 5 0 0 0 5-5c0-4-4-7.4-9-7.4z"/><circle cx="7.5" cy="11" r="1.2" fill="currentColor"/><circle cx="10" cy="7" r="1.2" fill="currentColor"/><circle cx="15" cy="7.5" r="1.2" fill="currentColor"/></svg>',
 };
 function openTool(kind, extra){ const prev = sheet && sheet.kind !== kind ? sheet : null; sheet = { kind, prev, ...(extra || {}) }; renderSheet();
   if (kind === 'qr') { const who = sheet.who || me, t = sheet; t.loading = true; renderSheet(); loadQr(who).then(img => { t.img = img; t.loading = false; if (sheet === t) renderSheet(); }).catch(() => { t.loading = false; t.err = 'Could not load the QR code. Check the internet connection.'; if (sheet === t) renderSheet(); }); } }
@@ -905,6 +955,7 @@ const TOOL_VIEW = {
       ${link('rqms')}${link('translator')}
       ${agent ? `<button class="tool" data-act="tool" data-tool="weekly"><span class="ti">${ICON.weekly}</span><b>${esc(toolName('weekly'))}</b><small><i class="wdot ${wd?'ok':'bad'}"></i> ${wd ? 'Done this week' : 'Not done yet'}</small></button>
       <button class="tool" data-act="tool" data-tool="zero"><span class="ti">${ICON.zero}</span><b>${esc(toolName('zero'))}</b><small>${zi.length ? zeroCount(me)+' of '+zi.length+' done' : 'No list yet'}</small></button>` : ''}
+      ${link('studio')}
       </div><div class="row"><button class="btn ghost" data-act="sheet-cancel">Close</button></div>`;
   },
   qr(){
@@ -1070,9 +1121,12 @@ function checkTestDone(){ const d = myDevice(); if (push.testAt && d && +d.testD
 function fmtAgo(ms){ const m = Math.round(ms/60000); return m < 90 ? m+' min' : Math.round(m/60)+' h'; }
 function serverNote(){ const s = pushCfg && +pushCfg.seen; if (!s) return ''; const ago = Date.now() - s; return ago > 25*60000 ? `<p class="muted" style="font-size:13px">The notification server last checked in ${fmtAgo(ago)} ago, so notifications may not arrive.</p>` : ''; }
 const SHARE_ICON = '<svg class="shr" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M8 7l4-4 4 4M6 11H5v10h14V11h-1"/></svg>';
+const GUIDE = 'https://github.com/prasant793001-stack/What-am-i-now-android#phone-notifications-android--iphone';
+const calBtn = () => staff().includes(me) ? `<div class="row"><button class="btn" data-act="cal-export">📅 Add my next 7 days to my calendar</button></div><p class="muted" style="font-size:12px">Each role change goes into your phone's calendar with an alarm ${+C().leadMin||3} minutes before, so it rings even with the app closed. If the roster changes, add it again.</p>` : '';
 function viewPush(){
   const lead = +C().leadMin || 3, env = pushEnv(), perm = window.Notification ? Notification.permission : 'default', dev = myDevice(); let b;
-  if (!pushReady()) b = `<p class="muted">Get a notification ${lead} minutes before every role change, even when this site is closed. This needs a one-time setup first: README → <b>Phone notifications</b>.</p>`;
+  if (!pushReady()) b = `<p class="muted">Right now alerts only come while the app is open. Notifications with the app closed (like WhatsApp or Facebook) start once the admin finishes a one-time setup${isAdmin() ? `: <a href="${GUIDE}" target="_blank" rel="noopener">step-by-step guide ↗</a> (about 15 minutes, free)` : ''}.</p>
+    <p style="font-weight:600;margin-top:4px">Until then: calendar alarms</p>${calBtn()}`;
   else if (env === 'ios-old') b = `<p>Notifications on iPhone need iOS 16.4 or newer. Update in Settings → General → Software Update, then come back.</p>`;
   else if (env === 'ios-browser') b = `<p class="muted">On iPhone, notifications only work from the Home Screen app, not from a Safari tab.</p>
     <ol class="steps"><li>Tap the <b>Share</b> button ${SHARE_ICON} in Safari.</li><li>Tap <b>Add to Home Screen</b>, then <b>Add</b>.</li><li>Open <b>Al Ain BC</b> from your Home Screen and tap <b>Turn on notifications</b> there.</li></ol>`;
@@ -1080,7 +1134,7 @@ function viewPush(){
   else if (perm === 'denied') b = `<span class="pill bad" style="justify-self:start">Blocked on this phone</span><p class="muted">${IOS ? 'Open iPhone Settings → Notifications, find Al Ain BC and turn on Allow Notifications.' : 'In Chrome tap ⋮ → Settings → Site settings → Notifications, find this site and choose Allow.'} Then come back and tap below.</p><button class="btn" data-act="push-on" style="justify-self:start">Try again</button>`;
   else if (dev) b = `<span class="pill ok" style="justify-self:start">On · ${lead} min before each change</span>${serverNote()}<div class="row"><button class="btn sm" data-act="push-test" ${push.testAt?'disabled':''}>${push.testAt?'Waiting for the test…':'Send a test'}</button><button class="btn ghost sm danger" data-act="push-off" ${push.busy?'disabled':''}>Turn off</button></div>`;
   else b = `<p class="muted">Get a notification ${lead} minutes before every role change, even when this site is closed and the phone is locked.</p><button class="btn primary" data-act="push-on" style="justify-self:start" ${push.busy?'disabled':''}>${push.busy?'Turning on…':'Turn on notifications'}</button>`;
-  return `<section class="card" style="display:grid;gap:10px" data-push><h3>Phone notifications</h3>${b}${push.err ? `<p class="errline">${esc(push.err)}</p>` : ''}</section>`;
+  return `<section class="card" style="display:grid;gap:10px" data-push><h3>Phone notifications</h3>${b}${push.err ? `<p class="errline">${esc(push.err)}</p>` : ''}${pushReady() && dev ? `<details><summary class="muted" style="font-size:13px">Calendar alarms too</summary>${calBtn()}</details>` : ''}</section>`;
 }
 function refreshPushCard(){ document.querySelectorAll('[data-push]').forEach(el => el.outerHTML = viewPush()); }
 
@@ -1115,6 +1169,36 @@ async function writePlan(){
     if (writes.length || Object.keys(old).some(u => !(u in sigs)) || pushMeta.tz !== tz) { await Promise.all(writes); await db.doc('config/push-meta').set({ sigs, at: Date.now(), tz, lead: +C().leadMin || 3 }); }
   } catch(e) { console.warn('push plan', e); }
   planBusy = false;
+}
+
+/* ---------- calendar alarms: each role change in the phone's own calendar, with an alarm before it ---------- */
+function icsText(name, days){
+  const lead = +C().leadMin || 3, now = Date.now(), from = sod(new Date());
+  const z = t => new Date(t).toISOString().replace(/[-:]/g,'').replace(/\.\d{3}/,'');
+  const tx = v => String(v).replace(/\\/g,'\\\\').replace(/;/g,'\\;').replace(/,/g,'\\,').replace(/\n/g,'\\n');
+  const L = ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Al Ain BC//Roster//EN','CALSCALE:GREGORIAN','METHOD:PUBLISH','X-WR-CALNAME:'+tx(APP_NAME)];
+  let n = 0;
+  for (let k = 0; k < days; k++) {
+    const d = addDays(from, k), r = dayRoster(d), items = myItems(r, name, -1);
+    items.forEach((it, i) => {
+      const t0 = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, it.sl.start).getTime(), t1 = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, it.sl.end).getTime();
+      if (t1 <= now) return;
+      const prev = i > 0 && items[i-1].sl.end === it.sl.start ? items[i-1].role.name : null, role = it.role.brk ? 'Break' : it.role.name;
+      L.push('BEGIN:VEVENT', 'UID:'+dkey(d)+'-'+it.sl.start+'-'+pkey(name)+'@alainbc', 'DTSTAMP:'+z(now), 'DTSTART:'+z(t0), 'DTEND:'+z(t1),
+        'SUMMARY:'+tx(role+' · '+APP_NAME), 'DESCRIPTION:'+tx(prev ? 'Moving from '+prev+' to '+it.role.name+'.' : 'Your first role: '+it.role.name+'.'),
+        'BEGIN:VALARM', 'ACTION:DISPLAY', 'DESCRIPTION:'+tx(role+' at '+fmtT(it.sl.start)), 'TRIGGER:-PT'+lead+'M', 'END:VALARM', 'END:VEVENT');
+      n++;
+    });
+  }
+  L.push('END:VCALENDAR');
+  return { text: L.join('\r\n')+'\r\n', n };
+}
+function exportCal(){
+  if (!staff().includes(me)) return;
+  const { text, n } = icsText(me, 7); if (!n) return toast('No roles in the next 7 days.');
+  const name = 'Al-Ain-BC-'+pkey(me)+'-'+dkey(new Date())+'.ics';
+  saveBlob(new Blob([text], { type: 'text/calendar;charset=utf-8' }), name);
+  toast(n+' role changes with alarms. Open the file, then tap Add All (iPhone) or Import / Save (Android).');
 }
 
 /* ---------- toast ---------- */
@@ -1258,7 +1342,7 @@ function render(force){
   else if (tab === 'roster') v.innerHTML = viewRoster();
   else if (tab === 'luck') { v.innerHTML = viewLuck(); drawWheel(); setupScratch(); }
   else v.innerHTML = viewHome();
-  $('#foot').innerHTML = `${APP_NAME} v${VERSION}${demo ? ' · Demo mode: saved on this device only' : ''}`;
+  $('#foot').innerHTML = `${APP_NAME} v${BUILD} · ${CREDIT}${demo ? ' · Demo mode: saved on this device only' : ''}`;
   if (tab === 'luck') setTimeout(askGame, 0);
   if (tab === 'settings') setupDrag();
   queuePlan();
@@ -1267,7 +1351,7 @@ function render(force){
 }
 function renderHeader(){
   const ok = navigator.onLine && dbState === 'ready';
-  $('#hdrdate').innerHTML = demo ? `${fmtDay(new Date())} · <span class="pill warn" style="padding:0 8px">Demo</span>` : `<span class="syncdot ${ok?'':'off'}"></span>${fmtDay(new Date())} · ${ok?'All changes saved':'Offline, will sync'}`;
+  $('#hdrdate').innerHTML = demo ? `${fmtDay(new Date())} · <span class="pill warn" style="padding:0 8px">Demo</span>` : `<span class="syncdot ${ok && db?'':'off'}"></span>${fmtDay(new Date())} · ${!db && navigator.onLine ? 'Connecting…' : ok ? 'All changes saved' : 'Offline, will sync'}`;
   $('#tabs').innerHTML = (isObs() ? OBS_TABS : TABS).map(([k,l]) => `<button data-act="tab" data-tab="${k}" aria-pressed="${tab===k}">${l}</button>`).join('');
   const wd = staff().includes(me) ? weeklyDone(me) : null, tw = toolName('weekly');
   const dot = wd == null ? '' : `<i class="wdot ${wd?'ok':'bad'}" title="${esc(tw)}: ${wd?'done this week':'not done yet'}" aria-label="${esc(tw)}: ${wd?'done this week':'not done yet'}"></i>`;
@@ -1318,7 +1402,7 @@ function viewHome(){
     <div class="rolecards">${curCard}${nxtCard}</div>
     <div class="row"><span class="pill" data-audio></span></div>
     ${viewOnNow()}
-    ${pushReady() ? viewPush() : ''}
+    ${viewPush()}
     ${list}`;
 }
 function waNumber(){ return String(C().waNumber || WA_DEFAULT).replace(/\D/g,''); }
@@ -1608,15 +1692,16 @@ function viewSettings(){
       <p class="muted" style="font-size:13px">${todayFixed ? `<b>Today is fixed.</b> Changes here apply from tomorrow. Only leave (Routine → tap a name) changes a day that has started.` : 'A day is fixed as soon as it starts. Until then it follows these settings.'}</p>
       <div class="row">${todayFixed ? `<button class="btn ghost" data-act="rebuild-today">Rebuild today from settings</button>` : ''}<button class="btn danger" data-act="admin-lock">Sign out of admin</button></div></section>`
     : `<section class="card" style="display:grid;gap:8px"><h3>Team settings</h3><p class="muted" style="font-size:13px">Only the admin changes the roster: the team, leave, roles, shifts and Saturdays. Once a day starts its roster is fixed; only leave marked by the admin changes it.</p><p class="muted" style="font-size:13px">You can change your name, photo and theme (tap your picture), and make your weekly pick in Next Week Luck. The tools button at the bottom right has your QR code, links, the weekly check and Zero Club.</p></section>`;
-  const about = `<section class="card" style="display:grid;gap:8px"><h3>About</h3><p><b>${APP_NAME}</b> v${VERSION}</p>
+  const about = `<section class="card" style="display:grid;gap:8px"><h3>About</h3><p><b>${APP_NAME}</b> v${BUILD}</p><p style="font-size:13px;font-weight:600">${CREDIT}</p>
     <p class="muted" style="font-size:13px">${demo?'Demo mode: everything is saved on this device only. Fill in firebase-config.js to share the roster with the team.':'Shared roster: saved changes reach everyone instantly.'}</p></section>`;
   if (!adm) return `${readOnly?'<div class="pill bad">View only: you can\'t change settings</div>':''}
     <section><h2>Settings</h2></section><div class="sgrid">${you}${alerts}${adminCard}${about}</div>`;
 
   const thisWk = wkKey(new Date()), order = staff().length ? weekOrder(thisWk) : [], pos = buildPositions(order.length), w = pickWindow(), roles = rolesAll(), seq = seqOf(roles);
-  const dropped = []; { let prev = roles.map(r => r.name); for (let m = roles.length-1; m >= 1 && dropped.length < 4; m--) { const cur = buildPositions(m).map(p => p.name); dropped.push(...prev.filter(x => !cur.includes(x))); prev = cur; } }
+  const prio = rolePrio(), dropped = []; { let prev = roles.map(r => r.name); for (let m = roles.length-1; m >= 1 && dropped.length < 3; m--) { const cur = buildPositions(m).map(p => p.name); dropped.push(...prev.filter(x => !cur.includes(x))); prev = cur; } }
   const extras = buildPositions(roles.length+2).map(p => p.name).filter(x => !roles.some(r => r.name === x));
-  const dropTxt = (dropped.length ? 'With fewer people, roles are left empty in this order: <b>'+dropped.slice(0,4).map(esc).join('</b>, <b>')+'</b>… Break is kept. ' : '') + (extras.length ? 'With more people, extra roles are added: <b>'+extras.map(esc).join('</b>, <b>')+'</b>.' : '');
+  const dropTxt = dropped.length ? `1 person on leave: <b>${esc(dropped[0])}</b> is left empty.`+(dropped[1] ? ` 2 people: <b>${esc(dropped[0])}</b> and <b>${esc(dropped[1])}</b>.` : '')+(dropped[2] ? ` 3 people: also <b>${esc(dropped[2])}</b>.` : '') : '';
+  const extraTxt = extras.length ? 'With more people than roles, extra roles are added: <b>'+extras.map(esc).join('</b>, <b>')+'</b>.' : '';
   const rf = rulesFrom();
   let satStart = fromKey(rf); while (satStart.getDay() !== 6) satStart = addDays(satStart, 1); const satTxt = dkey(satStart) > dkey(new Date()) ? ' (starts '+fmtDay(satStart)+')' : '';
   const sr = satRule(), offRoles = new Set(sr.roles.map(normName)), satRoles = roles.filter(r => !offRoles.has(normName(r.name))), satN = staff().length - sr.staff.length;
@@ -1643,8 +1728,14 @@ function viewSettings(){
     <div class="list" data-drag="roles">${seq.map((r,i) => `<div class="li" data-i="${i}"><span class="handle" aria-hidden="true" title="Drag to move">☰</span><span class="mono muted" style="width:20px">${i+1}</span><span class="grow">${esc(r.name)}</span><label class="row" style="gap:4px;font-size:13px"><input type="checkbox" data-set="role-brk" data-i="${i}" ${r.brk?'checked':''}> Break</label>
       <button class="icon" data-act="role-move" data-i="${i}" data-d="-1" aria-label="Move ${esc(r.name)} up" ${i?'':'disabled'}>↑</button><button class="icon" data-act="role-move" data-i="${i}" data-d="1" aria-label="Move ${esc(r.name)} down" ${i<seq.length-1?'':'disabled'}>↓</button><button class="icon" data-act="role-del" data-i="${i}" aria-label="Remove ${esc(r.name)}">✕</button></div>`).join('')}</div>
     <p class="chain"><span class="muted">How people move:</span> ${seq.concat(seq.length ? [seq[0]] : []).map(r => `<b>${esc(r.name)}</b>`).join(' → ')}</p>
-    <p class="muted" style="font-size:13px">${dropTxt}</p>
+    <p class="muted" style="font-size:13px">${extraTxt}</p>
     <form class="addrow" data-form="role"><input id="newrole" placeholder="Add role, e.g. SAS4" autocomplete="off" maxlength="20"><button class="btn primary">Add</button></form></section>
+
+  <section class="card" style="display:grid;gap:10px"><h3>Role priority</h3>
+    <p class="muted" style="font-size:13px">When someone is on leave (or the team is smaller than the roles), roles are left empty from the <b>bottom</b> of this list first, so the top roles stay covered. Break always stays. Drag <b>☰</b> or use ↑ ↓.</p>
+    <div class="list" data-drag="prio">${prio.map((n,i) => `<div class="li" data-i="${i}"><span class="handle" aria-hidden="true" title="Drag to move">☰</span><span class="mono muted" style="width:20px">${i+1}</span><span class="grow">${esc(n)}</span>${i >= prio.length-2 ? `<span class="pill warn">${i === prio.length-1 ? 'Empty first' : 'Next'}</span>` : ''}
+      <button class="icon" data-act="prio-move" data-i="${i}" data-d="-1" aria-label="Move ${esc(n)} up" ${i?'':'disabled'}>↑</button><button class="icon" data-act="prio-move" data-i="${i}" data-d="1" aria-label="Move ${esc(n)} down" ${i<prio.length-1?'':'disabled'}>↓</button></div>`).join('')}</div>
+    <p class="muted" style="font-size:13px">${dropTxt}</p></section>
 
   <section class="card" style="display:grid;gap:10px"><h3>Managers · view only</h3><p class="muted" style="font-size:13px">Managers see what everyone is doing right now and the full routine, and can download it. They are not on the roster and can't change it.</p>
     <div class="list">${observers().map(n => `<div class="li">${photoBtn(n)}<span class="grow">${esc(n)}</span><button class="icon" data-act="obs-del" data-name="${esc(n)}" aria-label="Remove ${esc(n)}">✕</button></div>`).join('') || '<p class="muted">No managers yet.</p>'}</div>
@@ -1680,6 +1771,7 @@ function viewSettings(){
     <p class="muted" style="font-size:13px">Everyone opens these from the tools button at the bottom right.</p>
     <label class="field"><b>RQMS link</b><input type="url" inputmode="url" data-set="tool-url" data-tool="rqms" placeholder="https://…" value="${esc(toolUrl('rqms'))}" autocomplete="off" spellcheck="false"></label>
     <label class="field"><b>Translator link</b><input type="url" inputmode="url" data-set="tool-url" data-tool="translator" placeholder="https://…" value="${esc(toolUrl('translator'))}" autocomplete="off" spellcheck="false"></label>
+    <label class="field"><b>Studio link</b><input type="url" inputmode="url" data-set="tool-url" data-tool="studio" placeholder="https://…" value="${esc(toolUrl('studio'))}" autocomplete="off" spellcheck="false"></label>
     <label class="field"><b>Weekly check · name</b><input data-set="tool-name" data-tool="weekly" placeholder="${TOOL_DEF.weekly}" value="${esc(toolCfg('weekly').name||'')}" maxlength="40" autocomplete="off"></label>
     <label class="field"><b>Weekly check · link (optional)</b><input type="url" inputmode="url" data-set="tool-url" data-tool="weekly" placeholder="https://…" value="${esc(toolUrl('weekly'))}" autocomplete="off" spellcheck="false"></label>
     <div class="field"><b>${esc(toolName('zero'))} · list</b><div class="list">${zeroItems().map(x => `<div class="li"><span class="grow" style="white-space:normal">${esc(x.text)}</span><button class="icon" data-act="zero-del" data-id="${esc(x.id)}" aria-label="Remove ${esc(x.text)}">✕</button></div>`).join('') || '<p class="muted">No items yet.</p>'}</div>
@@ -1694,6 +1786,11 @@ function viewSettings(){
     <p class="muted" style="font-size:13px">Add each person's QR code (a photo or screenshot of it is fine). Each person sees only their own, in their profile and in Tools. Saved straight away.</p>
     <input id="qrfile" type="file" accept="image/*" hidden>
     <div class="list">${[...staff(), ...observers()].map(n => { const q = hasQr(n); return `<div class="li">${avatar(n,30)}<span class="grow">${esc(n)}</span>${q ? '<span class="pill ok">QR added</span>' : '<span class="pill">No QR</span>'}<button class="btn sm" data-act="qr-pick" data-name="${esc(n)}">${q ? 'Change' : 'Add'}</button>${q ? `<button class="btn sm ghost" data-act="qr-view" data-name="${esc(n)}">View</button><button class="btn sm ghost danger" data-act="qr-del" data-name="${esc(n)}">Remove</button>` : ''}</div>`; }).join('')}</div></section>
+  <section class="card" style="display:grid;gap:10px"><h3>Phone notifications · server</h3>
+    ${pushReady() ? `<p><span class="pill ok">Set up</span> ${Object.keys(pushDevices||{}).length} phone${Object.keys(pushDevices||{}).length===1?'':'s'} signed up.${pushCfg && +pushCfg.seen ? ' Last check '+fmtAgo(Date.now() - +pushCfg.seen)+' ago.' : ''}</p>${serverNote()}`
+      : `<p><span class="pill bad">Not set up yet</span></p><p class="muted" style="font-size:13px">Without it, phones only get alerts while the app is open. It's a free one-time setup, about 15 minutes, on a PC:</p>
+      <ol class="steps" style="font-size:13px"><li>Firebase console → Project settings → Service accounts → <b>Generate new private key</b>.</li><li>Sign up free at <b>dash.cloudflare.com</b> → Workers → Create Worker → paste <span class="mono">push-server/worker.js</span> → Deploy.</li><li>Open the Worker's address, copy the two keys into its Settings → Variables (with the Firebase key and your email).</li><li>Add a Cron Trigger: <span class="mono">* * * * *</span>.</li><li>Back here, everyone taps <b>Turn on notifications</b> on Home.</li></ol>
+      <a class="btn" href="${GUIDE}" target="_blank" rel="noopener" style="justify-self:start">Open the full guide ↗</a>`}</section>
   ${viewGh()}
   ${about}
   </div>
@@ -1717,8 +1814,13 @@ function onSettingChange(el){
 const setOrder = order => stageCfg({ staff: order, anchorWeek: wkKey(new Date()) });
 const stageTool = (k, patch) => { const t = { ...(C().tools || {}) }; t[k] = { ...(t[k] || {}), ...patch }; stageCfg({ tools: t }); };
 // Role sequence: drag the ☰ handle up or down (works with a finger or a mouse).
-function setupDrag(){
-  const list = document.querySelector('[data-drag="roles"]'); if (!list || list.dataset.ready) return; list.dataset.ready = '1';
+const DROP = {
+  roles(from, to){ const seq = seqOf(rolesAll()), [m] = seq.splice(from, 1); seq.splice(to, 0, m); stageCfg({ roles: listFromSeq(seq) }); },
+  prio(from, to){ const p = rolePrio(), [m] = p.splice(from, 1); p.splice(to, 0, m); stageCfg({ priority: p }); },
+};
+function setupDrag(){ document.querySelectorAll('[data-drag]').forEach(dragList); }
+function dragList(list){
+  if (!list || list.dataset.ready || !DROP[list.dataset.drag]) return; list.dataset.ready = '1';
   list.addEventListener('pointerdown', e => {
     const h = e.target.closest('.handle'), item = h && h.closest('.li'); if (!item || !isAdmin()) return;
     e.preventDefault();
@@ -1731,7 +1833,7 @@ function setupDrag(){
     };
     const up = () => { h.removeEventListener('pointermove', move); h.removeEventListener('pointerup', up); h.removeEventListener('pointercancel', up);
       items.forEach(x => { x.style.transform = ''; x.classList.remove('dragging'); });
-      if (to !== from) { const seq = seqOf(rolesAll()), [m] = seq.splice(from, 1); seq.splice(to, 0, m); stageCfg({ roles: listFromSeq(seq) }); } };
+      if (to !== from) DROP[list.dataset.drag](from, to); };
     h.addEventListener('pointermove', move); h.addEventListener('pointerup', up); h.addEventListener('pointercancel', up);
   });
 }
@@ -1780,6 +1882,7 @@ document.addEventListener('click', e => {
     case 'scratch-new': scratch = SCRATCH0(); render(true); break;
     case 'staff-move': { const o = weekOrder(wkKey(new Date())).slice(), i = +el.dataset.i, j = i + +el.dataset.d; [o[i],o[j]] = [o[j],o[i]]; setOrder(o); break; }
     case 'staff-del': { const o = weekOrder(wkKey(new Date())).slice(), i = +el.dataset.i; if (el.dataset.confirm !== '1') { el.dataset.confirm = '1'; el.textContent = '?'; el.setAttribute('aria-label','Tap again to remove'); toast('Tap ✕ again to remove '+o[i]+'.'); return; } o.splice(i,1); setOrder(o); break; }
+    case 'prio-move': { const p = rolePrio(), i = +el.dataset.i, j = i + +el.dataset.d; if (j < 0 || j >= p.length) return; [p[i],p[j]] = [p[j],p[i]]; stageCfg({ priority: p }); break; }
     case 'role-move': { const q = seqOf(rolesAll()), i = +el.dataset.i, j = i + +el.dataset.d; if (j < 0 || j >= q.length) return; [q[i],q[j]] = [q[j],q[i]]; stageCfg({ roles: listFromSeq(q) }); break; }
     case 'role-del': { const q = seqOf(rolesAll()); if (q.length <= 1) return; if (el.dataset.confirm !== '1') { el.dataset.confirm = '1'; el.textContent = '?'; toast('Tap ✕ again to remove '+q[+el.dataset.i].name+'.'); return; } q.splice(+el.dataset.i,1); stageCfg({ roles: listFromSeq(q) }); break; }
     case 'sat-staff': { const sr = satRule(), n = el.dataset.name, s = sr.staff.includes(n) ? sr.staff.filter(x => x !== n) : [...sr.staff, n]; stageCfg({ satRule: { ...sr, staff: s } }); break; }
@@ -1793,6 +1896,7 @@ document.addEventListener('click', e => {
     case 'tools': if (!signedIn()) return; sheet = { kind: 'tools' }; renderSheet(); break;
     case 'tool': { const k = el.dataset.tool; if (k === 'link') openTool('link', { tool: el.dataset.k }); else openTool(k); break; }
     case 'sheet-back': if (sheet && sheet.prev) { sheet = sheet.prev; renderSheet(); } break;
+    case 'cal-export': exportCal(); break;
     case 'weekly-done': setWeekly(true); break;
     case 'weekly-undo': setWeekly(false); break;
     case 'zero-tick': toggleZero(el.dataset.id); break;
@@ -1812,7 +1916,7 @@ document.addEventListener('click', e => {
     case 'admin-go': sheet = null; renderSheet(); tab = 'settings'; LS.set('dutyRoster.tab', tab); render(true); window.scrollTo(0,0); break;
     case 'admin-lock': setAdmin(false); sheet = null; renderSheet(); render(true); toast('Signed out of admin on this device.'); break;
     case 'draft-save': saveDraft(); break;
-    case 'update-now': if (hasDraft()) return toast('Save or discard your team changes first, then update.'); location.reload(); break;
+    case 'update-now': if (hasDraft()) return toast('Save or discard your team changes first, then update.'); reloadFresh(); break;
     case 'photo-pick': { if (!isAdmin()) return; pickFor = el.dataset.name; const inp = $('#adminphoto'); if (inp) { inp.value = ''; inp.click(); } break; }
     case 'gh-push': pushToGitHub(); break;
     case 'gh-forget': LS.set('dutyRoster.ghToken', null); gh = { busy:'', msg:'', err:'', url:'' }; refreshGh(); toast('Token removed from this device.'); break;
@@ -1870,11 +1974,15 @@ function tryUpdate(){
   if (!updateTo) return;
   clearTimeout(updT);
   const b = $('#updbtn');
-  if (quietMoment()) { if (b) b.hidden = true; toast('Updating to the new version…'); setTimeout(() => location.reload(), 1500); return; }
+  // Reload once per new version; if the website is still handing out the old page, wait 3 minutes before trying again.
+  const last = String(SS.get('dutyRoster.upd') || '').split('|'), waiting = last[0] === updateTo && Date.now() - (+last[1] || 0) < 180000;
+  if (quietMoment() && !waiting) { if (b) b.hidden = true; SS.set('dutyRoster.upd', updateTo+'|'+Date.now()); toast('Updating to the new version…'); setTimeout(reloadFresh, 1500); return; }
   if (b) { b.hidden = false; b.textContent = 'New version ready · Update'; }
   updT = setTimeout(tryUpdate, 30000);
 }
-setTimeout(checkUpdate, 15000); setInterval(checkUpdate, 5*60000);
+// The phone keeps a copy of the page for a fast start; drop it so the reload fetches the new version.
+async function reloadFresh(){ try { const c = await caches.open('alainbc-v1'); await c.delete(new URL('index.html', location.href).href); } catch(e) {} location.reload(); }
+setTimeout(checkUpdate, 4000); setInterval(checkUpdate, 5*60000);
 window.addEventListener('online', checkUpdate);
 
 /* ---------- live clock ---------- */
@@ -1898,6 +2006,7 @@ setInterval(queueLock, 5*60000); // safety net: a day that couldn't be fixed yet
 setInterval(renderHeader, 15000);
 window.addEventListener('online', () => { renderHeader(); updateLive(); });
 window.addEventListener('offline', () => { renderHeader(); if (!demo) toast('You are offline. Changes will save when the connection is back.'); });
+loadSnap();
 applyMyTheme();
 render(true);
 startDb();

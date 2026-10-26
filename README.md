@@ -1,5 +1,7 @@
 # What Am I Now? v1.7.0
 
+**Al Ain BC · Powered by Aakriti Marketing Agency**
+
 Shown to the team as **Al Ain BC** (black and purple BC logo, also the name on phone home screens). The repository, website address and Firebase project keep their old names.
 
 A simple team roster website. Open it and you see straight away:
@@ -11,7 +13,9 @@ A simple team roster website. Open it and you see straight away:
 - **Download:** the whole week (7 days, every time slot) as a **PDF** to keep or share, or as **Excel (CSV)**. On the Routine page, under the sheet.
 - **Managers:** a view-only profile that shows what everyone is doing right now, the full roster and the download, without being on the roster
 - **Next Week Luck:** pick your starting role for next week by spinning the wheel or scratching a card. Once picked, it's fixed.
-- **Tools** (the round button at the bottom right): your **QR code**, **RQMS** and **Translator** links, the **Weekly Assessment** check and **Zero Club**.
+- **Tools** (the round grid button at the bottom right): your **QR code**, **RQMS** and **Translator** links, the **Weekly Assessment** check, **Zero Club** and **Studio**.
+- **Opens fast:** the phone keeps a copy of the app and of the last roster it saw, so Home shows straight away, even with no internet, and updates itself as soon as it connects.
+- **Back button / back swipe** closes the open panel (Tools, profile, pop-ups) instead of leaving the app.
 - **My profile:** tap your picture at the top to change your name, your photo, write a short line about yourself, pick a style or colour for the whole site, or change user. Tap **Save**.
 - **Settings:** your device and alerts for everyone; team, role sequence, shifts, half days, Saturday, managers, photos, tools, QR codes and **Push to GitHub** for the **admin** only. Every change shows straight away as a preview; one **Save changes** at the bottom sends it all to the team.
 - **WhatsApp alerts:** each person gets *their own* role on WhatsApp a few minutes before every change (join from Settings → Alerts)
@@ -37,6 +41,7 @@ A simple team roster website. Open it and you see straight away:
 ## How the roster rotates
 
 - **Role sequence** (Settings → Role sequence): each time slot everyone moves one step down the list, and the last role goes back to the top, e.g. Greeter → Break → TAB3 → … → SAS1 → Greeter. The Routine shows the roles left to right in the same order, so each time slot you move one column to the right. The admin changes the sequence by dragging ☰ or with ↑ ↓ (for example, to make GA come right after Greeter, drag GA to number 2). Settings spells out the result: how people move, which roles are left empty first when people are missing, and which roles are added when there are more people.
+- **Role priority** (Settings → Role priority): when someone is on leave (or the team is smaller than the roles), roles are left empty from the **bottom** of this list, so the top roles stay covered. Break always stays. Start: Greeter, GA, SAS1, TAB1, SAS2, TAB2, SAS3, TAB3. Drag ☰ or use ↑ ↓; Settings says which role is left empty with 1, 2 or 3 people on leave. It applies straight away, also to leave marked today.
 - **Next day** the order moves up by one, so it carries straight on: yesterday's Greeter starts the day on the role after Greeter in the sequence.
 - **Half days** (Settings → Half days): one shift only on those days. **Every Friday is 8:00–12:00**, one table instead of two. The admin can change the times or add other half days.
 - **Saturday** (Settings → Saturday): by default Hamada and Ahoud are off, and TAB3, SAS3 and Break are not used. Change who is off and which roles are dropped there. Settings → Saturday shows how the numbers work out.
@@ -61,6 +66,7 @@ Both are the same fair draw with the same rules. After you've played, the page s
 - **My QR code:** each person sees only their own (also in their profile: tap your picture → My QR code). Until the admin adds it, a placeholder shows. Admin: **Settings → QR codes** → **Add** / **Change** / **Remove** for each person (a photo or screenshot of the QR is fine). Saved straight away.
 - **RQMS** and **Translator:** open the links the admin puts in **Settings → Tools**. Until then they say "Link not added yet".
 - **Weekly Assessment:** each person marks it done for the week. The dot next to your name at the top is **red** until you do and **green** after. It goes back to red every Monday. The admin can rename it and add a link (Settings → Tools), and sees who has done it (Settings → This week).
+- **Studio:** opens the link the admin puts in **Settings → Tools**.
 - **Zero Club:** a checklist the admin writes (Settings → Tools → add and remove items). Each person ticks what they've done. It starts fresh every Monday (or every month, or never: the admin chooses).
 
 ## Fixed days
@@ -144,6 +150,10 @@ Double-click **`Publish to GitHub.bat`** in this folder. It uploads everything y
 - It refuses to publish an incomplete or old folder (for example the old app folder with `www` and `android` inside), because that would replace the live website.
 
 ## Phone notifications (Android + iPhone)
+
+**Status check:** Settings (admin) → **Phone notifications · server** says whether this is set up. Until it is, the app (iPhone Home Screen app or Android installed app) can only alert while it is open.
+
+**Backup that works right away: calendar alarms.** Home → Phone notifications → **Add my next 7 days to my calendar**. It downloads a calendar file with every role change for the next 7 days, each with an alarm 3 minutes before (the alert time from Settings). Open it and tap **Add All** (iPhone) or **Import / Save** (Android). The phone's own calendar then rings with the app closed. If the roster changes (leave, new picks), add it again. Do it once a week, e.g. every Monday.
 
 A website can't wake a closed phone by itself. A tiny free server does that: it runs every minute on **Cloudflare Workers** (free plan, no card), reads the roster plan the website keeps in Firebase, and sends each phone a notification a few minutes before its next role (Settings → "Alert and notification before each role change": 3, 4 or 5 minutes). It works next to the WhatsApp alerts; people can use either or both.
 

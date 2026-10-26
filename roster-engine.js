@@ -51,6 +51,9 @@ function setData(cfg,absences,wheels){S.cfg=cfg||null;cache=new Map();const rn=O
 //  * Role sequence: each time slot everyone moves one role along the sequence (seqOf): Greeter → the next role → …
 //    and the last one goes back to the first. The roles list in Settings is kept in "positions" order: the first role,
 //    then the sequence backwards (listFromSeq/seqOf convert between the two).
+//  * Role priority (Settings → Role priority): with fewer people than roles (leave, a small team), roles are left
+//    empty from the bottom of this list; Break always stays. Without a setting: Greeter, GA, SAS1, TAB1, SAS2, TAB2…
+//    Fixed days follow the current list too when the admin marks leave.
 //  * Fixed days: when a working day starts, the site saves it (absences/<date>.lock: who works, in which order, the roles
 //    and shift times). After that, settings changes, new people and wheel picks never change that day; only leave does.
 const normName=s=>String(s||'').toLowerCase().replace(/[^a-z0-9]/g,'');
@@ -127,10 +130,27 @@ function addExtra(pos,ref,k,n){
   if(before.length)at=before[before.length-1].i+1;else if(same.length)at=same[0].i;else{const b=pos.findIndex(x=>x.brk);at=b<0?pos.length:b}
   pos.splice(at,0,role);
 }
-function buildPositions(n,roles,ref){
+// Working roles, most important first (see Role priority above). `ref` = a full role list in Settings order.
+// Default: the front roles first (Greeter, GA, SAS1, TAB1), then SAS2, TAB2, SAS3, TAB3…, then any other roles.
+function defaultPrio(ref){
+  const key=n=>{const x=normName(n);if(x==='greeter')return[0,0];if(x==='ga'||x==='greeterassistant')return[1,0];const q=roleKind(n);return q?[2,q.n*2+(q.k==='sas'?0:1)]:[3,0]};
+  return (ref||rolesAll()).filter(r=>!r.brk).map((r,i)=>({n:String(r.name),i,k:key(r.name)})).sort((a,b)=>a.k[0]-b.k[0]||a.k[1]-b.k[1]||a.i-b.i).map(o=>o.n);
+}
+function rolePrio(){
+  const work=rolesAll().filter(r=>!r.brk),p=C().priority,out=[];
+  if(Array.isArray(p))for(const n of p){const r=work.find(x=>normName(x.name)===normName(n));if(r&&!out.includes(r.name))out.push(r.name)}
+  for(const n of defaultPrio())if(!out.includes(n))out.push(n);
+  return out;
+}
+// Leave on a fixed day follows today's Role priority (it is the leave rule, not part of the saved roster).
+function lockPrio(L){const p=rolePrio();for(const n of defaultPrio(Array.isArray(L.ref)?L.ref:L.roles))if(!p.some(x=>normName(x)===normName(n)))p.push(n);return p}
+function buildPositions(n,roles,ref,prio){
   const all=ref||rolesAll(),pos=(roles||all).map(r=>({name:String(r.name),brk:!!r.brk}));if(!n)return[];
   if(n>pos.length){for(let k=1;pos.length<n&&k<500;k++)for(const kind of ['tab','sas']){if(pos.length>=n)break;if(pos.some(x=>normName(x.name)===kind+k))continue;addExtra(pos,all,kind,k)}}
-  else while(pos.length>n){let i=-1;for(let j=pos.length-1;j>=0;j--)if(!pos[j].brk){i=j;break}pos.splice(i<0?pos.length-1:i,1)}
+  else{
+    const pr=(prio||(ref?defaultPrio(ref):rolePrio())).map(normName),rank=x=>{const i=pr.indexOf(normName(x.name));return i<0?1e9:i};
+    while(pos.length>n){let i=-1;for(let j=pos.length-1;j>=0;j--){if(pos[j].brk)continue;if(i<0||rank(pos[j])>rank(pos[i]))i=j}pos.splice(i<0?pos.length-1:i,1)}
+  }
   return pos;
 }
 function lastWorking(pos){for(let j=pos.length-1;j>=1;j--)if(!pos[j].brk)return j;return -1}
@@ -159,7 +179,7 @@ function dayRoster(date){
   else{
     const full=L?L.full.slice():liveFull(date),dayOff=L?(L.dayOff||[]).slice():satOff(date);
     const absent=((S.absences[key]||{}).names||[]).filter(x=>full.includes(x));
-    const order=full.filter(x=>!absent.includes(x)),positions=L?buildPositions(order.length,L.roles,Array.isArray(L.ref)?L.ref:L.roles):buildPositions(order.length,liveRoles(date));
+    const order=full.filter(x=>!absent.includes(x)),positions=L?buildPositions(order.length,L.roles,Array.isArray(L.ref)?L.ref:L.roles,lockPrio(L)):buildPositions(order.length,liveRoles(date));
     const sh0=L?L.shifts:dayShifts(date),mode=L?(L.slotMode==null?'auto':L.slotMode):c.slotMode;
     const shifts=sh0.map(sh=>({...sh,slots:buildSlots(parseHM(sh.start),parseHM(sh.end),order.length,mode).map((sl,i)=>({...sl,cells:positions.map((_,j)=>order[(i+j)%order.length])}))}));
     res={key,full,order,absent,dayOff,positions,shifts,locked:!!L,slotMode:mode};
@@ -176,4 +196,4 @@ function myItems(r,who,t){const items=[];if(!r.shifts||(r.absent||[]).includes(w
 
 export { DAYN, MON, DEFAULTS, sod, addDays, dkey, fromKey, monday, wkKey, parseHM, fmtT, fmtRange, fmtDay, fmtCd, hash, rng, shuffle, rotate, pkey, C, staff, setData, normalize, baseOrder, cleanAssign, forbidsFor, match, wheelOrder, buildPositions, buildSlots, dayRoster, allSlots, roleOf, myItems,
   normName, isStandby, rolesAll, rulesFrom, isNew, satRule, satApplies, dayOffStaff, dayRoles, isWorkDay, prevWorkDay, weekDays, scheduled, hasWheel, weekQueue, wheelForbids, lastWorking, dayFull, weekOrder,
-  liveName, renameMap, lockOf, isLocked, lockData, shortDays, shortOf, dayShifts, moveIdx, seqOf, listFromSeq };
+  liveName, renameMap, lockOf, isLocked, lockData, shortDays, shortOf, dayShifts, moveIdx, seqOf, listFromSeq, rolePrio, defaultPrio };
