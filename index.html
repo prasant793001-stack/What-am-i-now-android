@@ -240,6 +240,7 @@ ol.steps{margin:0;padding-left:20px;display:grid;gap:6px}
 #banner .b .btn{background:var(--accent-ink);color:var(--accent);border-color:var(--accent-ink)}
 @keyframes drop{from{transform:translateY(-30px);opacity:0}to{transform:none;opacity:1}}
 @media (prefers-reduced-motion:reduce){#banner .b{animation:none}.who button{transition:none}.scard canvas{transition:none}}
+#updbtn{position:fixed;left:50%;top:calc(10px + env(safe-area-inset-top,0px));transform:translateX(-50%);z-index:35;border:0;border-radius:999px;padding:9px 16px;background:var(--primary);color:var(--primary-ink);font-weight:700;box-shadow:0 8px 24px rgba(0,0,0,.25);white-space:nowrap}
 #toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:40;background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-weight:600;max-width:calc(100% - 32px);box-shadow:var(--shadow)}
 .btn.wa{background:#1F8F4E;border-color:#1F8F4E;color:#fff}
 .syncdot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--primary);margin-right:4px}
@@ -260,13 +261,14 @@ footer{padding:0 0 24px;text-align:center;font-size:12px}
 <div id="banner" hidden></div>
 <div id="sheet" hidden></div>
 <div id="savebar" hidden></div>
+<button id="updbtn" data-act="update-now" hidden></button>
 <div id="toast" role="status" hidden></div>
 
 <script type="module">
 import { DAYN, MON, DEFAULTS, sod, addDays, dkey, fromKey, monday, wkKey, parseHM, fmtT, fmtRange, fmtDay, fmtCd, hash, rotate, pkey, C, staff, setData, cleanAssign, match, buildPositions, dayRoster, allSlots, roleOf, myItems,
-  normName, isStandby, rolesAll, rulesFrom, satRule, weekOrder, wheelForbids } from "./roster-engine.js?v=1.5.0";
+  normName, isStandby, rolesAll, rulesFrom, satRule, weekOrder, wheelForbids } from "./roster-engine.js?v=1.5.1";
 
-const VERSION = '1.5.0';
+const VERSION = '1.5.1';
 const APP_NAME = 'BC Al Ain Routine';
 const WA_DEFAULT = '971505353447'; // the WhatsApp bot's number (can be changed in Settings)
 const SEED_STAFF = ["Ahmed","Shahid","Ziko","Rayan","Hamada","Prashant","Mohammed","Ahoud","Mustafa"];
@@ -1363,7 +1365,7 @@ function fmt24(m){ m = Math.min(m, 23*60+59); return String(Math.floor(m/60)).pa
 
 let wakeLock = null, wantWake = false;
 async function getWake(){ try { wakeLock = await navigator.wakeLock.request('screen'); wakeLock.addEventListener('release', () => { wakeLock = null; if (tab === 'settings') render(true); }); } catch(e) { wakeLock = null; toast("This device wouldn't keep the screen on. Change its auto-lock setting instead."); } if (tab === 'settings') render(true); }
-document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { if (wantWake && !wakeLock) getWake(); tickNow(); syncPush(); queuePlan(); } });
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { if (wantWake && !wakeLock) getWake(); tickNow(); syncPush(); queuePlan(); checkUpdate(); } });
 async function copyLink(){ const url = location.origin+location.pathname+'?me='+encodeURIComponent(me); try { await navigator.clipboard.writeText(url); toast('Your personal link is copied. Open it on another device to be remembered there too.'); } catch(e) { window.prompt('Copy your personal link:', url); } }
 
 /* ---------- clicks ---------- */
@@ -1419,6 +1421,7 @@ document.addEventListener('click', e => {
     case 'admin-go': sheet = null; renderSheet(); tab = 'settings'; LS.set('dutyRoster.tab', tab); render(true); window.scrollTo(0,0); break;
     case 'admin-lock': setAdmin(false); sheet = null; renderSheet(); render(true); toast('Admin is locked on this device.'); break;
     case 'draft-save': saveDraft(); break;
+    case 'update-now': if (hasDraft()) return toast('Save or discard your team changes first, then update.'); location.reload(); break;
     case 'photo-pick': { if (!isAdmin()) return; pickFor = el.dataset.name; const inp = $('#adminphoto'); if (inp) { inp.value = ''; inp.click(); } break; }
     case 'gh-push': pushToGitHub(); break;
     case 'gh-forget': LS.set('dutyRoster.ghToken', null); gh = { busy:'', msg:'', err:'', url:'' }; refreshGh(); toast('Token removed from this device.'); break;
@@ -1450,6 +1453,34 @@ document.addEventListener('submit', e => {
     if (e.target.dataset.signin) { me = n; rememberMe(me); setUrlMe(me); hl = null; tab = 'home'; LS.set('dutyRoster.tab', tab); render(true); toast('Hi '+me+'! You can see the team roster here.'); } else toast(n+' added as a manager.'); }
   if (f === 'role') { const v = $('#newrole').value.trim(); if (!v) return; if (isStandby({ name: v })) return toast('Standby is not used. Add a working role instead.'); const r = rolesAll(), bi = r.findIndex(x => x.brk); r.splice(bi < 0 ? r.length : bi, 0, { name: v }); stageCfg({ roles: r }); }
 });
+
+/* ---------- updates reach every open copy by themselves ---------- */
+// Tills and phones keep this page open for days, so an open copy would never see a new version. Every few minutes, and
+// whenever the page comes back to the front, it checks version.json. When a newer version is out it reloads itself at a
+// quiet moment (nothing unsaved, no panel open, no spin, scratch or role alert running); otherwise it shows an Update button.
+let updateTo = null, updT = null;
+const isNewer = (a, b) => { const x = String(a).split('.').map(Number), y = String(b).split('.').map(Number); for (let i = 0; i < 3; i++) if ((x[i]||0) !== (y[i]||0)) return (x[i]||0) > (y[i]||0); return false; };
+async function checkUpdate(){
+  try {
+    const r = await fetch('version.json?t='+Date.now(), { cache: 'no-store' }); if (!r.ok) return;
+    const v = String((await r.json()).version || '');
+    if (v && isNewer(v, VERSION)) { updateTo = v; tryUpdate(); }
+  } catch(e) {}
+}
+function quietMoment(){
+  const a = document.activeElement;
+  return !hasDraft() && !sheet && !spin.anim && !scratch.lock && !bannerData && !dl.busy && !gh.busy && !push.busy && !(a && /INPUT|TEXTAREA|SELECT/.test(a.tagName));
+}
+function tryUpdate(){
+  if (!updateTo) return;
+  clearTimeout(updT);
+  const b = $('#updbtn');
+  if (quietMoment()) { if (b) b.hidden = true; toast('Updating to the new version…'); setTimeout(() => location.reload(), 1500); return; }
+  if (b) { b.hidden = false; b.textContent = 'New version ready · Update'; }
+  updT = setTimeout(tryUpdate, 30000);
+}
+setTimeout(checkUpdate, 15000); setInterval(checkUpdate, 5*60000);
+window.addEventListener('online', checkUpdate);
 
 /* ---------- live clock ---------- */
 function updateLive(){

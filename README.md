@@ -1,4 +1,4 @@
-# What Am I Now? v1.5.0
+# What Am I Now? v1.5.1
 
 Shown to the team as **BC Al Ain Routine** (black and purple BC logo; "BC Routine" on phone home screens). The repository, website address and Firebase project keep their old names.
 
@@ -30,6 +30,7 @@ A simple team roster website. Open it and you see straight away:
 | `Publish to GitHub.bat` | **Double-click to upload all your changes to GitHub** |
 | `sw.js`, `manifest.webmanifest`, `icon-*.png`, `badge-96.png` | "Add to Home Screen", pop-up alerts and phone notifications |
 | `push-server/worker.js` | The free notification server for phone notifications (paste into Cloudflare, see below) |
+| `version.json` | The current version number. Open copies of the site check it and update themselves (see below) |
 | `vendor/` | The PDF maker used by Download (jsPDF, MIT licence). Loads only when someone taps PDF |
 
 ## How the roster rotates
@@ -140,6 +141,12 @@ As soon as the keys line shows ✓, the website shows **Turn on notifications** 
 - Tapped **Don't Allow** by mistake? iPhone: Settings → Notifications → BC Routine → Allow. Android: Chrome ⋮ → Settings → Site settings → Notifications → allow the site.
 
 The website keeps a 14-day notification plan for everyone who turned notifications on, and any open copy of the site updates it within seconds when sick leave, picks or settings change. If nobody opens the site for 14 days, notifications pause until someone does. Notifications follow the phone's Focus / Do Not Disturb settings; on Samsung, Xiaomi, Oppo and Huawei set Chrome's battery use to **Unrestricted**.
+
+## How updates reach everyone
+
+Phones and tills keep the site open for days, so from v1.5.1 every open copy checks `version.json` every 5 minutes and whenever it comes back to the screen. When a newer version is out, it reloads itself at a quiet moment: nothing unsaved, no profile panel open, no spin, scratch or role alert running. Otherwise it shows a **New version ready · Update** button at the top. GitHub can take up to about 10 minutes to hand out a new version, so allow up to 15 minutes in total.
+
+When the website's code changes, raise the number in both `version.json` and `const VERSION` in `index.html`. Photos and the settings backup sent with Push to GitHub don't need a new version.
 
 ## Website address
 
